@@ -1,5 +1,7 @@
 const { DataTypes, Model } = require("sequelize");
-const startConnection = require("./connection");
+const seqConnection = require("./connection");
+const RolesMenus = require("./roles_menus");
+const Menus = require("./menus");
 
 class Roles extends Model { }
 
@@ -8,8 +10,10 @@ Roles.init({
         type: DataTypes.STRING
     }
 }, {
-    sequelize: startConnection,
+    sequelize: seqConnection,
     underscored: true,
 })
+
+Roles.belongsToMany(Menus, { through: RolesMenus });
 
 module.exports = Roles;
