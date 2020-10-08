@@ -1,11 +1,12 @@
 const { DataTypes, Model } = require("sequelize");
 const seqConnection = require("./connection");
 
-class Roles extends Model { }
+class GeoZones extends Model { }
 
-Roles.init({
+GeoZones.init({
     name: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     description: {
         type: DataTypes.STRING,
@@ -13,8 +14,9 @@ Roles.init({
     }
 }, {
     sequelize: seqConnection,
+    timestamps: false,
     underscored: true,
-    modelName: 'roles'
-})
+    modelName: 'geozone'
+});
 
-module.exports = Roles;
+module.exports = GeoZones;

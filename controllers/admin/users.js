@@ -1,10 +1,21 @@
 var users = require('express').Router();
-const Users = require("../../models/users");
+const { Users, Roles, Menus } = require("../../models/index");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
 users.get('/', (req, res, next) => {
-    const users = Users.findAll();
+    let params = {
+        include: Roles
+    };
+
+    if (req.query.limit) {
+        params.limit = parseInt(req.query.limit);
+    }
+
+    if (req.query.offset) {
+        params.offset = parseInt(req.query.offset);
+    }
+    const users = Users.findAndCountAll(params);
     users.then((response) => {
         res.send(response).json();
     }).catch(error => {
@@ -22,8 +33,13 @@ users.post("/", (req, res, next) => {
     var token = jwt.sign({ username: req.body.email }, config.get("token_secret"), { expiresIn: "7200s" });
     req.body.token = token;
 
-    const user = Users.create(req.body);
-    user.then((response) => {
+    const saveUser = async () => {
+        const user = await Users.create(req.body);
+        await user.addRoles(req.body.roles);
+        return user;
+    }
+
+    saveUser().then((response) => {
         res.send(response).json();
     }).catch(error => {
         res.status(400).send(error).json();
@@ -31,7 +47,14 @@ users.post("/", (req, res, next) => {
 })
 
 users.get("/:id", (req, res, next) => {
-    const user = Users.findByPk(req.params.id);
+    const user = Users.findByPk(req.params.id, {
+        include: [
+            {
+                model: Roles,
+                include: Menus
+            }
+        ]
+    });
     user.then((data) => {
         res.send(data).json();
     }).catch(error => {
@@ -40,13 +63,19 @@ users.get("/:id", (req, res, next) => {
 });
 
 users.delete("/:id", (req, res, next) => {
-    const user = Users.destroy({
-        where: {
-            id: req.params.id
-        }
-    });
 
-    user.then((data) => {
+    const deleteUser = async () => {
+        const user = await Users.findByPk(req.params.id);
+        await user.setRoles([]);
+
+        return await Users.destroy({
+            where: {
+                id: req.params.id
+            }
+        });
+    }
+
+    deleteUser().then((data) => {
         res.send({ message: "Successfully deleted" }).json();
     }).catch((error) => {
         res.send(error).json();
@@ -54,14 +83,21 @@ users.delete("/:id", (req, res, next) => {
 });
 
 users.patch("/:id", (req, res, next) => {
-    const user = Users.update(req.body, {
-        where: {
-            id: req.params.id
-        }
-    });
 
-    user.then((data) => {
-        res.send({ message: "Successfully updated" }).json();
+    const saveUser = async () => {
+        await Users.update(req.body, {
+            where: {
+                id: req.params.id
+            }
+        });
+
+        const user = await Users.findByPk(req.params.id);
+        await user.setRoles(req.body.roles);
+        return user;
+    }
+
+    saveUser().then((data) => {
+        res.send(data).json();
     }).catch((error) => {
         res.status(400).send(error).json();
     })

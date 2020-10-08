@@ -28,7 +28,9 @@ RolesMenus.init({
     },
 }, {
     sequelize: seqConnection,
-    underscored: true
+    underscored: true,
+    modelName: 'rolesMenus',
+    timestamps: false
 });
 
 module.exports = RolesMenus;

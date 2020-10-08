@@ -7,7 +7,8 @@ var seqConnection = new Sequelize(
     config.get("database.password"),
     {
         host: config.get("database.host"),
-        dialect: config.get("database.dialect")
+        dialect: config.get("database.dialect"),
+//        logging: false
     }
 );
 

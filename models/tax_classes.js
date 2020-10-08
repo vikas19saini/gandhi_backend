@@ -1,11 +1,12 @@
 const { DataTypes, Model } = require("sequelize");
 const seqConnection = require("./connection");
 
-class Roles extends Model { }
+class TaxClasses extends Model { }
 
-Roles.init({
-    name: {
-        type: DataTypes.STRING
+TaxClasses.init({
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
     description: {
         type: DataTypes.STRING,
@@ -14,7 +15,8 @@ Roles.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: 'roles'
-})
+    modelName: "taxClasses"
+});
 
-module.exports = Roles;
+
+module.exports = TaxClasses;

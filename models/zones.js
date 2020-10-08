@@ -1,20 +1,25 @@
 const { DataTypes, Model } = require("sequelize");
 const seqConnection = require("./connection");
 
-class Roles extends Model { }
+class Zones extends Model { }
 
-Roles.init({
+Zones.init({
     name: {
-        type: DataTypes.STRING
-    },
-    description: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    code: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    countryId: {
+        type: DataTypes.BIGINT
     }
 }, {
     sequelize: seqConnection,
+    timestamps: false,
     underscored: true,
-    modelName: 'roles'
+    modelName: 'zones'
 })
 
-module.exports = Roles;
+module.exports = Zones;

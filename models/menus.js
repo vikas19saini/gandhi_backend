@@ -14,7 +14,8 @@ Menus.init({
     }
 }, {
     sequelize: seqConnection,
-    underscored: true
+    underscored: true,
+    modelName: 'menus'
 });
 
 module.exports = Menus;
