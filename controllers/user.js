@@ -1,14 +1,15 @@
 const route = require('express').Router();
 const { login } = require("./components/auth");
 
-route.get("/", (req, res) => {
-    res.send("eelo").json();
-})
-
 route.post("/login", (req, res) => {
     const auth = login(req.body.email, req.body.password);
     auth.then((data) => {
-        res.send(data).json();
+        if (data.status) {
+            res.send(data).json();
+        } else {
+            res.status(401).send({ ...data, ...{ statusCode: 1100 } }).json();
+        }
+
     })
 })
 

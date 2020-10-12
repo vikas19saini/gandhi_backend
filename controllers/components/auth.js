@@ -1,13 +1,18 @@
-const { Users } = require("../../models/index")
+const { Users, Roles, Menus } = require("../../models/index")
 const passwordHash = require("password-hash");
 const jwt = require("jsonwebtoken");
-const config = require("config");
+const { model } = require("../../models/connection");
 
 const login = async (userName, password) => {
     const user = await Users.findOne({
         where: {
             email: userName
+        },
+        include: [{
+            model: Roles,
+            include: Menus
         }
+        ]
     })
 
     if (user === null) {
@@ -31,7 +36,7 @@ const login = async (userName, password) => {
         }
     }
 
-    var authToken = jwt.sign({ username: user.email }, config.get("token_secret"), { expiresIn: "7200s" });
+    var authToken = jwt.sign({ username: user.email }, process.env.TOKEN, { expiresIn: "7200s" });
 
     await Users.update({ token: authToken }, {
         where: {
@@ -41,7 +46,8 @@ const login = async (userName, password) => {
 
     return {
         status: true,
-        token: authToken
+        token: authToken,
+        user: user
     }
 }
 

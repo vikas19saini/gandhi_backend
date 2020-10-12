@@ -1,7 +1,6 @@
 var users = require('express').Router();
 const { Users, Roles, Menus } = require("../../models/index");
 const jwt = require("jsonwebtoken");
-const config = require("config");
 
 users.get('/', (req, res, next) => {
     let params = {
@@ -30,7 +29,7 @@ users.post("/", (req, res, next) => {
     }
 
     // Generating access token
-    var token = jwt.sign({ username: req.body.email }, config.get("token_secret"), { expiresIn: "7200s" });
+    var token = jwt.sign({ username: req.body.email }, process.env.TOKEN, { expiresIn: "7200s" });
     req.body.token = token;
 
     const saveUser = async () => {

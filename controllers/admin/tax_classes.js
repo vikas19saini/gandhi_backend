@@ -40,7 +40,12 @@ route.patch("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         });
-        const taxClass = TaxClasses.findByPk(req.params.id);
+        const taxClass = await TaxClasses.findByPk(req.params.id);
+
+        //Delete reationship before creating new
+        await taxClass.setTaxes([]);
+
+        // Create reationship
         req.body.taxes.forEach((t) => {
             taxClass.addTaxes([t.id], { through: { priority: t.priority } })
         })
@@ -65,7 +70,7 @@ route.delete("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         })
-        res.send({message: "Succcessfully deleted"}).json();
+        res.send({ message: "Succcessfully deleted" }).json();
     } catch (err) {
         res.status(404).send(err).json();
     }

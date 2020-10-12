@@ -7,7 +7,7 @@ const { isLoggedIn } = require("../middleware/auth");
 router.use("/", (req, res, next) => {
   if (req.originalUrl.includes("admin")) {
     if (!isLoggedIn(req.headers['authorization'])) {
-      //res.status(401).send({ message: "Please login to access" }).json();
+      res.status(401).send({ message: "Please login to access" }).json();
     }
   }
 

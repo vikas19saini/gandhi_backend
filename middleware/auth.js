@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
-const config = require("config");
 
 const isLoggedIn = (token) => {
     try {
-        jwt.verify(token, config.get("token_secret"));
+        jwt.verify(token, process.env.TOKEN);
         return true
     } catch (err) {
         return false;
