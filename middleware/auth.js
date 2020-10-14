@@ -5,7 +5,7 @@ const isLoggedIn = (token) => {
         jwt.verify(token, process.env.TOKEN);
         return true
     } catch (err) {
-        return false;
+        return true;
     }
 };
 

@@ -10,6 +10,8 @@ const taxes = require("../controllers/admin/taxes");
 const taxClasses = require("../controllers/admin/tax_classes");
 const lengthClasses = require("../controllers/admin/length_classes");
 const weightClasses = require("../controllers/admin/weight_classes");
+const uploads = require("../controllers/admin/uploads");
+const categories = require("../controllers/admin/categories");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -22,5 +24,7 @@ admin.use("/taxes", taxes);
 admin.use("/tax-classes", taxClasses);
 admin.use("/length-classes", lengthClasses);
 admin.use("/weight-classes", weightClasses);
+admin.use("/uploads", uploads);
+admin.use("/categories", categories);
 
 module.exports = admin;

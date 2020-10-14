@@ -13,6 +13,8 @@ const TaxClasses = require("./tax_classes");
 const TaxesClasses = require("./taxes_classes");
 const WeightClasses = require("./weight_classes");
 const LengthClasses = require("./length_classes");
+const Uploads = require("./uploads");
+const Categories = require("./categories");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -26,9 +28,12 @@ GeoZones.belongsToMany(Zones, { through: GeoZonesZones, onDelete: 'CASCADE' });
 Zones.belongsToMany(GeoZones, { through: GeoZonesZones, onDelete: 'CASCADE' });
 
 Taxes.belongsTo(GeoZones);
-TaxClasses.belongsToMany(Taxes, { through: TaxesClasses })
+TaxClasses.belongsToMany(Taxes, { through: TaxesClasses });
+
+Categories.belongsTo(Uploads, { as: "media", foreignKey: "upload_id", targetKey: "id" })
+Categories.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobile_upload_id", targetKey: "id" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses
+    WeightClasses, LengthClasses, Uploads, Categories
 }
