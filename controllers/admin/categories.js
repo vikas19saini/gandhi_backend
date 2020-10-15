@@ -1,9 +1,8 @@
 const route = require("express").Router();
 const { Categories, Uploads } = require("../../models/index");
 
-route.get("/", (req, res) => {
+route.get("/", async (req, res) => {
     let params = {
-        hierarchy: true,
         include: [
             {
                 model: Uploads,
@@ -12,7 +11,20 @@ route.get("/", (req, res) => {
             {
                 model: Uploads,
                 as: "mobileMedia"
+            },
+            {
+                model: Categories,
+                as: "ancestors"
             }
+        ],
+        order: [
+            [
+                {
+                    model: Categories,
+                    as: 'ancestors',
+                },
+                'hierarchy_level'
+            ]
         ]
     };
 
@@ -24,11 +36,12 @@ route.get("/", (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
-    Categories.findAndCountAll(params).then((data) => {
-        res.send(data).json();
-    }).catch((err) => {
+    try {
+        let categories = await Categories.findAndCountAll(params);
+        res.send(categories).json();
+    } catch (err) {
         res.status(400).send(err).json();
-    })
+    }
 });
 
 route.post("/", (req, res, next) => {
@@ -39,16 +52,18 @@ route.post("/", (req, res, next) => {
     })
 });
 
-route.patch("/:id", (req, res, next) => {
-    Categories.update(req.body, {
-        where: {
-            id: req.params.id
-        }
-    }).then((data) => {
-        res.send(data).json();
-    }).catch((err) => {
-        res.status(400).send(err).json();
-    })
+route.patch("/:id", async (req, res) => {
+    try {
+        Categories.update(req.body, {
+            where: {
+                id: req.params.id
+            }
+        });
+        await Categories.rebuildHierarchy();
+        res.send(category).json();
+    } catch (err) {
+        res.status(500).send(err).json();
+    }
 });
 
 route.get("/:id", (req, res, next) => {
@@ -62,13 +77,29 @@ route.get("/:id", (req, res, next) => {
             hierarchy: true
         },
         {
+            model: Categories,
+            as: 'parent',
+        },
+        {
             model: Uploads,
             as: "media"
         },
         {
             model: Uploads,
             as: "mobileMedia"
-        }
+        },
+        {
+            model: Categories,
+            as: "ancestors"
+        }],
+        order: [
+            [
+                {
+                    model: Categories,
+                    as: 'ancestors',
+                },
+                'hierarchy_level'
+            ]
         ]
     }).then((data) => {
         res.send(data).json();
@@ -84,7 +115,7 @@ route.delete("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         })
-        await Categories.rebuildHierarchy();
+        res.send({ message: "Successfully deleted" }).json();
     } catch (err) {
         res.status(404).send(err).json();
     }

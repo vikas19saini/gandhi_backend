@@ -10,13 +10,14 @@ Categories.init({
     },
     slug: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
     },
-    meta_title: {
+    metaTitle: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    meta_desceiption: {
+    metaDesceiption: {
         type: DataTypes.STRING,
         allowNull: true
     },
@@ -34,7 +35,5 @@ Categories.init({
     modelName: "categories"
 });
 
-Categories.isHierarchy({
-    labels: true
-});
+Categories.isHierarchy();
 module.exports = Categories;
