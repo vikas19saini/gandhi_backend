@@ -18,7 +18,11 @@ var storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 route.get("/", (req, res, next) => {
-    let params = {};
+    let params = {
+        order: [
+            ['id', 'DESC']
+        ]
+    };
 
     if (req.query.limit) {
         params.limit = parseInt(req.query.limit);
@@ -36,7 +40,7 @@ route.get("/", (req, res, next) => {
 });
 
 route.post("/", upload.single('file'), (req, res, next) => {
-    
+
     const request = {
         name: req.file.filename,
         type: req.file.mimetype,

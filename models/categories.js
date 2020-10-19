@@ -28,7 +28,15 @@ Categories.init({
     parentId: {
         type: DataTypes.BIGINT,
         allowNull: true
-    }
+    },
+    uploadId: {
+        type: DataTypes.BIGINT,
+        allowNull: true
+    },
+    mobileUploadId: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+    },
 }, {
     sequelize: seqConnection,
     underscored: true,

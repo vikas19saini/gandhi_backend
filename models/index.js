@@ -30,8 +30,8 @@ Zones.belongsToMany(GeoZones, { through: GeoZonesZones, onDelete: 'CASCADE' });
 Taxes.belongsTo(GeoZones);
 TaxClasses.belongsToMany(Taxes, { through: TaxesClasses });
 
-Categories.belongsTo(Uploads, { as: "media", foreignKey: "upload_id", targetKey: "id" })
-Categories.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobile_upload_id", targetKey: "id" });
+Categories.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
+Categories.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
