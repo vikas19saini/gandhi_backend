@@ -12,6 +12,7 @@ const lengthClasses = require("../controllers/admin/length_classes");
 const weightClasses = require("../controllers/admin/weight_classes");
 const uploads = require("../controllers/admin/uploads");
 const categories = require("../controllers/admin/categories");
+const filters = require("../controllers/admin/filters");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -26,5 +27,6 @@ admin.use("/length-classes", lengthClasses);
 admin.use("/weight-classes", weightClasses);
 admin.use("/uploads", uploads);
 admin.use("/categories", categories);
+admin.use("/filters", filters);
 
 module.exports = admin;

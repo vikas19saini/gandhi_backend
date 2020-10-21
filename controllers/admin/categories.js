@@ -25,7 +25,8 @@ route.get("/", async (req, res) => {
                 },
                 'hierarchy_level'
             ]
-        ]
+        ],
+        distinct: true
     };
 
     if (req.query.limit) {
@@ -38,6 +39,7 @@ route.get("/", async (req, res) => {
 
     try {
         let categories = await Categories.findAndCountAll(params);
+        
         res.send(categories).json();
     } catch (err) {
         res.status(400).send(err).json();
@@ -46,6 +48,7 @@ route.get("/", async (req, res) => {
 
 route.post("/", (req, res, next) => {
     Categories.create(req.body).then((data) => {
+        Categories.rebuildHierarchy();
         res.send(data).json();
     }).catch((err) => {
         res.status(400).send(err).json();
@@ -60,7 +63,7 @@ route.patch("/:id", async (req, res) => {
             }
         });
         await Categories.rebuildHierarchy();
-        res.send(category).json();
+        res.send({ message: "Updated Successfully" }).json();
     } catch (err) {
         res.status(500).send(err).json();
     }
