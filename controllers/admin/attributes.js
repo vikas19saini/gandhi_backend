@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Filters, FilterValues } = require("../../models/index");
+const { Attributes, AttributeValues } = require("../../models/index");
 const seqConnection = require("../../models/connection");
 
 route.get("/", async (req, res) => {
@@ -16,8 +16,8 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
     try {
-        const filters = await Filters.findAndCountAll(params);
-        res.send(filters).json();
+        const attributes = await Attributes.findAndCountAll(params);
+        res.send(attributes).json();
     } catch (error) {
         res.status(500).send(error).json();
     }
@@ -25,14 +25,14 @@ route.get("/", async (req, res) => {
 
 route.post("/", async (req, res) => {
     try {
-        const filter = await Filters.create(req.body, {
+        const attribute = await Attributes.create(req.body, {
             include: [
                 {
-                    association: "filterValues"
+                    association: "attributeValues"
                 }
             ]
         });
-        res.send(filter).json();
+        res.send(attribute).json();
     } catch (error) {
         res.status(500).send(error).json();
     }
@@ -42,40 +42,40 @@ route.patch("/:id", async (req, res) => {
     try {
 
         const transactionResult = await seqConnection.transaction(async (t) => {
-            const filter = await Filters.update(req.body, {
+            const attribute = await Attributes.update(req.body, {
                 where: {
                     id: req.params.id
                 }
             }, { transaction: t });
 
-            const filterValues = await FilterValues.findAll({
+            const attributeValues = await AttributeValues.findAll({
                 where: {
-                    filterId: req.params.id
+                    attributeId: req.params.id
                 }
             }, { transaction: t });
 
-            const filterValueIds = filterValues.map(val => val.id);
+            const attributeValueIds = attributeValues.map(val => val.id);
 
-            for (const filterValueId of filterValueIds) {
-                let reqFilterValue = req.body.filterValues.filter(f => f.id === filterValueId);
-                if (reqFilterValue.length > 0) {
-                    await FilterValues.update(reqFilterValue[0], {
+            for (const attributeValueId of attributeValueIds) {
+                let reqAttributeValue = req.body.attributeValues.filter(f => f.id === attributeValueId);
+                if (reqAttributeValue.length > 0) {
+                    await AttributeValues.update(reqAttributeValue[0], {
                         where: {
-                            id: filterValueId
+                            id: attributeValueId
                         }
                     }, { transaction: t });
                 } else {
-                    await FilterValues.destroy({
+                    await AttributeValues.destroy({
                         where: {
-                            id: filterValueId
+                            id: attributeValueId
                         }
                     }, { transaction: t });
                 }
             }
 
-            const newFilterValues = req.body.filterValues.filter(val => !val.id);
-            for (const saveNewFilter of newFilterValues) {
-                await FilterValues.create({ ...saveNewFilter, ...{ filterId: req.params.id } }, { transaction: t });
+            const newAttributeValues = req.body.attributeValues.filter(val => !val.id);
+            for (const saveNewAttribute of newAttributeValues) {
+                await AttributeValues.create({ ...saveNewAttribute, ...{ attributeId: req.params.id } }, { transaction: t });
             }
 
             return { message: "updated" };
@@ -90,10 +90,10 @@ route.patch("/:id", async (req, res) => {
 
 route.get("/:id", async (req, res) => {
     try {
-        const filter = await Filters.findByPk(req.params.id, {
-            include: ["filterValues"]
+        const arrtibute = await Attributes.findByPk(req.params.id, {
+            include: ["attributeValues"]
         });
-        res.send(filter).json();
+        res.send(arrtibute).json();
     } catch (error) {
         res.status(404).send(error).json();
     }
@@ -101,14 +101,14 @@ route.get("/:id", async (req, res) => {
 
 route.delete("/:id", async (req, res) => {
     try {
-        await Filters.destroy({
+        await Attributes.destroy({
             where: {
                 id: req.params.id
             }
         });
-        await FilterValues.destroy({
+        await AttributeValues.destroy({
             where: {
-                filterId: req.params.id
+                attributeId: req.params.id
             }
         });
         res.send({ message: "deleted" }).json();

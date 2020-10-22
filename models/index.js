@@ -17,6 +17,8 @@ const Uploads = require("./uploads");
 const Categories = require("./categories");
 const Filters = require("./filters");
 const FilterValues = require("./filter_values");
+const Attributes = require("./attributes");
+const AttributeValues = require("./attribute_values");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -36,9 +38,12 @@ Categories.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: 
 Categories.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
 FilterValues.belongsTo(Filters, { as: "filterGroup", foreignKey: "filterId", targetKey: "id" });
-Filters.hasMany(FilterValues, { as: "filterValues" })
+Filters.hasMany(FilterValues, { as: "filterValues" });
+
+AttributeValues.belongsTo(Attributes, { as: "attributeGroup", foreignKey: "attributeId", targetKey: "id" });
+Attributes.hasMany(AttributeValues, { as: "attributeValues" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues
 }
