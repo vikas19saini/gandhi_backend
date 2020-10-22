@@ -20,6 +20,10 @@ const FilterValues = require("./filter_values");
 const Attributes = require("./attributes");
 const AttributeValues = require("./attribute_values");
 
+const Coupons = require("./coupons");
+
+
+
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
 Roles.belongsToMany(Users, { through: UsersRoles, hooks: true });
@@ -43,7 +47,13 @@ Filters.hasMany(FilterValues, { as: "filterValues" });
 AttributeValues.belongsTo(Attributes, { as: "attributeGroup", foreignKey: "attributeId", targetKey: "id" });
 Attributes.hasMany(AttributeValues, { as: "attributeValues" });
 
+
+
+
+
+
+
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons
 }

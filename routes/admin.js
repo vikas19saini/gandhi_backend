@@ -15,6 +15,8 @@ const categories = require("../controllers/admin/categories");
 const filters = require("../controllers/admin/filters");
 const attributes = require("../controllers/admin/attributes");
 
+const coupons = require("../controllers/admin/coupons");
+
 admin.use('/users', users);
 admin.use("/roles", roles);
 admin.use("/menus", menus);
@@ -30,5 +32,8 @@ admin.use("/uploads", uploads);
 admin.use("/categories", categories);
 admin.use("/filters", filters);
 admin.use("/attributes", attributes);
+
+admin.use("/coupons", coupons);
+
 
 module.exports = admin;
