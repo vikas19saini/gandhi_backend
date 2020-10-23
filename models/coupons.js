@@ -13,48 +13,47 @@ Coupons.init({
         type: DataTypes.STRING(225),
         allowNull: true
     },
-    discount_type: {
+    discountType: {
         type: DataTypes.STRING,
         allowNull: false
     },
     amount: {
         type: DataTypes.DOUBLE,
         allowNull: false,
-        validate:{
-            min:1
+        validate: {
+            min: 1
         }
-
     },
-    start_date: {
+    startDate: {
         type: DataTypes.DATE,
         allowNull: false
     },
-    end_date: {
+    endDate: {
         type: DataTypes.DATE,
         allowNull: false
     },
-    min_spend: {
+    minSpend: {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
-    max_spend: {
+    maxSpend: {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
-    individual_only: {
+    individualOnly: {
         type: DataTypes.TINYINT,
         allowNull: false
     },
-    exclude_sale_items: {
+    excludeSaleItems: {
         type: DataTypes.TINYINT,
         allowNull: false
     },
-    usage_limit: {
+    usageLimit: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
 
-    limit_per_user: {
+    limitPerUser: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -62,12 +61,10 @@ Coupons.init({
         type: DataTypes.INTEGER,
         allowNull: false
     }
-
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "coupons",
-    timestamps: false
+    modelName: "coupons"
 });
 
 module.exports = Coupons;

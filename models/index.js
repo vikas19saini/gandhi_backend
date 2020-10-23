@@ -19,10 +19,12 @@ const Filters = require("./filters");
 const FilterValues = require("./filter_values");
 const Attributes = require("./attributes");
 const AttributeValues = require("./attribute_values");
-
 const Coupons = require("./coupons");
-
-
+const Products = require("./products");
+const ProductsCategories = require("./products_categories");
+const ProductsUploads = require("./products_uploads");
+const ProductsFilterValues = require("./products_filter_values");
+const ProductsAttributeValues = require("./products_attribute_values");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -47,13 +49,26 @@ Filters.hasMany(FilterValues, { as: "filterValues" });
 AttributeValues.belongsTo(Attributes, { as: "attributeGroup", foreignKey: "attributeId", targetKey: "id" });
 Attributes.hasMany(AttributeValues, { as: "attributeValues" });
 
+// Product relationship
+Products.belongsTo(TaxClasses, { as: "taxClass", foreignKey: "taxClassId", targetKey: "id" });
+Products.belongsTo(LengthClasses, { as: "lengthClass", foreignKey: "lengthClassId", targetKey: "id" });
+Products.belongsTo(WeightClasses, { as: "weightClass", foreignKey: "weightClassId", targetKey: "id" });
+Products.belongsTo(Uploads, { as: "featuredImage", foreignKey: "uploadId", targetKey: "id" });
 
+Products.belongsToMany(Categories, { through: ProductsCategories, as: "categories", foreignKey: "productId", otherKey: "categoryId" });
+Categories.belongsToMany(Products, { through: ProductsCategories, as: "products", foreignKey: "categoryId", otherKey: "productId" });
 
+Products.belongsToMany(Uploads, { through: ProductsUploads, as: "thumbnails", foreignKey: "productId", otherKey: "uploadId" });
+Uploads.belongsToMany(Products, { through: ProductsUploads, as: "products", foreignKey: "uploadId", otherKey: "productId" });
 
+Products.belongsToMany(FilterValues, { through: ProductsFilterValues, as: "filters", foreignKey: "productId", otherKey: "filterValueId" });
+FilterValues.belongsToMany(Products, { through: ProductsFilterValues, as: "products", foreignKey: "filterValueId", otherKey: "productId" });
 
-
+Products.belongsToMany(AttributeValues, { through: ProductsAttributeValues, as: "attributes", foreignKey: "productId", otherKey: "attributeValueId" });
+AttributeValues.belongsToMany(Products, { through: ProductsAttributeValues, as: "products", foreignKey: "attributeValueId", otherKey: "productId" })
+// Product relationship end
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products
 }
