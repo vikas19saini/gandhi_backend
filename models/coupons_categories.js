@@ -1,16 +1,16 @@
 const { DataTypes, Model } = require("sequelize");
 const seqConnection = require("./connection");
 
-class ProductsCategories extends Model { }
+class CouponsCategories extends Model { }
 
-ProductsCategories.init({
+CouponsCategories.init({
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
     },
-    productId: {
+    couponId: {
         type: DataTypes.BIGINT,
         allowNull: false
     },
@@ -21,9 +21,9 @@ ProductsCategories.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: 'productsCategories',
+    modelName: 'couponsCategories',
     timestamps: false,
 });
 
 
-module.exports = ProductsCategories;
+module.exports = CouponsCategories;

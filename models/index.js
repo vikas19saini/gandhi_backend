@@ -26,6 +26,11 @@ const ProductsUploads = require("./products_uploads");
 const ProductsFilterValues = require("./products_filter_values");
 const ProductsAttributeValues = require("./products_attribute_values");
 
+const CouponsCategories = require("./coupons_categories");
+const CouponsUsers = require("./coupons_users");
+const Sliders = require("./sliders");
+
+
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
 Roles.belongsToMany(Users, { through: UsersRoles, hooks: true });
@@ -68,7 +73,20 @@ Products.belongsToMany(AttributeValues, { through: ProductsAttributeValues, as: 
 AttributeValues.belongsToMany(Products, { through: ProductsAttributeValues, as: "products", foreignKey: "attributeValueId", otherKey: "productId" })
 // Product relationship end
 
+
+Coupons.belongsToMany(Categories, { through: CouponsCategories, as: "categories", foreignKey: "couponId", otherKey: "categoryId" });
+Categories.belongsToMany(Coupons, { through: CouponsCategories, as: "coupons", foreignKey: "categoryId", otherKey: "couponId" });
+
+Coupons.belongsToMany(Users, { through: CouponsUsers, as: "users", foreignKey: "couponId", otherKey: "userId" });
+
+
+Sliders.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
+Sliders.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
+
+
+
+
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,Sliders
 }

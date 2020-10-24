@@ -16,6 +16,9 @@ const filters = require("../controllers/admin/filters");
 const attributes = require("../controllers/admin/attributes");
 const coupons = require("../controllers/admin/coupons");
 const products = require("../controllers/admin/products");
+const sliders = require("../controllers/admin/sliders");
+
+
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -33,6 +36,8 @@ admin.use("/categories", categories);
 admin.use("/filters", filters);
 admin.use("/attributes", attributes);
 admin.use("/coupons", coupons);
+admin.use("/sliders", sliders);
+
 
 
 module.exports = admin;
