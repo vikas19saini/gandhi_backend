@@ -15,6 +15,11 @@ route.get("/", async (req, res) => {
     if (req.query.offset) {
         params.offset = parseInt(req.query.offset);
     }
+
+    if (req.query.include) {
+        params.include = req.query.include.split(",");
+    }
+
     try {
         const filters = await Filters.findAndCountAll(params);
         res.send(filters).json();

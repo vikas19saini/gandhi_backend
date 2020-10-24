@@ -15,6 +15,7 @@ const categories = require("../controllers/admin/categories");
 const filters = require("../controllers/admin/filters");
 const attributes = require("../controllers/admin/attributes");
 const coupons = require("../controllers/admin/coupons");
+const products = require("../controllers/admin/products");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
