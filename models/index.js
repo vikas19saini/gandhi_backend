@@ -70,5 +70,6 @@ AttributeValues.belongsToMany(Products, { through: ProductsAttributeValues, as: 
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues, 
+    ProductsFilterValues, ProductsCategories, ProductsUploads
 }

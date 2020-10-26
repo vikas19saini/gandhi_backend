@@ -30,6 +30,7 @@ admin.use("/length-classes", lengthClasses);
 admin.use("/weight-classes", weightClasses);
 admin.use("/uploads", uploads);
 admin.use("/categories", categories);
+admin.use("/products", products);
 admin.use("/filters", filters);
 admin.use("/attributes", attributes);
 admin.use("/coupons", coupons);

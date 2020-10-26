@@ -41,14 +41,20 @@ Products.init({
     ragularPrice: {
         type: DataTypes.DOUBLE,
         allowNull: false,
+        set(value) {
+            this.setDataValue('ragularPrice', parseFloat(value));
+        },
         validate: {
-            min: 1,
-            msg: "Invalid ragular price"
+            min: {
+                args: 1,
+                msg: "Invalid ragular price"
+            },
         }
     },
     salePrice: {
         type: DataTypes.DOUBLE,
         defaultValue: 0,
+        allowNull: false
     },
     taxClassId: {
         type: DataTypes.BIGINT,
@@ -62,13 +68,15 @@ Products.init({
         type: DataTypes.TINYINT,
         defaultValue: 0,
         validate: {
-            isIn: [[0, 1]],
-            msg: "Invalid status for manage stock 0 or 1 allowed"
+            isIn: {
+                args: [[0, 1]],
+                msg: "Invalid status for manage stock 0 or 1 allowed"
+            }
         }
     },
     minOrderQuantity: {
         type: DataTypes.BIGINT,
-        allowNull: true
+        defaultValue: 1
     },
     maxOrderQuantity: {
         type: DataTypes.BIGINT,
@@ -76,7 +84,7 @@ Products.init({
     },
     step: {
         type: DataTypes.DOUBLE,
-        allowNull: true
+        defaultValue: 1
     },
     shippingLength: {
         type: DataTypes.FLOAT,
@@ -110,16 +118,20 @@ Products.init({
         type: DataTypes.TINYINT,
         defaultValue: 0,
         validate: {
-            isIn: [[0, 1]],
-            msg: "Invalid status 0 or 1 allowed"
+            isIn: {
+                args: [[0, 1]],
+                msg: "Invalid status 0 or 1 allowed"
+            }
         }
     },
     stockStatus: {
         type: DataTypes.TINYINT,
         defaultValue: 1,
         validate: {
-            isIn: [[0, 1]],
-            msg: "Invalid stock status 0 or 1 allowed"
+            isIn: {
+                args: [[0, 1]],
+                msg: "Invalid stock status 0 or 1 allowed"
+            }
         }
     }
 }, {

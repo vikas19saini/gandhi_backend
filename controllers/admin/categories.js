@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Categories, Uploads } = require("../../models/index");
+const { Categories, Uploads, Products } = require("../../models/index");
 
 route.get("/", async (req, res) => {
     let params = {
@@ -39,7 +39,7 @@ route.get("/", async (req, res) => {
 
     try {
         let categories = await Categories.findAndCountAll(params);
-        
+
         res.send(categories).json();
     } catch (err) {
         res.status(400).send(err).json();
