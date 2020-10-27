@@ -25,27 +25,35 @@ route.get("/", (req, res, next) => {
 
 route.post("/", async (req, res, next) => {
     try {
-        const coupon = await Coupons.create(req.body);
-        await coupon.addCategories(req.body.categories);
-        await coupon.addUsers(req.body.users);
-        res.send(coupon).json();
+        
+        const transactionResult = await seqConnection.transaction(async (t) => {
+            const coupon = await Coupons.create(req.body, { transaction: t });
+            await coupon.addCategories(req.body.categories, { transaction: t });
+            await coupon.addUsers(req.body.users , { transaction: t });
+            return { message: "Created Successfully" };
+        });
+        res.send(transactionResult).json();
     } catch (error) {
-        res.status(400).send(error).json();
-    }
-});
+            res.status(400).send(error).json();
+        }
+    });
 
 
 route.patch("/:id", async (req, res, next) => {
     try {
-        await Coupons.update(req.body, {
-            where: {
-                id: req.params.id
-            }
+        const transactionResult = await seqConnection.transaction(async (t) => {
+            const coupon =  await Coupons.update(req.body, {
+                where: {
+                    id: req.params.id
+                }
+            });
+
+            await coupon.setCategories(req.body.categories,{ transaction: t });
+            await coupon.setUsers(req.body.users,{ transaction: t });
+            return { message: "updated" };
         });
-        const coupon = await Coupons.findByPk(req.params.id);
-        await coupon.setCategories(req.body.categories);
-        await coupon.setUsers(req.body.users);
-        res.send(coupon).json();
+
+        res.send(transactionResult).json();
     } catch (error) {
         res.status(400).send(error).json();
     }

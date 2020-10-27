@@ -29,6 +29,7 @@ const ProductsAttributeValues = require("./products_attribute_values");
 const CouponsCategories = require("./coupons_categories");
 const CouponsUsers = require("./coupons_users");
 const Sliders = require("./sliders");
+const Addresses = require("./addresses");
 
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
@@ -83,10 +84,15 @@ Coupons.belongsToMany(Users, { through: CouponsUsers, as: "users", foreignKey: "
 Sliders.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
 Sliders.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
+Addresses.belongsTo(Users, { as: "users", foreignKey: "user_id", targetKey: "id" });
+Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
+Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zone_id", targetKey: "id" });
+
 
 
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,Sliders
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,
+    Sliders,Addresses
 }
