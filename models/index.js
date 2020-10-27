@@ -32,6 +32,8 @@ const Sliders = require("./sliders");
 const Addresses = require("./addresses");
 
 
+
+
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
 Roles.belongsToMany(Users, { through: UsersRoles, hooks: true });
