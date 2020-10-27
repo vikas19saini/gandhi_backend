@@ -70,13 +70,12 @@ roles.patch("/menu/:id", (req, res, next) => {
     })
 });
 
-roles.delete("/:id", (req, res, next) => {
+/*roles.delete("/:id", (req, res, next) => {
+   const deleteRole = async () => {
 
-    const deleteRole = async () => {
         const role = await Roles.findByPk(req.params.id);
-
         // Deleting relationship from roles_menus table
-        role.setMenus([]);
+      role.setMenus([]);
         role.setUsers([]);
 
 
@@ -86,13 +85,42 @@ roles.delete("/:id", (req, res, next) => {
                 id: req.params.id
             }
         });
+        
+
     }
 
-    deleteRole().then((data) => {
+   deleteRole().then((data) => {
         res.send({ message: "Successfully deleted" }).json();
     }).catch((error) => {
         res.status(400).send(error).json();
     })
 });
+*/
+
+
+roles.delete("/:id", (req, res, next) => {
+    const deleteRole = async () => {
+        const role = await Roles.findByPk(req.params.id);
+        if(role.dataValues.name === 'Admin'){
+            res.send({ status:404,message: "Do not deleted" }).json();
+        }else{
+            // Deleting relationship from roles_menus table
+            role.setMenus([]);
+            role.setUsers([]);
+            // Deleting roles from role table
+            Roles.destroy({
+                where: {
+                    id: req.params.id
+                }
+            });
+        }
+     }
+ 
+    deleteRole().then((data) => {
+         res.send({ message: "Successfully deleted" }).json();
+     }).catch((error) => {
+         res.status(400).send(error).json();
+     })
+ });
 
 module.exports = roles;

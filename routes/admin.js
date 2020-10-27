@@ -19,7 +19,6 @@ const products = require("../controllers/admin/products");
 const sliders = require("../controllers/admin/sliders");
 const addresses = require("../controllers/admin/addresses");
 
-const customers = require('../controllers/customers');
 
 
 
@@ -43,7 +42,6 @@ admin.use("/coupons", coupons);
 admin.use("/sliders", sliders);
 admin.use("/addresses", addresses);
 
-admin.use("/customers", customers);
 
 
 

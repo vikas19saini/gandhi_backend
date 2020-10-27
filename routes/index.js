@@ -2,6 +2,7 @@ var router = require('express').Router();
 var admin = require("./admin");
 const user = require("../controllers/user")
 const { isLoggedIn } = require("../middleware/auth");
+const customers = require("../controllers/customers")
 
 
 router.use("/", (req, res, next) => {
@@ -13,6 +14,8 @@ router.use("/", (req, res, next) => {
 
   router.use('/user', user);
   router.use('/admin', admin);
+  router.use("/customers", customers);
+
   next();
 })
 

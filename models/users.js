@@ -3,7 +3,6 @@ const passwordHash = require('password-hash');
 const startConnection = require("./connection");
 
 class Users extends Model { }
-
 Users.init({
     email: {
         type: DataTypes.STRING,
@@ -34,6 +33,10 @@ Users.init({
     },
     additionalInfo: {
         type: DataTypes.TEXT,
+        allowNull: true
+    },
+    otp: {
+        type: DataTypes.STRING,
         allowNull: true
     }
 }, {
