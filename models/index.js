@@ -25,14 +25,10 @@ const ProductsCategories = require("./products_categories");
 const ProductsUploads = require("./products_uploads");
 const ProductsFilterValues = require("./products_filter_values");
 const ProductsAttributeValues = require("./products_attribute_values");
-
 const CouponsCategories = require("./coupons_categories");
 const CouponsUsers = require("./coupons_users");
 const Sliders = require("./sliders");
 const Addresses = require("./addresses");
-
-
-
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -76,25 +72,19 @@ Products.belongsToMany(AttributeValues, { through: ProductsAttributeValues, as: 
 AttributeValues.belongsToMany(Products, { through: ProductsAttributeValues, as: "products", foreignKey: "attributeValueId", otherKey: "productId" })
 // Product relationship end
 
-
 Coupons.belongsToMany(Categories, { through: CouponsCategories, as: "categories", foreignKey: "couponId", otherKey: "categoryId" });
 Categories.belongsToMany(Coupons, { through: CouponsCategories, as: "coupons", foreignKey: "categoryId", otherKey: "couponId" });
-
 Coupons.belongsToMany(Users, { through: CouponsUsers, as: "users", foreignKey: "couponId", otherKey: "userId" });
-
 
 Sliders.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
 Sliders.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
-Addresses.belongsTo(Users, { as: "users", foreignKey: "user_id", targetKey: "id" });
+Addresses.belongsTo(Users, { as: "users", foreignKey: "userId", targetKey: "id" });
 Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
-Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zone_id", targetKey: "id" });
-
-
-
+Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,
-    Sliders,Addresses
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
+    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses
 }
