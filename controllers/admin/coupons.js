@@ -23,44 +23,69 @@ route.get("/", (req, res, next) => {
     })
 });
 
-route.post("/", (req, res, next) => {
-    Coupons.create(req.body).then((data) => {
-        res.send(data).json();
-    }).catch((err) => {
-        res.status(400).send(err).json();
-    })
-});
-
-route.patch("/:id", (req, res, next) => {
-    Coupons.update(req.body, {
-        where: {
-            id: req.params.id
+route.post("/", async (req, res, next) => {
+    try {
+        
+        const transactionResult = await seqConnection.transaction(async (t) => {
+            const coupon = await Coupons.create(req.body, { transaction: t });
+            await coupon.addCategories(req.body.categories, { transaction: t });
+            await coupon.addUsers(req.body.users , { transaction: t });
+            return { message: "Created Successfully" };
+        });
+        res.send(transactionResult).json();
+    } catch (error) {
+            res.status(400).send(error).json();
         }
-    }).then((data) => {
-        res.send(data).json();
-    }).catch((err) => {
-        res.status(400).send(err).json();
-    })
+    });
+
+
+route.patch("/:id", async (req, res, next) => {
+    try {
+        const transactionResult = await seqConnection.transaction(async (t) => {
+            const coupon =  await Coupons.update(req.body, {
+                where: {
+                    id: req.params.id
+                }
+            });
+
+            await coupon.setCategories(req.body.categories,{ transaction: t });
+            await coupon.setUsers(req.body.users,{ transaction: t });
+            return { message: "updated" };
+        });
+
+        res.send(transactionResult).json();
+    } catch (error) {
+        res.status(400).send(error).json();
+    }
 });
 
-route.get("/:id", (req, res, next) => {
-    Coupons.findByPk(req.params.id).then((data) => {
-        res.send(data).json();
-    }).catch((err) => {
-        res.status(404).send(err).json();
-    })
-});
+route.get("/:id", async (req, res) => {
+    try {
+        const coupon = await Coupons.findByPk(req.params.id, {
+            include: ["categories","users"]
+        });
+        res.send(coupon).json();
+    } catch (error) {
+        res.status(404).send(error).json();
+    }
+})
 
-route.delete("/:id", (req, res, next) => {
-    Coupons.destroy({
-        where: {
-            id: req.params.id
-        }
-    }).then((data) => {
+
+route.delete("/:id", async (req, res, next) => {
+    try {
+        const coupon = await Coupons.findByPk(req.params.id);
+        await coupon.setCategories([]);
+        await coupon.setUsers([]);
+        await Coupons.destroy({
+            where: {
+                id: req.params.id
+            }
+        });
         res.send({ message: "Successfully deleted" }).json();
-    }).catch((err) => {
+    } catch (error) {
         res.status(404).send(err).json();
-    })
+    }
 });
+
 
 module.exports = route;
