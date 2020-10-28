@@ -12,7 +12,7 @@ var app = express();
 
 // Enabling cors
 app.use(cors({
-  origin: 'http://localhost:3001'
+  origin: 'http://staging.gandhifabrics.com/'
 }));
 
 // view engine setup
