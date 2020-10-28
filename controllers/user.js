@@ -13,4 +13,8 @@ route.post("/login", (req, res) => {
     })
 })
 
+route.get("/login", (req, res) => {
+    res.send("called").json();
+})
+
 module.exports = route;
