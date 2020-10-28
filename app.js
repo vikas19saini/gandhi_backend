@@ -4,16 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 
 var indexRouter = require('./routes/index');
 
 var app = express();
 
 // Enabling cors
-/* app.use(cors({
+app.use(cors({
   origin: 'http://localhost:3001'
-})); */
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
