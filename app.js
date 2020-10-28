@@ -11,9 +11,7 @@ var indexRouter = require('./routes/index');
 var app = express();
 
 // Enabling cors
-app.use(cors({
-  origin: 'http://staging.gandhifabrics.com/'
-}));
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
