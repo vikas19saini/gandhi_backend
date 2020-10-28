@@ -10,10 +10,19 @@ var indexRouter = require('./routes/index');
 
 var app = express();
 
+const validatingCors = function (req, callback) {
+  var corsOptions;
+  if (req.header('Origin') === process.env.CLIENT_URL) {
+    corsOptions = { origin: true }
+  } else {
+    corsOptions = { origin: false }
+  }
+
+  callback(null, corsOptions);
+}
+
 // Enabling cors
-app.use(cors({
-  origin: 'http://localhost:3001'
-}));
+app.use(cors(validatingCors));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
