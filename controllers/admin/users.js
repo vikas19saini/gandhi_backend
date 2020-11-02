@@ -1,10 +1,11 @@
 var users = require('express').Router();
 const { Users, Roles, Menus } = require("../../models/index");
 const jwt = require("jsonwebtoken");
+const { Op } = require('sequelize');
 
-users.get('/', (req, res, next) => {
+users.get('/', (req, res) => {
     let params = {
-        include: Roles
+        //include: Roles
     };
 
     if (req.query.limit) {
@@ -14,6 +15,29 @@ users.get('/', (req, res, next) => {
     if (req.query.offset) {
         params.offset = parseInt(req.query.offset);
     }
+
+    if (req.query.search) {
+        params.where = {
+            [Op.or]: [
+                {
+                    email: {
+                        [Op.like]: `%${req.query.search}%`
+                    }
+                },
+                {
+                    phone: {
+                        [Op.like]: `%${req.query.search}%`
+                    }
+                },
+                {
+                    name: {
+                        [Op.like]: `%${req.query.search}%`
+                    }
+                }
+            ]
+        }
+    }
+
     const users = Users.findAndCountAll(params);
     users.then((response) => {
         res.send(response).json();
@@ -22,7 +46,7 @@ users.get('/', (req, res, next) => {
     });
 });
 
-users.post("/", (req, res, next) => {
+users.post("/", (req, res) => {
 
     if (req.body.password !== req.body.confirmPassword) {
         res.status(400).send({ message: "Passwords doesn't match, please try again!" }).json();
@@ -45,7 +69,7 @@ users.post("/", (req, res, next) => {
     });
 })
 
-users.get("/:id", (req, res, next) => {
+users.get("/:id", (req, res) => {
     const user = Users.findByPk(req.params.id, {
         include: [
             {
@@ -61,7 +85,7 @@ users.get("/:id", (req, res, next) => {
     });
 });
 
-users.delete("/:id", (req, res, next) => {
+users.delete("/:id", (req, res) => {
 
     const deleteUser = async () => {
         const user = await Users.findByPk(req.params.id);
@@ -81,7 +105,7 @@ users.delete("/:id", (req, res, next) => {
     })
 });
 
-users.patch("/:id", (req, res, next) => {
+users.patch("/:id", (req, res) => {
 
     const saveUser = async () => {
         await Users.update(req.body, {

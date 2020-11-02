@@ -28,6 +28,10 @@ Sliders.init({
         type: DataTypes.BIGINT,
         allowNull: false
     },
+    sortOrder: {
+        type: DataTypes.SMALLINT,
+        allowNull: true
+    },
     status: {
         type: DataTypes.TINYINT,
         defaultValue: 1,

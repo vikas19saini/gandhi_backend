@@ -58,7 +58,7 @@ route.patch("/:id", async (req, res) => {
     }
 });
 
-route.get("/:id", (req, res, next) => {
+route.get("/:id", (req, res) => {
     Sliders.findOne({
         where: {
             id: req.params.id
@@ -80,7 +80,7 @@ route.get("/:id", (req, res, next) => {
     })
 });
 
-route.delete("/:id", async (req, res, next) => {
+route.delete("/:id", async (req, res) => {
     try {
         await Sliders.destroy({
             where: {
