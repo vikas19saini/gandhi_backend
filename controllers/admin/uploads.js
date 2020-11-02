@@ -2,6 +2,9 @@ const route = require("express").Router();
 const { Uploads } = require("../../models/index");
 const multer = require("multer");
 const fs = require("fs");
+const sharp = require('sharp'); 
+
+
 
 var storage = multer.diskStorage({
     destination: process.env.UPLOAD_DIR,
@@ -39,8 +42,8 @@ route.get("/", (req, res, next) => {
     })
 });
 
-route.post("/", upload.single('file'), (req, res, next) => {
-
+/*route.post("/", upload.single('file'), (req, res, next) => {
+console.log(req.file,"file")
     const request = {
         name: req.file.filename,
         type: req.file.mimetype,
@@ -50,6 +53,33 @@ route.post("/", upload.single('file'), (req, res, next) => {
 
     Uploads.create(request).then((data) => {
         res.send(data).json();
+    }).catch((err) => {
+        res.status(400).send(err).json();
+    })
+});
+*/
+
+route.post("/", upload.single('file'), (req, res, next) => {
+    const request = {
+        name: req.file.filename,
+        type: req.file.mimetype,
+        url: process.env.UPLOAD_PATH + req.file.filename,
+        path: req.file.path
+    }
+    Uploads.create(request).then((data) => {
+
+        const imgname =  req.file.filename
+        const img = imgname.split('.')
+        const path = req.file.path;
+
+        sharp(path).resize(100,100) 
+        .jpeg({quality : 50}).toFile(req.file.destination+img[0]+"-100."+img[1]); 
+    
+        sharp(path).resize(350,350) 
+        .jpeg({quality : 80}).toFile(req.file.destination+img[0]+"-350."+img[1]); 
+        
+        res.send(data).json();
+
     }).catch((err) => {
         res.status(400).send(err).json();
     })
