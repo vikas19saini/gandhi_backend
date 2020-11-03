@@ -1,7 +1,8 @@
 const route = require("express").Router();
+const seqConnection = require("../../models/connection");
 const { Coupons } = require("../../models/index");
 
-route.get("/", (req, res, next) => {
+route.get("/", (req, res) => {
     let params = {
         order: [
             ['id', 'desc']
@@ -23,37 +24,52 @@ route.get("/", (req, res, next) => {
     })
 });
 
-route.post("/", async (req, res, next) => {
+route.post("/", async (req, res) => {
     try {
-        
         const transactionResult = await seqConnection.transaction(async (t) => {
             const coupon = await Coupons.create(req.body, { transaction: t });
-            await coupon.addCategories(req.body.categories, { transaction: t });
-            await coupon.addUsers(req.body.users , { transaction: t });
+            if (req.body.categories) {
+                await coupon.addCategories(req.body.categories, { transaction: t });
+            }
+            if (req.body.users) {
+                await coupon.addUsers(req.body.users, { transaction: t });
+            }
             return { message: "Created Successfully" };
         });
         res.send(transactionResult).json();
     } catch (error) {
-            res.status(400).send(error).json();
-        }
-    });
+        res.status(400).send(error).json();
+    }
+});
 
 
-route.patch("/:id", async (req, res, next) => {
+route.patch("/:id", async (req, res) => {
     try {
         const transactionResult = await seqConnection.transaction(async (t) => {
-            const coupon =  await Coupons.update(req.body, {
+            await Coupons.update(req.body, {
                 where: {
                     id: req.params.id
                 }
             });
-
-            await coupon.setCategories(req.body.categories,{ transaction: t });
-            await coupon.setUsers(req.body.users,{ transaction: t });
+            const coupon = await Coupons.findByPk(req.params.id);
+            await coupon.setCategories(req.body.categories ? req.body.categories : [], { transaction: t });
+            await coupon.setUsers(req.body.users ? req.body.users : [], { transaction: t });
             return { message: "updated" };
         });
-
         res.send(transactionResult).json();
+    } catch (error) {
+        res.status(400).send(error).json();
+    }
+});
+
+route.patch("/status/:id", async (req, res) => {
+    try {
+        await Coupons.update(req.body, {
+            where: {
+                id: req.params.id
+            }
+        });
+        res.send({ message: "Updated" }).json();
     } catch (error) {
         res.status(400).send(error).json();
     }
@@ -62,7 +78,7 @@ route.patch("/:id", async (req, res, next) => {
 route.get("/:id", async (req, res) => {
     try {
         const coupon = await Coupons.findByPk(req.params.id, {
-            include: ["categories","users"]
+            include: ["categories", "users"]
         });
         res.send(coupon).json();
     } catch (error) {
@@ -71,7 +87,7 @@ route.get("/:id", async (req, res) => {
 })
 
 
-route.delete("/:id", async (req, res, next) => {
+route.delete("/:id", async (req, res) => {
     try {
         const coupon = await Coupons.findByPk(req.params.id);
         await coupon.setCategories([]);

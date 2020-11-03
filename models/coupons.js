@@ -21,7 +21,10 @@ Coupons.init({
         type: DataTypes.DOUBLE,
         allowNull: false,
         validate: {
-            min: 1
+            min: {
+                args: 1,
+                msg: "Please set Amount"
+            }
         }
     },
     startDate: {
@@ -34,32 +37,33 @@ Coupons.init({
     },
     minSpend: {
         type: DataTypes.DOUBLE,
-        allowNull: false
+        allowNull: true
     },
     maxSpend: {
         type: DataTypes.DOUBLE,
-        allowNull: false
+        allowNull: true
     },
     individualOnly: {
         type: DataTypes.TINYINT,
-        allowNull: false
+        defaultValue: 1,
+        allowNull: true
     },
     excludeSaleItems: {
         type: DataTypes.TINYINT,
-        allowNull: false
+        defaultValue: 1,
+        allowNull: true
     },
     usageLimit: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
-
     limitPerUser: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     status: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        defaultValue: 0
     }
 }, {
     sequelize: seqConnection,
