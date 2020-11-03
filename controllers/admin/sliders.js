@@ -2,6 +2,7 @@ const route = require("express").Router();
 const { Sliders, Uploads } = require("../../models/index");
 
 route.get("/", async (req, res) => {
+    console.log(req.query.type,"req")
     let params = {
         include: [
             {
@@ -27,9 +28,13 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
+    if(req.query.type){
+        params.where ={'type': req.query.type};
+        params.order= [['sort_order', 'desc']]
+       
+    }
     try {
         let sliders = await Sliders.findAndCountAll(params);
-        
         res.send(sliders).json();
     } catch (err) {
         res.status(400).send(err).json();

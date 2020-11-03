@@ -66,23 +66,27 @@ route.post("/", upload.single('file'), (req, res, next) => {
         url: process.env.UPLOAD_PATH + req.file.filename,
         path: req.file.path
     }
-    Uploads.create(request).then((data) => {
+    console.log(req.file,"file");
+    if(req.file.size <= 1000000 ){//1mb
+        Uploads.create(request).then((data) => {
+            const imgname =  req.file.filename
+            const img = imgname.split('.')
+            const path = req.file.path;
+            if(img[1] == 'png' || img[1] == 'PNG' || img[1] == 'jpg' || img[1] == 'jpeg' || img[1] == 'JPG' || img[1] == 'JPEG'){
+                sharp(path).resize(100,100) 
+                .jpeg({quality : 50}).toFile(req.file.destination+img[0]+"-100."+img[1]); 
+            
+                sharp(path).resize(350,350) 
+                .jpeg({quality : 80}).toFile(req.file.destination+img[0]+"-350."+img[1]); 
+            }
+            res.send(data).json();
 
-        const imgname =  req.file.filename
-        const img = imgname.split('.')
-        const path = req.file.path;
-
-        sharp(path).resize(100,100) 
-        .jpeg({quality : 50}).toFile(req.file.destination+img[0]+"-100."+img[1]); 
-    
-        sharp(path).resize(350,350) 
-        .jpeg({quality : 80}).toFile(req.file.destination+img[0]+"-350."+img[1]); 
-        
-        res.send(data).json();
-
-    }).catch((err) => {
-        res.status(400).send(err).json();
-    })
+        }).catch((err) => {
+            res.status(400).send(err).json();
+        })
+    }else{
+        res.send({ status:404,message: "File size should not be more than 1MB" }).json();
+    }
 });
 
 
@@ -98,6 +102,14 @@ route.delete("/:id", async (req, res, next) => {
 
     try {
         const file = await Uploads.findByPk(req.params.id);
+        const imgname =  file.name
+        const img = imgname.split('.')
+        if(img[1] == 'png' || img[1] == 'PNG' || img[1] == 'jpg' || img[1] == 'jpeg' || img[1] == 'JPG' || img[1] == 'JPEG'){
+            const file_path = file.path
+            const path = file_path.split('.')
+            fs.unlinkSync(path[0]+"-100."+path[1]);
+            fs.unlinkSync(path[0]+"-350."+path[1]);
+        }
         fs.unlinkSync(file.path);
         Uploads.destroy({
             where: {
