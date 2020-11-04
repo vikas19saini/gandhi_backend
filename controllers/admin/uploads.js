@@ -66,7 +66,6 @@ route.post("/", upload.single('file'), (req, res, next) => {
         url: process.env.UPLOAD_PATH + req.file.filename,
         path: req.file.path
     }
-    console.log(req.file,"file");
     if(req.file.size <= 1000000 ){//1mb
         Uploads.create(request).then((data) => {
             const imgname =  req.file.filename

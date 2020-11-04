@@ -18,6 +18,10 @@ const coupons = require("../controllers/admin/coupons");
 const products = require("../controllers/admin/products");
 const sliders = require("../controllers/admin/sliders");
 const addresses = require("../controllers/admin/addresses");
+const subscribers = require("../controllers/admin/subscribers");
+const enquiries = require("../controllers/admin/enquiries");
+
+
 
 
 
@@ -40,7 +44,9 @@ admin.use("/filters", filters);
 admin.use("/attributes", attributes);
 admin.use("/coupons", coupons);
 admin.use("/sliders", sliders);
-admin.use("/addresses", addresses);
+admin.use("/subscribers", subscribers);
+admin.use("/enquiries", enquiries);
+
 
 
 

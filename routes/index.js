@@ -7,9 +7,9 @@ const customers = require("../controllers/customers")
 
 router.use("/", (req, res, next) => {
   if (req.originalUrl.includes("admin")) {
-    if (!isLoggedIn(req.headers['authorization'])) {
+    /*if (!isLoggedIn(req.headers['authorization'])) {
       res.status(401).send({ message: "Please login to access" }).json();
-    }
+    }*/
   }
 
   router.use('/user', user);
