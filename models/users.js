@@ -3,6 +3,7 @@ const passwordHash = require('password-hash');
 const startConnection = require("./connection");
 
 class Users extends Model { }
+
 Users.init({
     email: {
         type: DataTypes.STRING,

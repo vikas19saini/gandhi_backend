@@ -18,9 +18,7 @@ const coupons = require("../controllers/admin/coupons");
 const products = require("../controllers/admin/products");
 const sliders = require("../controllers/admin/sliders");
 const addresses = require("../controllers/admin/addresses");
-
-
-
+const imports = require("../controllers/admin/imports");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -41,9 +39,6 @@ admin.use("/attributes", attributes);
 admin.use("/coupons", coupons);
 admin.use("/sliders", sliders);
 admin.use("/addresses", addresses);
-
-
-
-
+admin.use("/imports", imports);
 
 module.exports = admin;

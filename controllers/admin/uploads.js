@@ -2,9 +2,7 @@ const route = require("express").Router();
 const { Uploads } = require("../../models/index");
 const multer = require("multer");
 const fs = require("fs");
-const sharp = require('sharp'); 
-
-
+const sharp = require('sharp');
 
 var storage = multer.diskStorage({
     destination: process.env.UPLOAD_DIR,
@@ -20,7 +18,7 @@ var storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-route.get("/", (req, res, next) => {
+route.get("/", (req, res) => {
     let params = {
         order: [
             ['id', 'DESC']
@@ -59,7 +57,7 @@ console.log(req.file,"file")
 });
 */
 
-route.post("/", upload.single('file'), (req, res, next) => {
+route.post("/", upload.single('file'), (req, res) => {
     const request = {
         name: req.file.filename,
         type: req.file.mimetype,
@@ -68,16 +66,16 @@ route.post("/", upload.single('file'), (req, res, next) => {
     }
     Uploads.create(request).then((data) => {
 
-        const imgname =  req.file.filename
+        const imgname = req.file.filename
         const img = imgname.split('.')
         const path = req.file.path;
 
-        sharp(path).resize(100,100) 
-        .jpeg({quality : 50}).toFile(req.file.destination+img[0]+"-100."+img[1]); 
-    
-        sharp(path).resize(350,350) 
-        .jpeg({quality : 80}).toFile(req.file.destination+img[0]+"-350."+img[1]); 
-        
+        sharp(path).resize(100, 100)
+            .jpeg({ quality: 100 }).toFile(req.file.destination + img[0] + "-100x100." + img[1]);
+
+        sharp(path).resize(350, 350)
+            .jpeg({ quality: 100 }).toFile(req.file.destination + img[0] + "-350x350." + img[1]);
+
         res.send(data).json();
 
     }).catch((err) => {
@@ -86,7 +84,7 @@ route.post("/", upload.single('file'), (req, res, next) => {
 });
 
 
-route.get("/:id", (req, res, next) => {
+route.get("/:id", (req, res) => {
     Uploads.findByPk(req.params.id).then((data) => {
         res.send(data).json();
     }).catch((err) => {
@@ -94,7 +92,7 @@ route.get("/:id", (req, res, next) => {
     })
 });
 
-route.delete("/:id", async (req, res, next) => {
+route.delete("/:id", async (req, res) => {
 
     try {
         const file = await Uploads.findByPk(req.params.id);
