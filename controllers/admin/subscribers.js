@@ -1,19 +1,10 @@
 const route = require("express").Router();
-const { Sliders, Uploads } = require("../../models/index");
+const { Subscribers } = require("../../models/index");
 
 route.get("/", async (req, res) => {
     console.log(req.query.type,"req")
     let params = {
-        include: [
-            {
-                model: Uploads,
-                as: "media"
-            },
-            {
-                model: Uploads,
-                as: "mobileMedia"
-            }
-        ],
+        
         order: [
             ['id', 'desc']
         ],
@@ -28,14 +19,10 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
-    if(req.query.type){
-        params.where ={'type': req.query.type};
-        params.order= [['sort_order', 'desc']]
-       
-    }
+    
     try {
-        let sliders = await Sliders.findAndCountAll(params);
-        res.send(sliders).json();
+        let subscribers = await Subscribers.findAndCountAll(params);
+        res.send(subscribers).json();
     } catch (err) {
         res.status(400).send(err).json();
     }
@@ -43,7 +30,7 @@ route.get("/", async (req, res) => {
 
 route.post("/", (req, res, next) => {
     console.log(req.body,"req");
-    Sliders.create(req.body).then((data) => {
+    Subscribers.create(req.body).then((data) => {
         res.send(data).json();
     }).catch((err) => {
         res.status(400).send(err).json();
@@ -52,7 +39,7 @@ route.post("/", (req, res, next) => {
 
 route.patch("/:id", async (req, res) => {
     try {
-        Sliders.update(req.body, {
+        Subscribers.update(req.body, {
             where: {
                 id: req.params.id
             }
@@ -64,20 +51,10 @@ route.patch("/:id", async (req, res) => {
 });
 
 route.get("/:id", (req, res) => {
-    Sliders.findOne({
+    Subscribers.findOne({
         where: {
             id: req.params.id
-        },
-        include: [
-       
-        {
-            model: Uploads,
-            as: "media"
-        },
-        {
-            model: Uploads,
-            as: "mobileMedia"
-        }]
+        }
     }).then((data) => {
         res.send(data).json();
     }).catch((err) => {
@@ -87,7 +64,7 @@ route.get("/:id", (req, res) => {
 
 route.delete("/:id", async (req, res) => {
     try {
-        await Sliders.destroy({
+        await Subscribers.destroy({
             where: {
                 id: req.params.id
             }
