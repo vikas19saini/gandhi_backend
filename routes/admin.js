@@ -21,6 +21,9 @@ const addresses = require("../controllers/admin/addresses");
 const subscribers = require("../controllers/admin/subscribers");
 const enquiries = require("../controllers/admin/enquiries");
 
+const emailSmsTemplates = require("../controllers/admin/email_sms_templates");
+const settings = require("../controllers/admin/settings");
+
 
 
 
@@ -46,6 +49,9 @@ admin.use("/coupons", coupons);
 admin.use("/sliders", sliders);
 admin.use("/subscribers", subscribers);
 admin.use("/enquiries", enquiries);
+admin.use("/email-sms-templates", emailSmsTemplates);
+admin.use("/settings", settings);
+
 
 
 
