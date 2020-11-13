@@ -31,7 +31,13 @@ const Sliders = require("./sliders");
 const Addresses = require("./addresses");
 const Imports = require("./imports");
 const Subscribers = require("./subscribers");
-const Enquiries = require("./enquiries")
+const Enquiries = require("./enquiries");
+
+const EmailSmsTemplates = require("./email_sms_templates");
+const Settings = require("./settings");
+
+
+
 
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
@@ -87,8 +93,10 @@ Addresses.belongsTo(Users, { as: "users", foreignKey: "userId", targetKey: "id" 
 Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
 Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" });
 
+
+
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
-    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses , Subscribers , Enquiries
+    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Enquiries, EmailSmsTemplates, Settings
 }

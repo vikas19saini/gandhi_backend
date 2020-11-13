@@ -21,6 +21,8 @@ const addresses = require("../controllers/admin/addresses");
 const imports = require("../controllers/admin/imports");
 const subscribers = require("../controllers/admin/subscribers");
 const enquiries = require("../controllers/admin/enquiries");
+const emailSmsTemplates = require("../controllers/admin/email_sms_templates");
+const settings = require("../controllers/admin/settings");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -44,5 +46,8 @@ admin.use("/addresses", addresses);
 admin.use("/imports", imports);
 admin.use("/subscribers", subscribers);
 admin.use("/enquiries", enquiries);
+admin.use("/email-sms-templates", emailSmsTemplates);
+admin.use("/settings", settings);
+
 
 module.exports = admin;
