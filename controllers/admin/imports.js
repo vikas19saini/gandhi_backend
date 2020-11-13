@@ -20,7 +20,7 @@ const upload = multer({
     storage: storage,
     fileFilter: function (req, file, cb) {
         if (!file.originalname.match(/\.(zip)$/i)) {
-            return cb(new Error('Only zip files allowed'))
+            return cb(new Error('Invalid file format .zip format allowed!!'))
         }
 
         cb(null, true)
