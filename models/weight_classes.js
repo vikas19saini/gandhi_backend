@@ -15,12 +15,15 @@ WeightClasses.init({
     value: {
         type: DataTypes.FLOAT,
         allowNull: false
+    },
+    isDefault: {
+        type: DataTypes.TINYINT,
+        defaultValue: 0
     }
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "weightClasses",
-    timestamps: false
+    modelName: "weightClasses"
 });
 
 module.exports = WeightClasses;

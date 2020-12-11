@@ -43,5 +43,24 @@ Categories.init({
     modelName: "categories"
 });
 
+Categories.findBySlug = async (slug) => {
+    try {
+        const category = await Categories.findOne({
+            where: {
+                slug: slug
+            }
+        });
+
+        if (category) {
+            return category.toJSON();
+        } else {
+            return false;
+        }
+
+    } catch (error) {
+        return false;
+    }
+}
+
 Categories.isHierarchy();
 module.exports = Categories;

@@ -3,6 +3,7 @@ const { Uploads } = require("../../models/index");
 const multer = require("multer");
 const fs = require("fs");
 const sharp = require('sharp');
+const allowedFileFormats = ['png', 'jpg', 'jpeg'];
 
 var storage = multer.diskStorage({
     destination: process.env.UPLOAD_DIR,
@@ -16,7 +17,7 @@ var storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, limits: { fileSize: parseInt(process.env.MAX_UPLOAD_FILE_SIZE), files: 1 } });
 
 route.get("/", (req, res) => {
     let params = {
@@ -41,32 +42,31 @@ route.get("/", (req, res) => {
 });
 
 route.post("/", upload.single('file'), (req, res) => {
+
     const request = {
         name: req.file.filename,
-        type: req.file.mimetype,
         url: process.env.UPLOAD_PATH + req.file.filename,
         path: req.file.path
     }
-    if (req.file.size <= 1000000) {//1mb
-        Uploads.create(request).then((data) => {
-            const imgname = req.file.filename
-            const img = imgname.split('.')
-            const path = req.file.path;
-            if (img[1] === 'png' || img[1] === 'PNG' || img[1] === 'jpg' || img[1] === 'jpeg' || img[1] === 'JPG' || img[1] === 'JPEG') {
-                sharp(path).resize(100, 100)
-                    .jpeg({ quality: 50 }).toFile(req.file.destination + img[0] + "-100x100." + img[1]);
 
-                sharp(path).resize(350, 350)
-                    .jpeg({ quality: 80 }).toFile(req.file.destination + img[0] + "-350x350." + img[1]);
-            }
-            res.send(data).json();
+    Uploads.create(request).then((data) => {
+        const imgname = req.file.filename
+        const img = imgname.split('.')
+        const path = req.file.path;
+        if (allowedFileFormats.includes(img[1].toLocaleLowerCase())) {
+            sharp(path).resize(100, 100, {
+                fit: sharp.fit.inside
+            }).jpeg({ quality: 100 }).toFile(req.file.destination + img[0] + "-100x100." + img[1]);
 
-        }).catch((err) => {
-            res.status(400).send(err).json();
-        })
-    } else {
-        res.send({ status: 404, message: "File size should not be more than 1MB" }).json();
-    }
+            sharp(path).resize(350, 350, {
+                fit: sharp.fit.inside
+            }).jpeg({ quality: 100 }).toFile(req.file.destination + img[0] + "-350x350." + img[1]);
+        }
+        res.send(data).json();
+
+    }).catch((err) => {
+        res.status(400).send(err).json();
+    })
 });
 
 
@@ -84,14 +84,14 @@ route.delete("/:id", async (req, res) => {
         const file = await Uploads.findByPk(req.params.id);
         const imgname = file.name
         const img = imgname.split('.')
-        if (img[1] == 'png' || img[1] == 'PNG' || img[1] == 'jpg' || img[1] == 'jpeg' || img[1] == 'JPG' || img[1] == 'JPEG') {
+        if (allowedFileFormats.includes(img[1].toLocaleLowerCase())) {
             const file_path = file.path
             const path = file_path.split('.')
-            fs.unlinkSync(path[0] + "-100." + path[1]);
-            fs.unlinkSync(path[0] + "-350." + path[1]);
+            fs.unlinkSync(path[0] + "-100x100." + path[1]);
+            fs.unlinkSync(path[0] + "-350x350." + path[1]);
         }
         fs.unlinkSync(file.path);
-        Uploads.destroy({
+        await Uploads.destroy({
             where: {
                 id: req.params.id
             }

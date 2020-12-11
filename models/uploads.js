@@ -17,10 +17,6 @@ Uploads.init({
         type: DataTypes.STRING(1000),
         allowNull: false,
     },
-    type: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     fullUrl: {
         type: DataTypes.VIRTUAL,
         get() {
@@ -30,8 +26,18 @@ Uploads.init({
     thumbnailUrl: {
         type: DataTypes.VIRTUAL,
         get() {
-            if (fs.existsSync(this.path)) {
-                return `${process.env.WEB_URL + this.url}`;
+            if (fs.existsSync(this.path.replace(".", "-350x350."))) {
+                return `${process.env.WEB_URL + this.url.replace(".", "-350x350.")}`;
+            } else {
+                return `${process.env.WEB_URL + "/images/placeholder.webp"}`;
+            }
+        }
+    },
+    miniThumbnailUrl: {
+        type: DataTypes.VIRTUAL,
+        get() {
+            if (fs.existsSync(this.path.replace(".", "-100x100."))) {
+                return `${process.env.WEB_URL + this.url.replace(".", "-100x100.")}`;
             } else {
                 return `${process.env.WEB_URL + "/images/placeholder.webp"}`;
             }

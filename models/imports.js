@@ -10,23 +10,23 @@ Imports.init({
     },
     total: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        defaultValue: 0
     },
     success: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        defaultValue: 0
     },
     error: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        defaultValue: 0
     },
     updated: {
         type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    logs: {
-        type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        defaultValue: 0
     },
     status: {
         type: DataTypes.TINYINT,

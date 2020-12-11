@@ -15,12 +15,15 @@ LengthClasses.init({
     value: {
         type: DataTypes.FLOAT,
         allowNull: false
+    },
+    isDefault: {
+        type: DataTypes.TINYINT,
+        defaultValue: 0
     }
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "lengthClasses",
-    timestamps: false
+    modelName: "lengthClasses"
 });
 
 module.exports = LengthClasses;

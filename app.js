@@ -15,7 +15,7 @@ const validatingCors = function (req, callback) {
   if (req.header('Origin') === process.env.CLIENT_URL) {
     corsOptions = { origin: true }
   } else {
-    corsOptions = { origin: false }
+    corsOptions = { origin: true }
   }
 
   callback(null, corsOptions);

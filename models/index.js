@@ -98,5 +98,5 @@ Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
-    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Enquiries, EmailSmsTemplates, Settings
+    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Enquiries, EmailSmsTemplates, Settings, Imports
 }
