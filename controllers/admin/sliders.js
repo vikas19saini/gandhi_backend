@@ -42,7 +42,6 @@ route.get("/", async (req, res) => {
 });
 
 route.post("/", (req, res, next) => {
-    console.log(req.body,"req");
     Sliders.create(req.body).then((data) => {
         res.send(data).json();
     }).catch((err) => {

@@ -36,9 +36,11 @@ const Enquiries = require("./enquiries");
 const EmailSmsTemplates = require("./email_sms_templates");
 const Settings = require("./settings");
 
-
-
-
+const Orders = require("./orders");
+const OrdersProducts = require("./orders_products");
+const OrdersCoupons = require("./orders_coupons");
+const OrdersHistories = require("./orders_histories");
+const OrdersAddresses = require("./orders_addresses");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -93,10 +95,17 @@ Addresses.belongsTo(Users, { as: "users", foreignKey: "userId", targetKey: "id" 
 Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
 Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" });
 
+Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreignKey: "orderId", otherKey: "productId" });
+Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
 
+Orders.belongsToMany(Coupons, { through: OrdersCoupons, as: "coupons", foreignKey: "orderId", otherKey: "couponId" });
+Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey: "couponId", otherKey: "orderId" });
+
+Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
-    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Enquiries, EmailSmsTemplates, Settings, Imports
+    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
+    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories
 }
