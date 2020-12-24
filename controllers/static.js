@@ -1,5 +1,5 @@
 const route = require('express').Router();
-const { Sliders, Currencies } = require("../models/index");
+const { Sliders, Currencies, Filters, FilterValues } = require("../models/index");
 
 route.get("/", async (req, res) => {
     let sliders = await Sliders.findAll({
@@ -16,6 +16,24 @@ route.get("/", async (req, res) => {
         metaDescription: "Gandhi meta desription",
         sliders: sliders
     }).json();
+})
+
+route.get("/filters", (req, res) => {
+    Filters.findAll({
+        order: [['sortOrder', 'ASC']],
+        include: [
+            {
+                model: FilterValues,
+                as: "filterValues",
+                required: true,
+                order: [['sortOrder', 'ASC']]
+            }
+        ]
+    }).then((data) => {
+        res.send(data).json()
+    }).catch(err => {
+        res.status(500).send(err).json()
+    })
 })
 
 route.get("/config", (req, res) => {

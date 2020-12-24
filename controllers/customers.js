@@ -3,8 +3,7 @@ const { Users } = require("../models/index");
 const email = require("./components/email");
 
 
-route.post("/signUp", (req, res, next) => {
-    req.body.status = 2
+route.post("/registartion", (req, res) => {
     req.body.otp = ("" + Math.random()).substring(2, 8);
     Users.create(req.body).then((data) => {
         let msg =
@@ -13,7 +12,7 @@ route.post("/signUp", (req, res, next) => {
         email.sendMail(email_data)
         res.send(data).json();
     }).catch((err) => {
-        res.status(400).send(err).json();
+        res.status(500).send(err).json();
     })
 });
 

@@ -27,7 +27,8 @@ Users.init({
     },
     status: {
         type: DataTypes.TINYINT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     token: {
         type: DataTypes.STRING,

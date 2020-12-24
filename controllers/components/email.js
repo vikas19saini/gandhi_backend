@@ -1,19 +1,15 @@
 const nodemailer = require('nodemailer');
 const mustache = require('mustache');
 
-
 let mailModule = nodemailer.createTransport({
     host : "smtp.gmail.com",
     port : 465,
     secure : true,
     auth : {
-        user:"deepak.lamppost@gmail.com",
-        pass : "deepak@123"
+        user:"vikas.lamppost@gmail.com  ",
+        pass : "Vikash_19"
     },
 });
-
-
-
 
 let sendMail = (data)=>{
     var mailOptions = {
@@ -24,7 +20,5 @@ let sendMail = (data)=>{
     }
   mailModule.sendMail(mailOptions);
 }
-
-
  
 module.exports = { sendMail : sendMail}

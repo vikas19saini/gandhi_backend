@@ -5,7 +5,7 @@ const { isLoggedIn } = require("../middleware/auth");
 const customers = require("../controllers/customers");
 const static = require("../controllers/static");
 const products = require("../controllers/products")
-const categories = require("../controllers/categories")
+const categories = require("../controllers/category")
 
 router.use("/", (req, res, next) => {
   if (req.originalUrl.includes("admin")) {
@@ -16,9 +16,9 @@ router.use("/", (req, res, next) => {
 
   router.use("/static", static);
   router.use('/user', user);
-  router.use("/customers", customers);
+  router.use("/customer", customers);
   router.use("/products", products);
-  router.use("/categories", categories);
+  router.use("/category", categories);
   router.use('/admin', admin);
 
   next();
