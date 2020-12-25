@@ -41,6 +41,8 @@ const OrdersProducts = require("./orders_products");
 const OrdersCoupons = require("./orders_coupons");
 const OrdersHistories = require("./orders_histories");
 const OrdersAddresses = require("./orders_addresses");
+const Carts = require("./carts");
+
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -107,5 +109,5 @@ module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
     ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
-    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories
+    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories , Carts
 }
