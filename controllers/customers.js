@@ -1,19 +1,17 @@
 const route = require('express').Router();
 const { Users } = require("../models/index");
-const email = require("./components/email");
+const { sendOtp } = require("./emails/customer")
 
 
-route.post("/registartion", (req, res) => {
-    req.body.otp = ("" + Math.random()).substring(2, 8);
-    Users.create(req.body).then((data) => {
-        let msg =
-            "<html><head><title></title></head><body style='margin : 0 ; padding : 0 ; background-color : #ffffff;'>Hello " + req.body.name + ",<br><br>Thanks for your registration .<br> OTP is: " + req.body.otp + "<br><br><br>Thankyou</body></html>";
-        let email_data = { to: req.body.email, subject: "SignUp", text: msg }
-        email.sendMail(email_data)
-        res.send(data).json();
-    }).catch((err) => {
-        res.status(500).send(err).json();
-    })
+route.post("/registartion", async (req, res) => {
+    try {
+        req.body.otp = ("" + Math.random()).substring(2, 8)
+        let user = await Users.create(req.body)
+        await sendOtp(user)
+        return res.json({ message: "Successfully created" })
+    } catch (err) {
+        return res.status(400).json(err);
+    }
 });
 
 route.post("/verifyOTP", async (req, res, next) => {
