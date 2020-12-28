@@ -11,11 +11,11 @@ route.get("/", async (req, res) => {
         order: [["sortOrder", "asc"]]
     })
 
-    res.send({
+    return res.json({
         title: "Gandhi - Home",
         metaDescription: "Gandhi meta desription",
         sliders: sliders
-    }).json();
+    })
 })
 
 route.get("/filters", (req, res) => {
@@ -30,9 +30,9 @@ route.get("/filters", (req, res) => {
             }
         ]
     }).then((data) => {
-        res.send(data).json()
+        return res.json(data)
     }).catch(err => {
-        res.status(500).send(err).json()
+        return res.status(500).json(err)
     })
 })
 
@@ -42,14 +42,10 @@ route.get("/config", (req, res) => {
             status: 1
         }
     }).then((data) => {
-        res.send(data).json()
+        return res.json(data)
     }).catch(err => {
-        res.status(500).send(err).json()
+        return res.status(500).json(err)
     })
 })
-
-/* route.get("/login", (req, res) => {
-    res.send("called").json();
-}) */
 
 module.exports = route;

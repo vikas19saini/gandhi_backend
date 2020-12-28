@@ -1,0 +1,119 @@
+doctype html
+html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml' xmlns:o='urn:schemas-microsoft-com:office:office')
+	head
+		meta(charset='utf-8')
+		meta(name='viewport' content='width=device-width')
+		meta(http-equiv='X-UA-Compatible' content='IE=edge')
+		meta(name='x-apple-disable-message-reformatting')
+		title #{process.env.BRAND_NAME}
+		style.
+			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+			body {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 14px;
+			line-height: 24px
+			}
+			.main_tx h1 {
+			font-size: 52px;
+			padding: 20px 0 0;
+			font-weight: 500;
+			line-height: 65px;
+			}
+			.main_tx h2 {
+			font-size: 30px;
+			line-height: 40px;
+			font-weight: 400;
+			color: #767676
+			}
+			.main_tx h3 {
+			font-size: 28px;
+			line-height: 44px;
+			font-weight: 400;
+			padding: 45px 0;
+			}
+			.main_tx h4 {
+			font-size: 11px;
+			padding: 15px 0;
+			font-weight: 500;
+			color: #38383D
+			}
+			.code_bttn a {
+			color: #fff;
+			padding: 20px 140px;
+			font-size: 52px;
+			text-decoration: none
+			}
+			.code_bttn {
+			background: #000000;
+			padding: 20px 0
+			}
+			.table_bdr {
+			background: #F6F6FA;
+			height: 10px;
+			}
+			.footer_icon a img {
+			padding: 0 10px 0 0
+			}
+			.ft_padd {
+			padding: 0 0 25px
+			}
+			@media only screen and (max-width: 414px) {
+			.main_tx h1 {
+			font-size: 40px;
+			}
+			.main_tx h2 {
+			font-size: 22px;
+			}
+			.code_bttn a {
+			padding: 14px 100px;
+			font-size: 40px;
+			}
+			.main_tx h3 {
+			font-size: 20px;
+			}
+			}
+	body(width='100%' style='margin: 0; padding: 0 !important;')
+		table(align='center' role='presentation' cellspacing='0' cellpadding='0' border='0' width='600' style='padding: 15px;margin:4rem auto 0;')
+			tbody
+				tr
+					td
+						table(align='center' role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%')
+							tbody
+								tr
+									td.logo
+										img(src= process.env.WEB_URL + '/images/logo.png')
+								tr
+									td.main_tx
+										h1 Verify your email to finish signing up for #{process.env.BRAND_NAME}
+								tr
+									td.main_tx
+										h2 To continue with your email verification, please enter the following code :
+								tr
+									td
+										button.code_bttn
+											a(href='#otp') #{otp}
+								tr
+									td.main_tx
+										h3 Thank you for choosing #{process.env.BRAND_NAME}
+								tr
+									td.table_bdr
+								tr
+									td.main_tx
+										h4 Follow Us On Social Media
+						table.ft_padd(width='100%' cellspacing='0' cellpadding='0' border='0')
+							tbody
+								tr
+									td.footer_icon
+										a(href='#')
+											img(src= process.env.WEB_URL + '/images/facebook.png')
+										a(href='#')
+											img(src= process.env.WEB_URL + '/images/instagram.png')
+										a(href='#')
+											img(src= process.env.WEB_URL + '/images/twiter.png')
+										a(href='#')
+											img(src= process.env.WEB_URL + '/images/whatsapp.png')
+										a(href='#')
+											img(src= process.env.WEB_URL + '/images/youtube.png')
+									td(width='50%' align='right')
+										img(src= process.env.WEB_URL + '/images/logo.png')

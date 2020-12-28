@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 require('dotenv').config({ path: __dirname + '/.env' });
+global.appRootDir = path.join(__dirname, 'views')
 
 var indexRouter = require('./routes/index');
 
