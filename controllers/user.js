@@ -5,16 +5,12 @@ route.post("/login", (req, res) => {
     const auth = login(req.body.email, req.body.password);
     auth.then((data) => {
         if (data.status) {
-            res.send(data).json();
+            return res.json(data)
         } else {
-            res.status(401).send({ ...data, ...{ statusCode: 1100 } }).json();
+            return res.status(401).json({ ...data, ...{ statusCode: 1100 } })
         }
 
     })
-})
-
-route.get("/login", (req, res) => {
-    res.send("called").json();
 })
 
 module.exports = route;

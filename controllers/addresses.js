@@ -1,21 +1,17 @@
 const route = require("express").Router();
-const { Addresses ,Countries , Zones , Users } = require("../../models/index");
+const { Addresses, Countries, Zones } = require("../models/index");
 
 route.get("/", async (req, res) => {
     let params = {
         include: [
             {
                 model: Countries,
-                as: "countries"
+                as: "country"
             },
             {
                 model: Zones,
-                as: "zones"
+                as: "zone"
             },
-            {
-                model: Users,
-                as: "users"
-            }
         ],
         order: [
             ['id', 'desc']
@@ -30,41 +26,45 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
+    if (req.userId) {
+        params.where = { userId: req.userId }
+    }
+
     try {
         let addresses = await Addresses.findAndCountAll(params);
-        
-        res.send(addresses).json();
+
+        return res.json(addresses);
     } catch (err) {
-        res.status(400).send(err).json();
+        return res.status(500).json(err);
     }
 });
 
-route.post("/", async(req, res, next) => {
-    if(req.body.is_default == 1){
-        let updated_data = await updateData(req.body)
+route.post("/", async (req, res) => {
+    req.body.userId = req.userId;
+
+    if (req.body.isDefault == 1) {
+        await updateData(req.body)
     }
     Addresses.create(req.body).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
-
 });
 
 route.patch("/:id", async (req, res) => {
     try {
-
-        if(req.body.is_default == 1){
-            let updated_data = await updateData(req.body)
+        if (req.body.isDefault == 1) {
+            await updateData(req.body)
         }
         Addresses.update(req.body, {
             where: {
                 id: req.params.id
             }
         });
-         res.send({ message: "Updated Successfully" }).json();
+        return res.json({ message: "Updated Successfully" });
     } catch (err) {
-        res.status(500).send(err).json();
+        return res.status(500).json(err);
     }
 });
 
@@ -76,48 +76,45 @@ route.get("/:id", (req, res, next) => {
         include: [
             {
                 model: Countries,
-                as: "countries"
+                as: "country"
             },
             {
                 model: Zones,
-                as: "zones"
-            },
-            {
-                model: Users,
-                as: "users"
+                as: "zone"
             }
         ]
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
-route.delete("/:id", async (req, res, next) => {
+route.delete("/:id", async (req, res) => {    
     try {
         await Addresses.destroy({
             where: {
-                id: req.params.id
+                id: req.params.id,
+                userId: req.userId
             }
         })
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (err) {
-        res.status(404).send(err).json();
+        console.log(err)
+        return res.status(400).json(err);
     }
 });
 
-module.exports = route;
-
-
-async function updateData(data){
-    let user_id = JSON.parse(data.user_id);
-    data.is_default = 0;
-    let updateData = Addresses.update(data, {
+async function updateData(data) {
+    let userId = data.userId;
+    data.isDefault = 0;
+    let updateData = await Addresses.update(data, {
         where: {
-            user_id: user_id
+            userId: userId
         }
     });
-    data.is_default = 1;
+    data.isDefault = 1;
     return updateData;
 }
+
+module.exports = route;

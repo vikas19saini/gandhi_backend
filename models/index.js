@@ -93,9 +93,9 @@ Coupons.belongsToMany(Users, { through: CouponsUsers, as: "users", foreignKey: "
 Sliders.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
 Sliders.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
-Addresses.belongsTo(Users, { as: "users", foreignKey: "userId", targetKey: "id" });
-Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
-Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" });
+Addresses.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
+Addresses.belongsTo(Countries, { as: "country", foreignKey: "country_id", targetKey: "id" });
+Addresses.belongsTo(Zones, { as: "zone", foreignKey: "zoneId", targetKey: "id" });
 
 Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreignKey: "orderId", otherKey: "productId" });
 Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
@@ -109,5 +109,5 @@ module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
     ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
-    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories , Carts
+    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories, Carts
 }

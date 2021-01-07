@@ -4,7 +4,7 @@ const seqConnection = require("./connection");
 class Addresses extends Model { }
 
 Addresses.init({
-    user_id: {
+    userId: {
         type: DataTypes.BIGINT,
         allowNull: false,
     },
@@ -12,11 +12,11 @@ Addresses.init({
         type: DataTypes.STRING(225),
         allowNull: true
     },
-    country_id: {
+    countryId: {
         type: DataTypes.BIGINT,
         allowNull: false
     },
-    zone_id: {
+    zoneId: {
         type: DataTypes.BIGINT,
         allowNull: false,
     },
@@ -28,7 +28,7 @@ Addresses.init({
         type: DataTypes.STRING(10),
         allowNull: false
     },
-    is_default: {
+    isDefault: {
         type: DataTypes.TINYINT,
         allowNull: false
     },

@@ -1,5 +1,5 @@
 const route = require('express').Router();
-const { Sliders, Currencies, Filters, FilterValues } = require("../models/index");
+const { Sliders, Currencies, Filters, FilterValues, Countries } = require("../models/index");
 
 route.get("/", async (req, res) => {
     let sliders = await Sliders.findAll({
@@ -45,6 +45,17 @@ route.get("/config", (req, res) => {
         return res.json(data)
     }).catch(err => {
         return res.status(500).json(err)
+    })
+})
+
+route.get("/countries", (req, res) => {
+    Countries.findAll({
+        attributes: ["id", "name"],
+        include: ["zones"]
+    }).then(data => {
+        return res.json(data)
+    }).catch(err => {
+        return res.status(500).json(err);
     })
 })
 
