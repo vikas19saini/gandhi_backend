@@ -23,7 +23,6 @@ const enquiries = require("../controllers/admin/enquiries");
 const emailSmsTemplates = require("../controllers/admin/email_sms_templates");
 const settings = require("../controllers/admin/settings");
 const orders = require("../controllers/admin/orders");
-const carts = require("../controllers/admin/carts");
 
 
 admin.use('/users', users);
@@ -50,7 +49,7 @@ admin.use("/enquiries", enquiries);
 admin.use("/email-sms-templates", emailSmsTemplates);
 admin.use("/settings", settings);
 admin.use("/orders", orders);
-admin.use("/carts", carts);
+
 
 
 module.exports = admin;

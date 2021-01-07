@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Carts , Users } = require("../../models/index");
+const { Carts , Users } = require("../models/index");
 
 route.get("/", async (req, res) => {
     let params = {
