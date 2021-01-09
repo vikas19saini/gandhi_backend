@@ -1,9 +1,9 @@
 const { DataTypes, Model } = require("sequelize");
 const seqConnection = require("./connection");
 
-class Carts extends Model { }
+class Wishlists extends Model { }
 
-Carts.init({
+Wishlists.init({
     userId: {
         type: DataTypes.BIGINT,
         allowNull: false
@@ -12,14 +12,10 @@ Carts.init({
         type: DataTypes.BIGINT,
         allowNull: false
     },
-    quantity: {
-        type: DataTypes.BIGINT,
-        allowNull: false
-    }
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "carts"
+    modelName: "wishlist"
 });
 
-module.exports = Carts;
+module.exports = Wishlists;

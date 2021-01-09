@@ -32,17 +32,15 @@ const Addresses = require("./addresses");
 const Imports = require("./imports");
 const Subscribers = require("./subscribers");
 const Enquiries = require("./enquiries");
-
 const EmailSmsTemplates = require("./email_sms_templates");
 const Settings = require("./settings");
-
 const Orders = require("./orders");
 const OrdersProducts = require("./orders_products");
 const OrdersCoupons = require("./orders_coupons");
 const OrdersHistories = require("./orders_histories");
 const OrdersAddresses = require("./orders_addresses");
 const Carts = require("./carts");
-
+const Wishlists = require("./wishlist")
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -105,9 +103,12 @@ Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey
 
 Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
 
+Wishlists.belongsTo(Users, { as: "user" })
+Wishlists.belongsTo(Products, { as: "product" })
+
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
     ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
-    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories, Carts
+    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories, Carts, Wishlists
 }

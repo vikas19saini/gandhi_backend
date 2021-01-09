@@ -8,15 +8,18 @@ const products = require("../controllers/products")
 const categories = require("../controllers/category")
 const addresses = require("./../controllers/addresses")
 const carts = require("../controllers/carts")
+const wishlist = require("../controllers/wishlist")
 
 router.use('/admin', [isAuthenticated], admin);
 
 router.use("/static", static);
 router.use('/user', user);
+
 router.use("/customer", customers);
 router.use("/products", products);
 router.use("/category", categories);
 router.use("/address", [isAuthenticated], addresses)
+router.use("/wishlist", [isAuthenticated], wishlist)
 router.use("/cart", carts)
 
 module.exports = router;
