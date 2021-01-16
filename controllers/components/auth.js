@@ -1,7 +1,6 @@
 const { Users, Roles, Menus } = require("../../models/index")
 const passwordHash = require("password-hash");
 const jwt = require("jsonwebtoken");
-const { model } = require("../../models/connection");
 
 const login = async (userName, password) => {
     const user = await Users.findOne({
@@ -36,8 +35,7 @@ const login = async (userName, password) => {
         }
     }
 
-    var authToken = jwt.sign({ username: user.email ,id:user.id}, process.env.TOKEN, { expiresIn: "7200s" });
-
+    var authToken = jwt.sign({ username: user.email, userId: user.id }, process.env.TOKEN, { expiresIn: "7200s" });
     await Users.update({ token: authToken }, {
         where: {
             id: user.id

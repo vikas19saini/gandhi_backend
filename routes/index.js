@@ -1,36 +1,24 @@
 var router = require('express').Router();
 var admin = require("./admin");
 const user = require("../controllers/user")
-const { isLoggedIn } = require("../middleware/auth");
+const { isAuthenticated } = require("../middleware/auth");
 const customers = require("../controllers/customers");
 const static = require("../controllers/static");
 const products = require("../controllers/products")
 const categories = require("../controllers/category")
+const addresses = require("./../controllers/addresses")
 const carts = require("../controllers/carts")
+const wishlist = require("../controllers/wishlist")
 
+router.use('/admin', [isAuthenticated], admin);
 
-router.use("/", (req, res, next) => {
-  if (req.originalUrl.includes("admin")) {
-    /*if (!isLoggedIn(req.headers['authorization'])) {
-      res.status(401).send({ message: "Please login to access" }).json();
-    }*/
-  }
-
-  /*if (req.originalUrl.includes("calcShipping")) {
-    if (!isLoggedIn(req.headers['token'])) {
-      res.status(401).send({ message: "Please login to access" }).json();
-    }
-  }*/
-
-  router.use("/static", static);
-  router.use('/user', user);
-  router.use("/customer", customers);
-  router.use("/products", products);
-  router.use("/category", categories);
-  router.use('/admin', admin);
-  router.use("/cart", carts);
-
-  next();
-})
+router.use("/static", static);
+router.use('/user', user);
+router.use("/customer", customers);
+router.use("/products", products);
+router.use("/category", categories);
+router.use("/address", [isAuthenticated], addresses)
+router.use("/wishlist", [isAuthenticated], wishlist)
+router.use("/cart", carts)
 
 module.exports = router;

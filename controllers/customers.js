@@ -14,27 +14,22 @@ route.post("/registartion", async (req, res) => {
     }
 });
 
-route.post("/verifyOTP", async (req, res, next) => {
-    let getUser = await Users.findOne({
-        where: {
-            email: req.body.email,
-            otp: req.body.otp
-        }
-    });
-    if (getUser) {
-        req.body.status = 1
-        Users.update(req.body, {
+route.post("/verify", async (req, res) => {
+    try {
+        let user = await Users.findOne({
             where: {
-                id: getUser.id
+                email: req.body.email,
+                otp: req.body.otp
             }
         });
-        let msg =
-            "<html><head><title></title></head><body style='margin : 0 ; padding : 0 ; background-color : #ffffff;'>Hello,<br><br>Your Account is verified Successfully .<br><br><br>Thankyou</body></html>";
-        let email_data = { to: req.body.email, subject: "Verify Account", text: msg }
-        email.sendMail(email_data)
-        res.send({ message: "OTP Verify Successfully" }).json();
-    } else {
-        res.send({ status: 404, message: "Invalid OTP" }).json();
+
+        if (!user) return res.status(400).json({ message: "Incorrect OTP! please try again" })
+        await Users.update({ status: 1, otp: null }, { where: { email: req.body.email } })
+
+        return res.json({ message: "OTP Verified" })
+
+    } catch (err) {
+        return res.status(500).json(err)
     }
 });
 

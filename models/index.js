@@ -32,17 +32,15 @@ const Addresses = require("./addresses");
 const Imports = require("./imports");
 const Subscribers = require("./subscribers");
 const Enquiries = require("./enquiries");
-
 const EmailSmsTemplates = require("./email_sms_templates");
 const Settings = require("./settings");
-
 const Orders = require("./orders");
 const OrdersProducts = require("./orders_products");
 const OrdersCoupons = require("./orders_coupons");
 const OrdersHistories = require("./orders_histories");
 const OrdersAddresses = require("./orders_addresses");
 const Carts = require("./carts");
-
+const Wishlists = require("./wishlist")
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -93,9 +91,9 @@ Coupons.belongsToMany(Users, { through: CouponsUsers, as: "users", foreignKey: "
 Sliders.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
 Sliders.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
 
-Addresses.belongsTo(Users, { as: "users", foreignKey: "userId", targetKey: "id" });
-Addresses.belongsTo(Countries, { as: "countries", foreignKey: "country_id", targetKey: "id" });
-Addresses.belongsTo(Zones, { as: "zones", foreignKey: "zoneId", targetKey: "id" });
+Addresses.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
+Addresses.belongsTo(Countries, { as: "country", foreignKey: "country_id", targetKey: "id" });
+Addresses.belongsTo(Zones, { as: "zone", foreignKey: "zoneId", targetKey: "id" });
 
 Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreignKey: "orderId", otherKey: "productId" });
 Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
@@ -105,14 +103,15 @@ Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey
 
 Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
 
-//Carts.hasMany(Products, { as: "products" });
-//Carts.belongsToMany(Products, { as: "products", foreignKey: "productId" });
+
 Carts.belongsTo(Products, { as: "products", foreignKey: "productId", targetKey: "id" });
 
+Wishlists.belongsTo(Users, { as: "user" })
+Wishlists.belongsTo(Products, { as: "product" })
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
     ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
-    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories , Carts
+    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrdersAddresses, OrdersHistories, Carts, Wishlists
 }
