@@ -12,9 +12,9 @@ route.get("/new", async (req, res) => {
             limit: 30
         })
 
-        res.send(products).json()
+        return res.json(products);
     } catch (err) {
-        res.status(500).send(err).json()
+        return res.status(500).json(err)
     }
 })
 
@@ -43,9 +43,9 @@ route.get("/relative/:pid", async (req, res) => {
             limit: 21
         })
 
-        res.send(products).json()
+        return res.json(products);
     } catch (err) {
-        res.status(500).send(err).json()
+        return res.status(500).json(err);
     }
 })
 
@@ -54,13 +54,13 @@ route.get("/:slug", async (req, res) => {
         where: {
             slug: req.params.slug
         },
-        include: ["categories", "filters", "thumbnails", "attributes", "featuredImage", "taxClass", "lengthClass", "weightClass"]
+        include: ["categories", "filters", "thumbnails", "attributes", "featuredImage"]
     });
 
     if (product) {
-        res.send(product).json();
+        return res.json(product);
     } else {
-        res.status(404).send({ message: "No Data Found" }).json()
+        return res.status(404).json({ message: "No Data Found" });
     }
 })
 
