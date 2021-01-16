@@ -88,8 +88,8 @@ route.post("/", async (req, res) => {
                     const element = products[index];
                     let getProductDetail =  await Products.findOne({
                         where: {
-                            //"id":element.id
-                            "id": 19
+                            "id":element.id
+                            //"id": 19
                         },
                     });
                     let productData = {

@@ -16,6 +16,12 @@ router.use("/", (req, res, next) => {
     }*/
   }
 
+  /*if (req.originalUrl.includes("calcShipping")) {
+    if (!isLoggedIn(req.headers['token'])) {
+      res.status(401).send({ message: "Please login to access" }).json();
+    }
+  }*/
+
   router.use("/static", static);
   router.use('/user', user);
   router.use("/customer", customers);

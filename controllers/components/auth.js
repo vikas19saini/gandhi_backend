@@ -36,7 +36,7 @@ const login = async (userName, password) => {
         }
     }
 
-    var authToken = jwt.sign({ username: user.email }, process.env.TOKEN, { expiresIn: "7200s" });
+    var authToken = jwt.sign({ username: user.email ,id:user.id}, process.env.TOKEN, { expiresIn: "7200s" });
 
     await Users.update({ token: authToken }, {
         where: {

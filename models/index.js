@@ -105,6 +105,11 @@ Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey
 
 Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
 
+//Carts.hasMany(Products, { as: "products" });
+//Carts.belongsToMany(Products, { as: "products", foreignKey: "productId" });
+Carts.belongsTo(Products, { as: "products", foreignKey: "productId", targetKey: "id" });
+
+
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
