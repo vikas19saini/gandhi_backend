@@ -16,7 +16,7 @@ Orders.init({
     },
     shippingAddressId: {
         type: DataTypes.BIGINT(20),
-        allowNull: true
+        allowNull: false
     },
     billingAddressId: {
         type: DataTypes.BIGINT(20),
@@ -25,38 +25,35 @@ Orders.init({
     currencyCode: {
         type: DataTypes.STRING(5),
         allowNull: false,
-        unique: true
     },
     currencyValue: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        unique: true
     },
-    orderValue : {
+    orderValue: {
         type: DataTypes.DOUBLE,
         allowNull: false,
-        unique: true
     },
-    taxValue : {
-        type: DataTypes.DOUBLE,
-        allowNull: false,
-        unique: true
-    },
-    discount : {
+    discount: {
         type: DataTypes.FLOAT,
         allowNull: false,
-       
+        defaultValue: 0
     },
-    shippingCharges : {
+    shippingCharges: {
         type: DataTypes.FLOAT,
         allowNull: false,
+        defaultValue: 0
     },
     paymentMethod: {
         type: DataTypes.STRING(10),
-        allowNull: false,
+        allowNull: true,
     },
     shippingMethod: {
         type: DataTypes.STRING(10),
+        allowNull: false,
+    },
+    total: {
+        type: DataTypes.DOUBLE,
         allowNull: false,
     },
     status: {
@@ -64,15 +61,23 @@ Orders.init({
         defaultValue: 0,
         validate: {
             isIn: {
-                args: [[0, 1]],
-                msg: "Invalid status 0 or 1 allowed"
+                args: [[0, 1, 2, 3, 4, 5]], // 0 - Created, 1 - Processing, 2 - Shipped, 3 - delivered, 4 - Refunded, 5 - Cancelled
+                msg: "Invalid status"
             }
         }
     }
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "orders"
+    modelName: "orders",
 });
+
+Orders.afterCreate(order => {
+    console.log(order);
+})
+
+Orders.afterUpdate(order => {
+    console.log(order);
+})
 
 module.exports = Orders;

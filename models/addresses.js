@@ -10,7 +10,11 @@ Addresses.init({
     },
     address: {
         type: DataTypes.STRING(225),
-        allowNull: true
+        allowNull: false
+    },
+    city: {
+        type: DataTypes.STRING(225),
+        allowNull: false
     },
     countryId: {
         type: DataTypes.BIGINT,
@@ -18,7 +22,7 @@ Addresses.init({
     },
     zoneId: {
         type: DataTypes.BIGINT,
-        allowNull: false,
+        allowNull: true,
     },
     postcode: {
         type: DataTypes.STRING(10),

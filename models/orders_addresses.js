@@ -14,11 +14,14 @@ OrdersAddresses.init({
         type: DataTypes.STRING(225),
         allowNull: false
     },
+    city: {
+        type: DataTypes.STRING(225),
+        allowNull: false
+    },
     country: {
         type: DataTypes.BIGINT(20),
         allowNull: false
     },
-
     postcode: {
         type: DataTypes.STRING(10),
         allowNull: false
@@ -35,13 +38,10 @@ OrdersAddresses.init({
         type: DataTypes.STRING(15),
         allowNull: false
     }
-
-
-
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: 'ordersAddresses',
+    modelName: 'orderAddresses',
     timestamps: false,
 });
 

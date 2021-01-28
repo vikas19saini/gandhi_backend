@@ -18,7 +18,6 @@ OrdersProducts.init({
         type: DataTypes.BIGINT,
         allowNull: false
     },
-
     title: {
         type: DataTypes.STRING(225),
         allowNull: false
@@ -33,18 +32,6 @@ OrdersProducts.init({
     },
     salePrice: {
         type: DataTypes.DOUBLE,
-        allowNull: false
-    },
-    tax: {
-        type: DataTypes.STRING(225),
-        allowNull: false
-    },
-    tax_value: {
-        type: DataTypes.FLOAT,
-        allowNull: false
-    },
-    tax_rate: {
-        type: DataTypes.FLOAT,
         allowNull: false
     },
     quantity: {

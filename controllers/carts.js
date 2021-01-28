@@ -1,279 +1,276 @@
 const route = require("express").Router();
-const { Carts , Users , Addresses , Countries , Zones , Products ,WeightClasses } = require("../models/index");
-const Buffer   = require('buffer/').Buffer
-const request = require("request");
+const { Carts, Addresses, Products, Currencies } = require("../models/index");
+const axios = require("axios")
 
-route.get("/", async (req, res) => {
-    let params = {
-        order: [["id", "desc"]],
-        distinct: true
-    };
-
-    if (req.query.limit) {
-        params.limit = parseInt(req.query.limit);
-    }
-
-    if (req.query.offset) {
-        params.offset = parseInt(req.query.offset);
-    }
+route.post("/sync", async (req, res) => {
     try {
-        let carts = await Carts.findAndCountAll(params);
-
-        res.send(carts).json();
-    } catch (err) {
-        res.status(400).send(err).json();
-    }
-});
-
-route.post("/", async(req, res, next) => {
-    console.log(req.body,"req");
-    let getUserId = await Users.findOne({
-        where: {
-            token: req.headers.token
-        }
-    });
-    if(getUserId){
-        req.body.userId = getUserId.id;
-        Carts.create(req.body).then((data) => {
-            res.send(data).json();
-        }).catch((err) => {
-            res.status(400).send(err).json();
-        })
-    }else{
-        let err = "Invalid Token"
-        res.status(400).send(err).json();
-    }
-});
-
-route.patch("/:id", async (req, res) => {
-    try {
-        Carts.update(req.body, {
-            where: {
-                id: req.params.id
-            }
+        let cartItems = req.body.cartItems.map(ci => {
+            return { productId: ci.id, quantity: ci.quantity };
         });
-         res.send({ message: "Updated Successfully" }).json();
+        let cartItemsSaved = await Carts.findAll({
+            where: {
+                userId: req.userId
+            },
+            attributes: ["productId", "quantity"],
+            raw: true
+        });
+
+        if (cartItemsSaved.length === 0) {
+            let cartItemToSave = cartItems.map(ci => {
+                return { ...ci, ...{ userId: req.userId } };
+            })
+            await Carts.bulkCreate(cartItemToSave);
+        } else {
+            for (let cartProduct of cartItems) {
+                let cartPro = await Carts.findOne({
+                    where: {
+                        productId: cartProduct.productId,
+                        userId: req.userId
+                    }
+                })
+                if (cartPro) {
+                    await Carts.update({ quantity: cartProduct.quantity }, { where: { productId: cartProduct.productId, userId: req.userId } });
+                } else {
+                    await Carts.create({ productId: cartProduct.productId, quantity: cartProduct.quantity, userId: req.userId });
+                }
+            }
+        }
+
+        let cartDataAfterSync = await Carts.findAll({
+            where: { userId: req.userId },
+            attributes: ["productId", "quantity"],
+            include: [{
+                model: Products,
+                as: "product",
+                attributes: ["id", "slug"]
+            }],
+            raw: true,
+            nest: true
+        });
+
+        cartDataAfterSync = cartDataAfterSync.map(cp => {
+            return { id: cp.productId, quantity: cp.quantity, slug: cp.product.slug }
+        })
+
+        return res.json(cartDataAfterSync);
     } catch (err) {
-        res.status(500).send(err).json();
+        return res.status(500).json(err)
+    }
+
+});
+
+route.post("/add", async (req, res) => {
+    try {
+        let itemSaved = await Carts.findOne({
+            where: {
+                userId: req.userId,
+                productId: req.body.productId
+            },
+            raw: true
+        })
+
+        if (itemSaved) {
+            await Carts.update({ quantity: req.body.quantity }, { where: { userId: req.userId, productId: req.body.productId } });
+        } else {
+            await Carts.create({ ...req.body, ...{ userId: req.userId } });
+        }
+
+        return res.json({ message: "Added to cart!" });
+
+    } catch (err) {
+        return res.status(400).json(err)
     }
 });
 
-route.delete("/:id", async (req, res) => {
+route.delete("/remove/:productId", async (req, res) => {
     try {
         await Carts.destroy({
             where: {
-                id: req.params.id
+                userId: req.userId,
+                productId: req.params.productId
             }
-        })
-        res.send({ message: "Successfully deleted" }).json();
+        });
+
+        return res.json({ message: "Added to cart!" });
     } catch (err) {
-        res.status(404).send(err).json();
+        return res.status(400).json(err);
     }
 });
 
-route.post("/calcShipping", async(req, res) => {
-    let user_id
-    //user_id = await decodeToken(req.headers.token)
-    user_id = 80
-
+route.get("/calculateShipping/:addressId", async (req, res) => {
     try {
-
-        let getProductDetails = await Carts.findAll({
-            where:{
-                user_id:user_id
-            },
-            include: [
-                {
-                    model: Products,
-                    as: "products"
-                }
-            ]
-        })
-
-        let array = getProductDetails
-        let productDetails = []
-        let totalWeight = 0;
-        for(let index = 0; index < getProductDetails.length; index++)
-        {
-            const element = array[index];
-            let getWeightClass = await WeightClasses.findOne({
-                where:{
-                    id  :   element.products.dataValues.weightClassId
-                },
-                attributes: ['id', 'unit'],
-            })
-            totalWeight +=  element.products.dataValues.shippingWeight
-            product_details =
-                {
-                    "description"   :   element.products.dataValues.name,
-                    "origin_country":   "JPN",
-                    "quantity"  :   element.products.dataValues.quantity,
-                    "price" :
-                    {
-                        "amount"    :   element.products.dataValues.ragularPrice,
-                        "currency"  :   "JPY"
-                    },
-                    "weight" :
-                    {
-                        "value" :   element.products.dataValues.shippingWeight,
-                        "unit"  :   getWeightClass.dataValues.unit
-                    },
-                    "sku"   :   element.products.dataValues.sku
-                }
-                productDetails.push(product_details)
+        let shippingDetails = await __calulateShipping(req.params.addressId, req.userId)
+        if (!shippingDetails) {
+            return res.status(422).json({ message: "Shipping service not available at this location!" })
         }
-        let getWeightUnit = await WeightClasses.findOne({
-            order: [
-                ['id', 'DESC']],
-            attributes: ['id', 'unit'],
-        })
-
-        let getCountryDetails = await Addresses.findAll({
-            where: {
-                id: req.body.address_id
-            },
-            include: [
-                {
-                    model: Countries,
-                    as: "countries"
-                },
-                {
-                    model: Users,
-                    as: "users"
-                },
-                {
-                    model: Zones,
-                    as: "zones"
-                }
-            ]
-        })
-        if(getCountryDetails[0].countries.code_2 === process.env.COUNTRY_OF_IMPLEMENTATION){//TH
-            let username , password , authentication , auth , options , req , chunks
-            username = process.env.EMS_USERNAME;
-            password = process.env.EMS_PASSWORD;
-            authentication  = Buffer.from(username + ':' + password).toString('base64');
-            auth = 'Basic ' + authentication;
-        
-            options = { 
-                method: 'POST',
-                url: 'https://r_dservice.thailandpost.com/webservice/getRatePriceZoneByWeight',
-                headers: 
-                { 
-                    'postman-token': '264c2700-5e8a-072f-b0c1-79d7771c974b',
-                    'cache-control': 'no-cache',
-                    'authorization': auth,
-                    'content-type': 'application/json' 
-                },
-                body: 
-                {   
-                    type    : 'E',//E=(EMS delivery service) , "R" (registered shipping service)
-                    sourcePostcode  :   process.env.CUSTOMER_POSTCODE ,
-                    destinationPostcode : getCountryDetails[0].postcode,
-                    weight  : totalWeight
-                },
-                json: true 
-            };
-            request(options, function (error, response, body) {
-                if (error) throw new Error(error);
-                 res.send(body).json();
-            });
-        }
-        else
-        {
-            var options = {
-                method: 'POST',
-                url: 'https://sandbox-api.postmen.com/v3/rates',
-                headers: {
-                    'content-type': 'application/json',
-                    'postmen-api-key': 'afa44b2a-10cf-4719-ac20-96017d897d57'//test server api key
-                },
-                body: {
-                    "async":false,
-                    "shipper_accounts":[
-                        {
-                            "id":"0fe56e4f-2c61-4088-8fbf-e9614e4f6d0e"
-                        }
-                    ],
-                    "shipment":{
-                        "parcels":[
-                            {
-                                "description":"Food XS",
-                                "box_type":"custom",
-                                "weight":{
-                                    "value":totalWeight,
-                                    "unit": getWeightUnit.dataValues.unit
-                                },
-                                "dimension":{
-                                    "width":20,
-                                    "height":40,
-                                    "depth":40,
-                                    "unit":"cm"
-                                },
-                                "items":productDetails
-                            }
-                        ],
-                        "ship_from":{
-                            "contact_name":process.env.CUSTOMER_CONTACT_NAME,
-                            "street1":process.env.CUSTOMER_ADDRESS_LINE1,
-                            "city":process.env.CUSTOMER_CITY,
-                            "state":"Phra Nakhon",
-                            "country":process.env.CUSTOMER_ADDRESS_LINE3,
-                            "phone":process.env.CUSTOMER_TELEPHONE,
-                            "email":process.env.CUSTOMER_EMAIL,
-                            "type":"business"//residential
-                            
-                            /*contact_name: 'Yin Ting Wong',
-                            street1: 'Flat A, 29/F, Block 17\nLaguna Verde',
-                            city: 'Hung Hom',
-                            state: 'Kowloon',
-                            country: 'HKG',
-                            phone: '96679797',
-                            email: 'test@test.test',
-                            type: 'residential'
-                            */
-                        },
-                        "ship_to":{
-                            "contact_name": getCountryDetails[0].name,
-                            "street1":getCountryDetails[0].address,
-                            "city":"Sonipat",
-                            "state":getCountryDetails[0].zones.name,
-                            "postal_code": getCountryDetails[0].postcode,
-                            "country":getCountryDetails[0].countries.name,
-                            "phone": getCountryDetails[0].phone,
-                            "email":getCountryDetails[0].users.email,
-                            "type": getCountryDetails[0].type
-                            
-                           /*"contact_name":"Mike Carunchia",
-                            "street1":"9504 W Smith ST",
-                            "city":"Yorktown",
-                            "state":"Indiana",
-                            "postal_code":"47396",
-                            "country":"USA",
-                            "phone":"7657168649",
-                            "email":"test@test.test",
-                            "type":"residential"
-                           */
-                        }
-                    }
-                },
-                json: true
-            };
-            
-            request(options, function (error, response, body) {
-                if (error) throw new Error(error);
-                res.send(body).json();
-        
-            });
-        }
+        return res.json(shippingDetails);
     } catch (err) {
-        res.status(400).send(err).json();
+        return res.status(500).json(err);
     }
-})
+});
 
-const decodeToken = async (token) => {
-    const base64String = token.split('.')[1];
-    const decodedValue = JSON.parse(Buffer.from(base64String,'base64').toString('ascii'));
-    return decodedValue.id;
+async function __calulateShipping(addressId, userId) {
+    let address = await Addresses.findOne({
+        where: {
+            userId: userId,
+            id: parseInt(addressId)
+        },
+        include: ["country", "zone", "user"],
+        raw: true,
+        nest: true
+    });
+
+    if (!address) {
+        return false;
+    }
+
+    if ("tha" === address.country.code_3.toLowerCase()) {
+        return [{
+            serviceName: "Thailandpost",
+            cost: 0,
+            eta: "2021-01-29T10:00:00+00:00"
+        }];
+    }
+
+    let requestBody = {
+        async: false,
+        shipper_accounts: [
+            {
+                id: process.env.DHL_KEY
+            }
+        ],
+        is_document: false,
+        shipment: {
+            ship_to: {
+                contact_name: address.name,
+                phone: address.phone,
+                email: address.user.email,
+                street1: address.address,
+                city: address.city,
+                postal_code: address.postcode,
+                state: address.zone.code,
+                country: address.country.code_3,
+                type: address.type === 'office' ? 'business' : 'residential',
+            },
+            ship_from: {
+                contact_name: "Wisa Singh",
+                company_name: "GANDHI IMPEX LTD PART",
+                street1: "326 Phahurat Rd, Wang Burapha Phirom",
+                country: "TH",
+                type: "business",
+                postal_code: "10200",
+                city: "Bangkok",
+                phone: "0888812761",
+                street2: "Phra Nakhon",
+                tax_id: null,
+                street3: "THAILAND",
+                state: null,
+                email: "gandhi326projects@gmail.com",
+                fax: null
+            }
+        }
+    };
+
+    let parcelData = await parcelDetails(userId)
+    requestBody.shipment.parcels = [parcelData];
+
+    let rates = [];
+    let requestData = await axios.post(process.env.POSTMEN_URL, requestBody, {
+        headers: {
+            'content-type': 'application/json',
+            'postmen-api-key': process.env.POSTMEN_KEY
+        }
+    });
+
+    let body = requestData.data;
+    if (body.meta.code === 200) {
+        let availableRates = body.data.rates || [];
+        for (let rate of availableRates) {
+            rates.push({
+                serviceName: rate.service_name,
+                cost: rate.total_charge.amount,
+                currency: rate.total_charge.currency,
+                eta: rate.delivery_date
+            });
+        }
+    }
+
+    if (rates.length > 0) {
+        let currency = await Currencies.findOne({
+            where: {
+                code: rates[0].currency
+            },
+            raw: true
+        })
+
+        if (!currency) {
+            return false;
+        }
+
+        let finalRates = [];
+        for (let rate of rates) {
+            finalRates.push({ ...rate, ...{ cost: rate.cost * currency.value } })
+        }
+
+        return finalRates;
+    }
+
+    return false;
+}
+
+async function parcelDetails(userId) {
+    let cart = await Carts.findAll({
+        where: { userId: userId },
+        include: ["product"],
+        raw: true,
+        nest: true
+    });
+
+    let defaultCurrency = await Currencies.findOne({
+        where: {
+            value: 1
+        },
+        raw: true
+    })
+
+    let parcel = {
+        description: "Gandhi Box",
+        box_type: "custom",
+        weight: {
+            value: 0,
+            unit: "kg"
+        },
+        dimension: {
+            width: 40,
+            height: 40,
+            depth: 40,
+            unit: "cm"
+        },
+    }
+
+    let products = [], totalWeighht = 0;
+    for (let cp of cart) {
+        totalWeighht += parseFloat((cp.product.shippingWeight * cp.quantity).toFixed(2));
+        products.push({
+            description: cp.product.name,
+            origin_country: process.env.STORE_COUNTRY,
+            quantity: cp.quantity,
+            price: {
+                amount: cp.product.salePrice ? cp.product.salePrice : cp.product.ragularPrice,
+                currency: defaultCurrency.code
+            },
+            weight: {
+                value: parseFloat((cp.product.shippingWeight).toFixed(2)),
+                unit: "kg"
+            },
+            sku: cp.product.sku
+        });
+    }
+
+    parcel.weight.value = totalWeighht;
+    parcel.items = products;
+
+    return parcel;
 }
 
 module.exports = route;
