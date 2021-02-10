@@ -40,14 +40,13 @@ OrdersProducts.init({
     },
     discount: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     }
-
 }, {
     sequelize: seqConnection,
     underscored: true,
     modelName: 'ordersProducts',
-    timestamps: false,
 });
 
 

@@ -97,12 +97,9 @@ Addresses.belongsTo(Zones, { as: "zone", foreignKey: "zoneId", targetKey: "id" }
 
 Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreignKey: "orderId", otherKey: "productId" });
 Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
-
 Orders.belongsToMany(Coupons, { through: OrdersCoupons, as: "coupons", foreignKey: "orderId", otherKey: "couponId" });
 Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey: "couponId", otherKey: "orderId" });
-
 Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
-
 
 Carts.belongsTo(Products, { as: "product", foreignKey: "productId", targetKey: "id" });
 
@@ -111,7 +108,8 @@ Wishlists.belongsTo(Products, { as: "product" })
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
-    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products, ProductsAttributeValues,
-    ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders, Addresses, Subscribers, Imports,
-    Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrderAddresses, OrdersHistories, Carts, Wishlists
+    WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,
+    ProductsAttributeValues, ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders,
+    Addresses, Subscribers, Imports, Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrderAddresses,
+    OrdersHistories, Carts, Wishlists
 }

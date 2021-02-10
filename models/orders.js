@@ -4,11 +4,6 @@ const seqConnection = require("./connection");
 class Orders extends Model { }
 
 Orders.init({
-    code: {
-        type: DataTypes.STRING(225),
-        allowNull: false,
-        unique: true
-    },
     userId: {
         type: DataTypes.BIGINT(20),
         allowNull: false,
@@ -49,7 +44,7 @@ Orders.init({
         allowNull: true,
     },
     shippingMethod: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.STRING(50),
         allowNull: false,
     },
     total: {
@@ -73,11 +68,15 @@ Orders.init({
 });
 
 Orders.afterCreate(order => {
-    console.log(order);
+    //console.log(order);
+})
+
+Orders.beforeUpdate(order => {
+
 })
 
 Orders.afterUpdate(order => {
-    console.log(order);
+    //console.log(order);
 })
 
 module.exports = Orders;

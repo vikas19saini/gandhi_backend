@@ -10,6 +10,7 @@ const addresses = require("./../controllers/addresses")
 const carts = require("../controllers/carts")
 const wishlist = require("../controllers/wishlist")
 const orders = require("../controllers/orders")
+const payments = require("../controllers/payments");
 
 router.use('/admin', [isAuthenticated], admin);
 
@@ -22,5 +23,6 @@ router.use("/address", [isAuthenticated], addresses);
 router.use("/wishlist", [isAuthenticated], wishlist);
 router.use("/cart", [isAuthenticated], carts);
 router.use("/orders", [isAuthenticated], orders);
+router.use("/payments", [isAuthenticated], payments);
 
 module.exports = router;

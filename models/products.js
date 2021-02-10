@@ -133,11 +133,32 @@ Products.init({
                 msg: "Invalid stock status 0 or 1 allowed"
             }
         }
+    },
+    currentStockStatus: {
+        type: new DataTypes.VIRTUAL(DataTypes.TINYINT, ['stockStatus', 'manageStock', 'quantity']),
+        get: function () {
+            let status = this.get('stockStatus');
+            if (this.get('stockStatus')) {
+                if (this.get('stockStatus') && this.get('stockStatus') <= 0)
+                    status = 0
+            }
+
+            return status;
+        }
     }
 }, {
     sequelize: seqConnection,
     underscored: true,
     modelName: "products"
 });
+
+Products.getCurrentStockStatus = (product) => {
+    if (product.stockStatus) {
+        if (product.manageStock && product.quantity <= 0)
+            product.stockStatus = 0
+    }
+
+    return product.stockStatus
+}
 
 module.exports = Products;

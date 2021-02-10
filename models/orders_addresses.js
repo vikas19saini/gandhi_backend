@@ -19,8 +19,12 @@ OrdersAddresses.init({
         allowNull: false
     },
     country: {
-        type: DataTypes.BIGINT(20),
+        type: DataTypes.STRING(225),
         allowNull: false
+    },
+    zone: {
+        type: DataTypes.STRING(225),
+        allowNull: true
     },
     postcode: {
         type: DataTypes.STRING(10),
@@ -42,7 +46,6 @@ OrdersAddresses.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'orderAddresses',
-    timestamps: false,
 });
 
 
