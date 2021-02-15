@@ -1,7 +1,5 @@
 const route = require('express').Router();
-const { Categories, Uploads, Products, FilterValues } = require("../models/index");
-const Op = require("sequelize");
-const { where } = require('sequelize');
+const { Categories, Uploads, Products } = require("../models/index");
 
 route.get("/products/:slug", async (req, res) => {
 
@@ -19,8 +17,6 @@ route.get("/products/:slug", async (req, res) => {
                 })
             }
         }
-
-        console.log(filters)
 
         let products = await Products.findAndCountAll({
             where: {
@@ -49,10 +45,10 @@ route.get("/products/:slug", async (req, res) => {
                 }
             } */]
         });
-        res.send(products).json();
+        return res.json(products);
     } catch (err) {
         console.log(err)
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     }
 })
 
@@ -70,7 +66,7 @@ route.get("/:slug", async (req, res) => {
                 },
                 {
                     model: Uploads,
-                    as: "mobileMedia"
+                    as: "subCategory"
                 },
                 {
                     model: Categories,
@@ -82,7 +78,7 @@ route.get("/:slug", async (req, res) => {
                         },
                         {
                             model: Uploads,
-                            as: "mobileMedia"
+                            as: "subCategory"
                         },
                         {
                             model: Products,
@@ -96,13 +92,36 @@ route.get("/:slug", async (req, res) => {
             ]
         });
 
-        res.send(category).json()
+        return res.json(category);
     } catch (err) {
-        console.log(err)
-        res.status(404).send(err).json()
+        console.log(err);
+        return res.status(404).json(err);
+    }
+});
+
+route.get("/", async (req, res) => {
+    let params = {
+        include: [
+            {
+                model: Uploads,
+                as: "subCategory"
+            },
+            {
+                model: Uploads,
+                as: "icon"
+            }
+        ],
+        distinct: true,
+        hierarchy: true
+    };
+
+    try {
+        let categories = await Categories.findAndCountAll(params);
+
+        return res.json(categories);
+    } catch (err) {
+        return res.status(400).json(err);
     }
 })
-
-
 
 module.exports = route;

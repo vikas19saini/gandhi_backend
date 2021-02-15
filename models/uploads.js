@@ -29,6 +29,11 @@ Uploads.init({
             if (fs.existsSync(this.path.replace(".", "-350x350."))) {
                 return `${process.env.WEB_URL + this.url.replace(".", "-350x350.")}`;
             } else {
+                let ext = this.path.split(".");
+                ext = ext[ext.length - 1];
+                if (ext.toLowerCase() === "svg" && fs.existsSync(this.path)) {
+                    return `${process.env.WEB_URL + this.url}`;
+                }
                 return `${process.env.WEB_URL + "/images/placeholder.webp"}`;
             }
         }
@@ -39,6 +44,11 @@ Uploads.init({
             if (fs.existsSync(this.path.replace(".", "-100x100."))) {
                 return `${process.env.WEB_URL + this.url.replace(".", "-100x100.")}`;
             } else {
+                let ext = this.path.split(".");
+                ext = ext[ext.length - 1];
+                if (ext.toLowerCase() === "svg" && fs.existsSync(this.path)) {
+                    return `${process.env.WEB_URL + this.url}`;
+                }
                 return `${process.env.WEB_URL + "/images/placeholder.webp"}`;
             }
         }

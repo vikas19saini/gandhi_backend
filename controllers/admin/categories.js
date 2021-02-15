@@ -10,7 +10,7 @@ route.get("/", async (req, res) => {
             },
             {
                 model: Uploads,
-                as: "mobileMedia"
+                as: "subCategory"
             },
             {
                 model: Categories,
@@ -40,18 +40,18 @@ route.get("/", async (req, res) => {
     try {
         let categories = await Categories.findAndCountAll(params);
 
-        res.send(categories).json();
+        return res.json(categories);
     } catch (err) {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     }
 });
 
 route.post("/", (req, res, next) => {
     Categories.create(req.body).then((data) => {
         Categories.rebuildHierarchy();
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -63,9 +63,9 @@ route.patch("/:id", async (req, res) => {
             }
         });
         await Categories.rebuildHierarchy();
-        res.send({ message: "Updated Successfully" }).json();
+        return res.json({ message: "Updated Successfully" });
     } catch (err) {
-        res.status(500).send(err).json();
+        return res.status(500).json(err);
     }
 });
 
@@ -89,7 +89,11 @@ route.get("/:id", (req, res, next) => {
         },
         {
             model: Uploads,
-            as: "mobileMedia"
+            as: "icon"
+        },
+        {
+            model: Uploads,
+            as: "subCategory"
         },
         {
             model: Categories,
@@ -105,9 +109,10 @@ route.get("/:id", (req, res, next) => {
             ]
         ]
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        console.log(err)
+        return res.status(404).json(err);
     })
 });
 
@@ -118,9 +123,9 @@ route.delete("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         })
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (err) {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     }
 });
 

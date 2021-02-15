@@ -33,7 +33,11 @@ Categories.init({
         type: DataTypes.BIGINT,
         allowNull: true
     },
-    mobileUploadId: {
+    subCategoryId: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+    },
+    iconId: {
         type: DataTypes.BIGINT,
         allowNull: true,
     },

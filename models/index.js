@@ -57,7 +57,8 @@ Taxes.belongsTo(GeoZones);
 TaxClasses.belongsToMany(Taxes, { through: TaxesClasses });
 
 Categories.belongsTo(Uploads, { as: "media", foreignKey: "uploadId", targetKey: "id" })
-Categories.belongsTo(Uploads, { as: 'mobileMedia', foreignKey: "mobileUploadId", targetKey: "id" });
+Categories.belongsTo(Uploads, { as: 'subCategory', foreignKey: "subCategoryId", targetKey: "id" });
+Categories.belongsTo(Uploads, { as: 'icon', foreignKey: "iconId", targetKey: "id" });
 
 FilterValues.belongsTo(Filters, { as: "filterGroup", foreignKey: "filterId", targetKey: "id" });
 Filters.hasMany(FilterValues, { as: "filterValues" });

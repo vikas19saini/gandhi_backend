@@ -35,9 +35,10 @@ route.get("/", (req, res) => {
     }
 
     Uploads.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        console.log(err)
+        return res.status(400).json(err);
     })
 });
 
@@ -62,19 +63,19 @@ route.post("/", upload.single('file'), (req, res) => {
                 fit: sharp.fit.inside
             }).jpeg({ quality: 100 }).toFile(req.file.destination + img[0] + "-350x350." + img[1]);
         }
-        res.send(data).json();
+        return res.json(data);
 
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
 
 route.get("/:id", (req, res) => {
     Uploads.findByPk(req.params.id).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -96,9 +97,9 @@ route.delete("/:id", async (req, res) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
