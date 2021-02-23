@@ -1,26 +1,13 @@
 const route = require('express').Router();
-const { Categories, Uploads, Products } = require("../models/index");
+const { Op } = require('sequelize');
+const { Categories, Uploads, Products, FilterValues } = require("../models/index");
 
 route.get("/products/:slug", async (req, res) => {
 
     try {
-
-        let filters = [], price = {}
-
-        for (const [key, val] of Object.entries(req.query)) {
-            if (key === "startPrice" || key === "endPrice") {
-                price[key] = val
-            } else if (key === "limit" || key === "offset") {
-            } else {
-                filters.push({
-                    id: parseInt(val)
-                })
-            }
-        }
-
-        let products = await Products.findAndCountAll({
+        let queryParams = {
             where: {
-                status: 1,
+                status: 1
             },
             order: [["id", "desc"]],
             distinct: true,
@@ -35,16 +22,26 @@ route.get("/products/:slug", async (req, res) => {
             }, {
                 model: Uploads,
                 as: "featuredImage"
-            }, /* {
+            }, {
                 model: FilterValues,
                 as: "filters",
-                required: true,
-                attributes: ["id"],
-                where: {
-                    [Op.and]: filters
-                }
-            } */]
-        });
+                attributes: ["id"]
+            }]
+        };
+
+        if (req.query.start && req.query.end) {
+            queryParams.where = { ...queryParams.where, ...{ ragularPrice: { [Op.between]: [parseInt(req.query.start), parseInt(req.query.end)] } } };
+        }
+
+        if (req.query.filters) {
+            let filters = req.query.filters.split("|");
+            filters = filters.map(filter => parseInt(filter));
+            queryParams.include[2].where = { id: filters };
+        }
+
+        console.log(queryParams);
+
+        let products = await Products.findAndCountAll(queryParams);
         return res.json(products);
     } catch (err) {
         console.log(err)
