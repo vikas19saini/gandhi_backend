@@ -13,6 +13,10 @@ FilterValues.init({
         type: DataTypes.STRING(225),
         allowNull: false
     },
+    colorCode: {
+        type: DataTypes.STRING(10),
+        allowNull: false
+    },
     sortOrder: {
         type: DataTypes.INTEGER,
         defaultValue: 0,

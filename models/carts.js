@@ -6,15 +6,12 @@ class Carts extends Model { }
 Carts.init({
     userId: {
         type: DataTypes.BIGINT,
-        allowNull: false
+        allowNull: true
     },
-    productId: {
-        type: DataTypes.BIGINT,
-        allowNull: false
-    },
-    quantity: {
-        type: DataTypes.BIGINT,
-        allowNull: false
+    status: {
+        type: DataTypes.TINYINT,
+        allowNull: false,
+        defaultValue: 0
     }
 }, {
     sequelize: seqConnection,

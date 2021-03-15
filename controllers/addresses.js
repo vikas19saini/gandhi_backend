@@ -18,14 +18,14 @@ route.get("/", async (req, res) => {
         ],
         distinct: true
     };
-    if (req.query.limit) {
+    /* if (req.query.limit) {
         params.limit = parseInt(req.query.limit);
     }
 
     if (req.query.offset) {
         params.offset = parseInt(req.query.offset);
-    }
-
+    } */
+    console.log(req.userId);
     if (req.userId) {
         params.where = { userId: req.userId }
     }
@@ -90,7 +90,7 @@ route.get("/:id", (req, res, next) => {
     })
 });
 
-route.delete("/:id", async (req, res) => {    
+route.delete("/:id", async (req, res) => {
     try {
         await Addresses.destroy({
             where: {

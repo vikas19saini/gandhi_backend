@@ -21,7 +21,7 @@ router.use("/products", products);
 router.use("/category", categories);
 router.use("/address", [isAuthenticated], addresses);
 router.use("/wishlist", [isAuthenticated], wishlist);
-router.use("/cart", [isAuthenticated], carts);
+router.use("/cart", carts);
 router.use("/orders", [isAuthenticated], orders);
 router.use("/payments", [isAuthenticated], payments);
 

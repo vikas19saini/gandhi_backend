@@ -41,6 +41,7 @@ const OrdersHistories = require("./orders_histories");
 const OrderAddresses = require("./orders_addresses");
 const Carts = require("./carts");
 const Wishlists = require("./wishlist")
+const CartProducts = require("./cart_products");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -101,8 +102,10 @@ Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignK
 Orders.belongsToMany(Coupons, { through: OrdersCoupons, as: "coupons", foreignKey: "orderId", otherKey: "couponId" });
 Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey: "couponId", otherKey: "orderId" });
 Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
+Orders.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
 
-Carts.belongsTo(Products, { as: "product", foreignKey: "productId", targetKey: "id" });
+Carts.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
+Carts.belongsToMany(Products, { through: CartProducts, as: "products", foreignKey: "cartId", otherKey: "productId" });
 
 Wishlists.belongsTo(Users, { as: "user" })
 Wishlists.belongsTo(Products, { as: "product" })

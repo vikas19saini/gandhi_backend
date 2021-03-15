@@ -3,7 +3,6 @@ const { Op } = require('sequelize');
 const { Categories, Uploads, Products, FilterValues } = require("../models/index");
 
 route.get("/products/:slug", async (req, res) => {
-
     try {
         let queryParams = {
             where: {
@@ -39,18 +38,14 @@ route.get("/products/:slug", async (req, res) => {
             queryParams.include[2].where = { id: filters };
         }
 
-        console.log(queryParams);
-
         let products = await Products.findAndCountAll(queryParams);
         return res.json(products);
     } catch (err) {
-        console.log(err)
         return res.status(400).json(err);
     }
 })
 
 route.get("/:slug", async (req, res) => {
-
     try {
         let category = await Categories.findOne({
             where: {
@@ -91,7 +86,6 @@ route.get("/:slug", async (req, res) => {
 
         return res.json(category);
     } catch (err) {
-        console.log(err);
         return res.status(404).json(err);
     }
 });
@@ -114,7 +108,6 @@ route.get("/", async (req, res) => {
 
     try {
         let categories = await Categories.findAndCountAll(params);
-
         return res.json(categories);
     } catch (err) {
         return res.status(400).json(err);

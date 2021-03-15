@@ -56,7 +56,7 @@ Orders.init({
         defaultValue: 0,
         validate: {
             isIn: {
-                args: [[0, 1, 2, 3, 4, 5]], // 0 - Created, 1 - Processing, 2 - Shipped, 3 - delivered, 4 - Refunded, 5 - Cancelled
+                args: [[0, 1, 2, 3, 4, 5, 6]], // 0 - Created, 1 - Processing, 2 - Shipped, 3 - delivered, 4 - Refunded, 5 - Cancelled, 6 - Payment Fail
                 msg: "Invalid status"
             }
         }
@@ -66,17 +66,5 @@ Orders.init({
     underscored: true,
     modelName: "orders",
 });
-
-Orders.afterCreate(order => {
-    //console.log(order);
-})
-
-Orders.beforeUpdate(order => {
-
-})
-
-Orders.afterUpdate(order => {
-    //console.log(order);
-})
 
 module.exports = Orders;

@@ -1,103 +1,76 @@
 const route = require("express").Router();
 const { Carts, Addresses, Products, Currencies } = require("../models/index");
-const axios = require("axios")
+const axios = require("axios");
+const seqConnection = require("../models/connection");
+const CartProducts = require("../models/cart_products");
+const { isAuthenticated } = require("../middleware/auth");
 
-route.post("/sync", async (req, res) => {
-    try {
-        let cartItems = req.body.cartItems.map(ci => {
-            return { productId: ci.id, quantity: ci.quantity };
-        });
-        let cartItemsSaved = await Carts.findAll({
-            where: {
-                userId: req.userId
-            },
-            attributes: ["productId", "quantity"],
-            raw: true
-        });
-
-        if (cartItemsSaved.length === 0) {
-            let cartItemToSave = cartItems.map(ci => {
-                return { ...ci, ...{ userId: req.userId } };
-            })
-            await Carts.bulkCreate(cartItemToSave);
-        } else {
-            for (let cartProduct of cartItems) {
-                let cartPro = await Carts.findOne({
-                    where: {
-                        productId: cartProduct.productId,
-                        userId: req.userId
-                    }
-                })
-                if (cartPro) {
-                    await Carts.update({ quantity: cartProduct.quantity }, { where: { productId: cartProduct.productId, userId: req.userId } });
-                } else {
-                    await Carts.create({ productId: cartProduct.productId, quantity: cartProduct.quantity, userId: req.userId });
-                }
-            }
-        }
-
-        let cartDataAfterSync = await Carts.findAll({
-            where: { userId: req.userId },
-            attributes: ["productId", "quantity"],
-            include: [{
+route.get("/:cartId", async (req, res) => {
+    Carts.findByPk(req.params.cartId, {
+        include: [
+            {
                 model: Products,
-                as: "product",
-                attributes: ["id", "slug"]
-            }],
-            raw: true,
-            nest: true
-        });
-
-        cartDataAfterSync = cartDataAfterSync.map(cp => {
-            return { id: cp.productId, quantity: cp.quantity, slug: cp.product.slug }
-        })
-
-        return res.json(cartDataAfterSync);
-    } catch (err) {
-        return res.status(500).json(err)
-    }
-
+                as: "products",
+                attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
+                include: ["featuredImage"]
+            }
+        ]
+    }).then((d) => {
+        return res.json(d);
+    }).catch(e => {
+        return res.status(404).json(e);
+    })
 });
 
-route.post("/add", async (req, res) => {
+// Creating new cart and add items
+route.post("/", async (req, res) => {
     try {
-        let itemSaved = await Carts.findOne({
-            where: {
-                userId: req.userId,
-                productId: req.body.productId
-            },
-            raw: true
+        let cartTransaction = await seqConnection.transaction(async (t) => {
+            let cart = await Carts.create({ userId: req.userId || null, status: 0 }, { transaction: t });
+            await cart.addProducts([req.body.productId], { through: { quantity: req.body.quantity }, transaction: t })
+            return cart;
         })
-
-        if (itemSaved) {
-            await Carts.update({ quantity: req.body.quantity }, { where: { userId: req.userId, productId: req.body.productId } });
-        } else {
-            await Carts.create({ ...req.body, ...{ userId: req.userId } });
-        }
-
-        return res.json({ message: "Added to cart!" });
+        return res.json(cartTransaction);
 
     } catch (err) {
         return res.status(400).json(err)
     }
 });
 
-route.delete("/remove/:productId", async (req, res) => {
-    try {
-        await Carts.destroy({
-            where: {
-                userId: req.userId,
-                productId: req.params.productId
-            }
-        });
-
-        return res.json({ message: "Added to cart!" });
-    } catch (err) {
+route.post("/sync", [isAuthenticated], async (req, res) => {
+    Carts.update({ userId: req.userId }, { where: { id: req.body.cartId } }).then((d) => {
+        return res.json({ message: "Sync" })
+    }).catch(err => {
         return res.status(400).json(err);
+    })
+});
+
+// Updating cart items
+route.patch("/", async (req, res) => {
+    try {
+        let cartTransaction = await seqConnection.transaction(async (t) => {
+            await Carts.update({ userId: req.userId || null, status: 0 }, { where: { id: req.body.cartId }, transaction: t });
+            let cart = await Carts.findByPk(req.body.cartId);
+            await cart.addProducts([req.body.productId], { through: { quantity: req.body.quantity }, transaction: t })
+            return cart;
+        })
+        return res.json(cartTransaction);
+
+    } catch (err) {
+        return res.status(400).json(err)
     }
 });
 
-route.get("/calculateShipping/:addressId", async (req, res) => {
+route.delete("/remove/:cartProductId", async (req, res) => {
+    try {
+        await CartProducts.destroy({ where: { id: req.params.cartProductId } });
+        return res.json({ message: "Added to cart!" });
+    } catch (err) {
+        return res.status(404).json(err);
+    }
+});
+
+route.get("/calculateShipping/:addressId", [isAuthenticated], async (req, res) => {
     try {
         let shippingDetails = await __calulateShipping(req.params.addressId, req.userId)
         if (!shippingDetails) {
@@ -221,7 +194,10 @@ async function __calulateShipping(addressId, userId) {
 async function parcelDetails(userId) {
     let cart = await Carts.findAll({
         where: { userId: userId },
-        include: ["product"],
+        include: [{
+            model: Products,
+            as: "products",
+        }],
         raw: true,
         nest: true
     });
@@ -250,20 +226,21 @@ async function parcelDetails(userId) {
 
     let products = [], totalWeighht = 0;
     for (let cp of cart) {
-        totalWeighht += parseFloat((cp.product.shippingWeight * cp.quantity).toFixed(2));
+        console.log(cp)
+        totalWeighht += parseFloat((cp.products.shippingWeight * cp.products.cartProducts.quantity).toFixed(2));
         products.push({
-            description: cp.product.name,
+            description: cp.products.name,
             origin_country: process.env.STORE_COUNTRY,
-            quantity: cp.quantity,
+            quantity: cp.products.cartProducts.quantity,
             price: {
-                amount: cp.product.salePrice ? cp.product.salePrice : cp.product.ragularPrice,
+                amount: cp.products.salePrice ? cp.products.salePrice : cp.products.ragularPrice,
                 currency: defaultCurrency.code
             },
             weight: {
-                value: parseFloat((cp.product.shippingWeight).toFixed(2)),
+                value: parseFloat((cp.products.shippingWeight).toFixed(2)),
                 unit: "kg"
             },
-            sku: cp.product.sku
+            sku: cp.products.sku
         });
     }
 

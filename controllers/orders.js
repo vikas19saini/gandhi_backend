@@ -1,7 +1,38 @@
 const route = require("express").Router();
 const seqConnection = require("../models/connection");
-const { Currencies, Addresses, Carts, Orders, OrderAddresses, OrdersProducts, OrdersCoupons, Products } = require("../models/index");
+const { Currencies, Addresses, Carts, Orders, OrderAddresses, OrdersProducts, OrdersCoupons, Products, Users, Uploads } = require("../models/index");
 const OrdersAddresses = require("../models/orders_addresses");
+const { sendOrderEmail } = require("../controllers/emails/mailer");
+
+route.patch("/updateStatus", async (req, res) => {
+    try {
+        let order = await Orders.findByPk(req.body.orderId, {
+            raw: true,
+            nest: true,
+            include: [
+                {
+                    model: Users,
+                    as: "user"
+                },
+                {
+                    model: Products,
+                    as: "products",
+                    include: [{
+                        model: Uploads,
+                        as: "featuredImage"
+                    }]
+                }
+            ]
+        });
+        //if (order.status === req.body.status) throw new Error("Status couldn't be updated");
+        await Orders.update({ status: req.body.status }, { where: { id: req.body.orderId } });
+        sendOrderEmail(order);
+        return res.json(order);
+    } catch (e) {
+        console.log(e)
+        return res.status(400).json(e);
+    }
+});
 
 route.patch("/:orderId", async (req, res) => {
     let reqBody = req.body;
@@ -75,7 +106,10 @@ async function saveOrder(req, orderId = null) {
         where: {
             userId: req.userId
         },
-        include: ["product"],
+        include: [{
+            model: Products,
+            as: "products"
+        }],
         raw: true,
         nest: true
     })
@@ -83,15 +117,15 @@ async function saveOrder(req, orderId = null) {
     let orderValue = 0, shippingCharges = order.shippingCharges, discount = 0, totalOrderValue = 0;
     let anyOutOfStock = 0;
     for (let cartProduct of customerCart) {
-        orderValue += cartProduct.quantity * cartProduct.product.ragularPrice;
-        if (cartProduct.product.salePrice === 0) {
-            totalOrderValue += cartProduct.quantity * cartProduct.product.ragularPrice;
+        orderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice;
+        if (cartProduct.products.salePrice === 0) {
+            totalOrderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice;
         } else {
-            totalOrderValue += cartProduct.quantity * cartProduct.product.salePrice;
-            discount += (cartProduct.quantity * cartProduct.product.ragularPrice) - (cartProduct.quantity * cartProduct.product.salePrice);
+            totalOrderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.salePrice;
+            discount += (cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice) - (cartProduct.products.cartProducts.quantity * cartProduct.products.salePrice);
         }
 
-        if (!Products.getCurrentStockStatus(cartProduct.product)) {
+        if (!Products.getCurrentStockStatus(cartProduct.products)) {
             anyOutOfStock = 1;
             break;
         }
@@ -164,13 +198,13 @@ async function saveOrder(req, orderId = null) {
         }
 
         for (let cartProduct of customerCart) {
-            await newOrder.addProducts(cartProduct.product.id, {
+            await newOrder.addProducts(cartProduct.products.id, {
                 through: {
-                    title: cartProduct.product.name,
-                    sku: cartProduct.product.sku,
-                    ragularPrice: cartProduct.product.ragularPrice,
-                    salePrice: cartProduct.product.salePrice,
-                    quantity: cartProduct.quantity,
+                    title: cartProduct.products.name,
+                    sku: cartProduct.products.sku,
+                    ragularPrice: cartProduct.products.ragularPrice,
+                    salePrice: cartProduct.products.salePrice,
+                    quantity: cartProduct.products.cartProducts.quantity,
                     discount: 0
                 },
                 transaction: t

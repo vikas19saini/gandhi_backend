@@ -12,10 +12,9 @@ const mailer = nodemailer.createTransport({
 })
 
 const send = async (to, subject, template, context) => {
-
     try {
         let templateHtml = templateGenerator(template, context)
-        
+
         await mailer.sendMail({
             from: process.env.EMAIL_FROM,
             to: to,
@@ -27,7 +26,13 @@ const send = async (to, subject, template, context) => {
     } catch (error) {
         throw error
     }
-
 }
 
-module.exports = send
+const sendOrderEmail = async (order) => {
+    console.log(order);
+    if (order.status === 1) {
+        send(order.user.email, "Order received",)
+    }
+}
+
+module.exports = { send, sendOrderEmail }
