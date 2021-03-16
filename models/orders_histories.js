@@ -28,6 +28,7 @@ OrdersHistories.init({
     underscored: true,
     modelName: 'ordersHistories',
     timestamps: false,
+    tableName: "order_history"
 });
 
 

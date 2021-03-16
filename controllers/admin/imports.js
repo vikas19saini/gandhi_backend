@@ -62,7 +62,7 @@ const schema = {
         }
     }, minOrderQuantity: {
         prop: 'minOrderQuantity',
-        type: Number
+        type: Number,
     }, maxOrderQuantity: {
         prop: 'maxOrderQuantity',
         type: Number
@@ -80,7 +80,8 @@ const schema = {
         type: Number
     }, shippingWeight: {
         prop: 'shippingWeight',
-        type: Number
+        type: Number,
+        required: true
     }, lengthClass: {
         prop: 'lengthClass',
         type: String
@@ -97,14 +98,14 @@ const schema = {
     }, status: {
         prop: 'status',
         type: (value) => {
-            if (value.toLocaleLowerCase() === 'live')
+            if (value.trim().toLocaleLowerCase() === 'live')
                 return 1
             return 0
         }
     }, stockStatus: {
         prop: 'stockStatus',
         type: (value) => {
-            if (value.toLocaleLowerCase() === 'in')
+            if (value.trim().toLocaleLowerCase() === 'in')
                 return 1
             return 0
         }
@@ -150,9 +151,9 @@ route.get("/", (req, res) => {
     }
 
     Imports.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -182,21 +183,21 @@ route.post("/", upload.single('file'), async (req, res) => {
                 }
             })
         }).catch(error => {
-            res.send(error).json();
+            return res.json(error);
         })
 
-        res.send(f).json();
+        return res.json(f);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
 
 route.get("/:id", (req, res) => {
     Imports.findByPk(req.params.id).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -214,9 +215,9 @@ route.delete("/:id", async (req, res) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -226,12 +227,12 @@ route.get("/start/:id", async (req, res) => {
     const productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
 
     if (productsList.errors.length > 0) {
-        res.status(500).send(productsList.errors).json();
+        return res.status(500).json(productsList.errors);
     }
 
     fs.appendFileSync(im.path + "/logs.txt", "", (error) => {
         if (error) {
-            res.status(500).send({ message: "Unable to create log file:" }).json();
+            return res.status(500).json({ message: "Unable to create log file:" });
         }
     });
 
@@ -344,7 +345,7 @@ route.get("/start/:id", async (req, res) => {
         }
     })
 
-    res.send({ message: "Import successfully run" }).json();
+    return res.json({ message: "Import successfully run" });
 });
 
 

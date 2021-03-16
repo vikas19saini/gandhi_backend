@@ -29,7 +29,6 @@ const send = async (to, subject, template, context) => {
 }
 
 const sendOrderEmail = async (order) => {
-    console.log(order);
     if (order.status === 1) {
         send(order.user.email, "Order received",)
     }

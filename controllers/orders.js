@@ -1,6 +1,7 @@
 const route = require("express").Router();
 const seqConnection = require("../models/connection");
-const { Currencies, Addresses, Carts, Orders, OrderAddresses, OrdersProducts, OrdersCoupons, Products, Users, Uploads } = require("../models/index");
+const { Currencies, Addresses, Carts, Orders, OrderAddresses,
+    OrdersProducts, OrdersCoupons, Products, Users, Uploads, Payments, OrdersHistories } = require("../models/index");
 const OrdersAddresses = require("../models/orders_addresses");
 const { sendOrderEmail } = require("../controllers/emails/mailer");
 
@@ -24,15 +25,27 @@ route.patch("/updateStatus", async (req, res) => {
                 }
             ]
         });
-        //if (order.status === req.body.status) throw new Error("Status couldn't be updated");
+
+        if (order.status === req.body.status) throw new Error("Status couldn't be updated");
         await Orders.update({ status: req.body.status }, { where: { id: req.body.orderId } });
-        sendOrderEmail(order);
+        //sendOrderEmail(order);
         return res.json(order);
     } catch (e) {
-        console.log(e)
         return res.status(400).json(e);
     }
 });
+
+
+route.post("/payment", (req, res) => {
+    Payments.create(req.body)
+        .then((data) => {
+            return res.status(200).json();
+        }).catch((err) => {
+            console.log(err);
+            return res.status(400).json(err);
+        });
+});
+
 
 route.patch("/:orderId", async (req, res) => {
     let reqBody = req.body;
@@ -57,6 +70,36 @@ route.patch("/:orderId", async (req, res) => {
         console.log(err)
         return res.status(422).json(err);
     }
+});
+
+route.get("/:orderId", async (req, res) => {
+    Orders.findByPk(req.params.orderId, {
+        include: [
+            {
+                model: Products,
+                as: "products",
+                attributes: ["id"],
+                include: ["featuredImage"]
+            },
+            {
+                model: OrderAddresses,
+                as: "shippingAddress"
+            },
+            {
+                model: Payments,
+                as: "payments"
+            },
+            {
+                model: OrdersHistories,
+                as: "ordersHistories"
+            }
+        ]
+    }).then((data) => {
+        return res.status(200).json(data);
+    }).catch((err) => {
+        console.log(err);
+        return res.status(500).json(err);
+    })
 });
 
 route.post("/", async (req, res) => {
