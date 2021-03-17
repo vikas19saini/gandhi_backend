@@ -18,4 +18,12 @@ const isAuthenticated = (req, res, next) => {
     next()
 }
 
-module.exports = { isLoggedIn, isAuthenticated };
+const validateIsLoggedIn = (req, res, next) => {
+    let user = isLoggedIn(req.headers['authorization']);
+    if (user) {
+        req.userId = user.userId;
+    }
+    next()
+}
+
+module.exports = { isLoggedIn, isAuthenticated, validateIsLoggedIn };

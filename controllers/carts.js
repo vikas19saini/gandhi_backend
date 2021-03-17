@@ -3,7 +3,25 @@ const { Carts, Addresses, Products, Currencies } = require("../models/index");
 const axios = require("axios");
 const seqConnection = require("../models/connection");
 const CartProducts = require("../models/cart_products");
-const { isAuthenticated } = require("../middleware/auth");
+const { isAuthenticated, validateIsLoggedIn } = require("../middleware/auth");
+
+route.delete("/:cartId", async (req, res) => {
+    Carts.destroy({
+        where: {
+            id: req.params.cartId
+        }
+    }).then((d) => {
+        return CartProducts.destroy({
+            where: {
+                cartId: req.params.cartId
+            }
+        })
+    }).then((d) => {
+        return res.status(200).json();
+    }).catch(e => {
+        return res.status(404).json(e);
+    })
+});
 
 route.get("/:cartId", async (req, res) => {
     Carts.findByPk(req.params.cartId, {
@@ -23,7 +41,7 @@ route.get("/:cartId", async (req, res) => {
 });
 
 // Creating new cart and add items
-route.post("/", async (req, res) => {
+route.post("/", [validateIsLoggedIn], async (req, res) => {
     try {
         let cartTransaction = await seqConnection.transaction(async (t) => {
             let cart = await Carts.create({ userId: req.userId || null, status: 0 }, { transaction: t });
@@ -46,7 +64,7 @@ route.post("/sync", [isAuthenticated], async (req, res) => {
 });
 
 // Updating cart items
-route.patch("/", async (req, res) => {
+route.patch("/", [validateIsLoggedIn], async (req, res) => {
     try {
         let cartTransaction = await seqConnection.transaction(async (t) => {
             await Carts.update({ userId: req.userId || null, status: 0 }, { where: { id: req.body.cartId }, transaction: t });
