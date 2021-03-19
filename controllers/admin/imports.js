@@ -24,6 +24,9 @@ const schema = {
     }, shortDescription: {
         prop: 'shortDescription',
         type: String
+    }, longDescription: {
+        prop: 'longDescription',
+        type: String
     }, tags: {
         prop: 'tags',
         type: String
