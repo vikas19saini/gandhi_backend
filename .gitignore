@@ -1,3 +1,4 @@
 /.env
 /public/uploads
+/public/imports
 /node_modules/sharp
