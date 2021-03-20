@@ -1,5 +1,6 @@
 const route = require("express").Router();
-const { Imports, AttributeValues, FilterValues, TaxClasses, LengthClasses, WeightClasses, Uploads, Products } = require("../../models/index");
+const { Imports, AttributeValues, FilterValues, TaxClasses, LengthClasses, WeightClasses, Uploads, Products,
+    ProductsAttributeValues, ProductsCategories, ProductsFilterValues } = require("../../models/index");
 const multer = require("multer");
 const fs = require("fs");
 const extract = require("extract-zip");
@@ -224,6 +225,7 @@ route.delete("/:id", async (req, res) => {
     }
 });
 
+
 route.get("/start/:id", async (req, res) => {
 
     const im = await Imports.findByPk(req.params.id);
@@ -292,26 +294,47 @@ route.get("/start/:id", async (req, res) => {
                 item.weightClassId = weightClassId;
             }
 
-            if (item.hasOwnProperty("image")) {
-                writeToLog("Uploading featured image");
-                let imageId = await mapMedias(item.image, im); // featured image;
-                item.uploadId = imageId[0];
-            }
+            if (req.query.requestType === "create") {
+                if (item.hasOwnProperty("image")) {
+                    writeToLog("Uploading featured image");
+                    let imageId = await mapMedias(item.image, im); // featured image;
+                    item.uploadId = imageId[0];
+                }
 
-            if (item.hasOwnProperty("thumbnails")) {
-                writeToLog("Uploading thumbnails image");
-                let thumbnailsId = await mapMedias(item.thumbnails, im); // thumbnails image;
-                item.thumbnails = thumbnailsId;
-            }
+                if (item.hasOwnProperty("thumbnails")) {
+                    writeToLog("Uploading thumbnails image");
+                    let thumbnailsId = await mapMedias(item.thumbnails, im); // thumbnails image;
+                    item.thumbnails = thumbnailsId;
+                }
 
-            item.slug = item.name + "-" + item.sku;
-            item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
+                item.slug = item.name + "-" + item.sku;
+                item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
+            }
 
             const createProduct = await seqConnection.transaction(async (t) => {
-                let product = await Products.create(item, { transaction: t });
-                await product.addCategories(item.categories, { transaction: t })
+                let product = null;
+                if ((req.query.requestType === "update") && (item.sku)) {
+                    await Products.update(item, { where: { sku: item.sku }, transaction: t });
+                    product = await Products.findOne({
+                        where: {
+                            sku: item.sku
+                        }, transaction: t
+                    });
+                } else {
+                    product = await Products.create(item, { transaction: t });
+                }
+
+                if (item.hasOwnProperty("categories")) {
+                    if (req.query.requestType === "update") {
+                        await ProductsCategories.destroy({ where: { productId: product.id }, transaction: t });
+                    }
+                    await product.addCategories(item.categories, { transaction: t })
+                }
 
                 if (item.hasOwnProperty("filters")) {
+                    if (req.query.requestType === "update") {
+                        await ProductsFilterValues.destroy({ where: { productId: product.id }, transaction: t });
+                    }
                     await product.addFilters(item.filters, { transaction: t });
                 }
 
@@ -320,17 +343,24 @@ route.get("/start/:id", async (req, res) => {
                 }
 
                 if (item.hasOwnProperty("attributes")) {
+                    if (req.query.requestType === "update") {
+                        await ProductsAttributeValues.destroy({ where: { productId: product.id }, transaction: t });
+                    }
                     for (attr of item.attributes) {
-                        await product.addAttributes([attr.id], { through: { attributeDescription: attr.value } }, { transaction: t });
+                        await product.addAttributes([attr.id], { through: { attributeDescription: attr.value }, transaction: t });
                     }
                 }
 
                 return product;
-            })
+            });
 
-            created++
+            if (req.query.requestType === "create")
+                created++;
+            else
+                updated++
+
         } catch (err) {
-            errors++
+            errors++;
             writeToLog(err.message);
         }
     }
@@ -346,7 +376,7 @@ route.get("/start/:id", async (req, res) => {
         where: {
             id: req.params.id
         }
-    })
+    });
 
     return res.json({ message: "Import successfully run" });
 });

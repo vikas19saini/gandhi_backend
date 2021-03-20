@@ -22,9 +22,9 @@ route.get("/", async (req, res) => {
 
     try {
         const filters = await Filters.findAndCountAll(params);
-        res.send(filters).json();
+        return res.json(filters);
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -37,9 +37,9 @@ route.post("/", async (req, res) => {
                 }
             ]
         });
-        res.send(filter).json();
+        return res.json(filter);
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -50,14 +50,14 @@ route.patch("/:id", async (req, res) => {
             const filter = await Filters.update(req.body, {
                 where: {
                     id: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
 
             const filterValues = await FilterValues.findAll({
                 where: {
                     filterId: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
 
             const filterValueIds = filterValues.map(val => val.id);
 
@@ -67,14 +67,14 @@ route.patch("/:id", async (req, res) => {
                     await FilterValues.update(reqFilterValue[0], {
                         where: {
                             id: filterValueId
-                        }
-                    }, { transaction: t });
+                        }, transaction: t
+                    });
                 } else {
                     await FilterValues.destroy({
                         where: {
                             id: filterValueId
-                        }
-                    }, { transaction: t });
+                        }, transaction: t
+                    });
                 }
             }
 
@@ -86,10 +86,9 @@ route.patch("/:id", async (req, res) => {
             return { message: "updated" };
         });
 
-        res.send(transactionResult).json();
+        return res.json(transactionResult);
     } catch (error) {
-        console.log(error);
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -98,9 +97,9 @@ route.get("/:id", async (req, res) => {
         const filter = await Filters.findByPk(req.params.id, {
             include: ["filterValues"]
         });
-        res.send(filter).json();
+        return res.json(filter);
     } catch (error) {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     }
 })
 
@@ -116,9 +115,9 @@ route.delete("/:id", async (req, res) => {
                 filterId: req.params.id
             }
         });
-        res.send({ message: "deleted" }).json();
+        return res.json({ message: "deleted" });
     } catch (error) {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     }
 });
 

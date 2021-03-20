@@ -13,17 +13,17 @@ route.get("/", (req, res, next) => {
     }
 
     WeightClasses.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
 route.post("/", (req, res, next) => {
     WeightClasses.create(req.body).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -33,17 +33,17 @@ route.patch("/:id", (req, res, next) => {
             id: req.params.id
         }
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
 route.get("/:id", (req, res, next) => {
     WeightClasses.findByPk(req.params.id).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -53,9 +53,9 @@ route.delete("/:id", (req, res, next) => {
             id: req.params.id
         }
     }).then((data) => {
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 

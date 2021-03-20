@@ -38,9 +38,9 @@ route.get("/", async (req, res) => {
     try {
         let products = await Products.findAndCountAll(params);
 
-        res.send(products).json();
+        return res.json(products);
     } catch (err) {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     }
 });
 
@@ -56,9 +56,9 @@ route.post("/", async (req, res) => {
             }
             return product;
         });
-        res.send(createProduct).json();
+        return res.json(createProduct);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -105,9 +105,9 @@ route.patch("/:id", async (req, res) => {
 
             return product;
         })
-        res.send(productTransaction).json();
+        return res.json(productTransaction);
     } catch (err) {
-        res.status(500).send(err).json();
+        return res.status(500).json(err);
     }
 });
 
@@ -117,9 +117,9 @@ route.patch("/status/:id", (req, res) => {
             id: req.params.id
         }
     }).then((data) => {
-        res.send({ message: "Updated" }).json();
+        return res.json({ message: "Updated" });
     }).catch(error => {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     });
 });
 
@@ -127,9 +127,9 @@ route.get("/:id", (req, res) => {
     Products.findByPk(req.params.id, {
         include: ["categories", "filters", "thumbnails", "attributes", "featuredImage", "taxClass", "lengthClass", "weightClass"]
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -139,33 +139,33 @@ route.delete("/:id", async (req, res) => {
             await Products.destroy({
                 where: {
                     id: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
             await ProductsAttributeValues.destroy({
                 where: {
                     productId: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
             await ProductsCategories.destroy({
                 where: {
                     productId: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
             await ProductsUploads.destroy({
                 where: {
                     productId: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
             await ProductsFilterValues.destroy({
                 where: {
                     productId: req.params.id
-                }
-            }, { transaction: t });
+                }, transaction: t
+            });
             return { message: "Successfully deleted" };
         });
-        res.send(productTransaction).json();
+        return res.json(productTransaction);
     } catch (err) {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     }
 });
 
