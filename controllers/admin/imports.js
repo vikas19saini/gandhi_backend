@@ -361,6 +361,7 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
+            console.log(err);
             writeToLog(err.message);
         }
     }
