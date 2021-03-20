@@ -311,6 +311,8 @@ route.get("/start/:id", async (req, res) => {
                 item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
             }
 
+            console.log(item);
+
             const createProduct = await seqConnection.transaction(async (t) => {
                 let product = null;
                 if ((req.query.requestType === "update") && (item.sku)) {
@@ -338,7 +340,7 @@ route.get("/start/:id", async (req, res) => {
                     await product.addFilters(item.filters, { transaction: t });
                 }
 
-                if (item.hasOwnProperty("thumbnails")) {
+                if (item.hasOwnProperty("thumbnails") && req.query.requestType === "create") {
                     await product.addThumbnails(item.thumbnails, { transaction: t });
                 }
 
@@ -361,7 +363,6 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err);
             writeToLog(err.message);
         }
     }
