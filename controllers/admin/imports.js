@@ -574,14 +574,18 @@ async function mapMedias(files, importDir) {
             file = file.trim();
             let extesnion = file.split(".");
             extesnion = extesnion[extesnion.length - 1];
+            extesnion = extesnion.toLocaleLowerCase();
             let destName = Date.now() + "." + extesnion;
 
             let filePath = `${importDir.path}/${file}`
             let copyTo = process.env.UPLOAD_DIR + destName
 
             if (!fs.existsSync(filePath)) {
-                writeToLog(`File ${filePath} not found`);
-                continue;
+                filePath = filePath.replace(extesnion, extesnion.toUpperCase());
+                if (!fs.existsSync(filePath)) {
+                    writeToLog(`File ${filePath} not found`);
+                    continue;
+                }
             }
 
             fs.copyFileSync(filePath, copyTo) // copying file to upload dir
