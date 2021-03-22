@@ -1,6 +1,6 @@
 const route = require("express").Router();
 const { Imports, AttributeValues, FilterValues, TaxClasses, LengthClasses, WeightClasses, Uploads, Products,
-    ProductsAttributeValues, ProductsCategories, ProductsFilterValues } = require("../../models/index");
+    ProductsAttributeValues, ProductsCategories, ProductsFilterValues, ProductsUploads } = require("../../models/index");
 const multer = require("multer");
 const fs = require("fs");
 const extract = require("extract-zip");
@@ -246,6 +246,7 @@ route.get("/start/:id", async (req, res) => {
     })
 
     let created = updated = errors = 0;
+    let uploadIdsToDeleteonUpdate = [];
 
     for (item of productsList.rows) {
         try {
@@ -294,24 +295,39 @@ route.get("/start/:id", async (req, res) => {
                 item.weightClassId = weightClassId;
             }
 
-            if (req.query.requestType === "create") {
+            if (item.hasOwnProperty("image")) {
+                writeToLog("Uploading featured image");
+                let imageId = await mapMedias(item.image, im); // featured image;
+                item.uploadId = imageId[0];
+            }
+
+            if (req.query.requestType === "update") {
+                let thumbs = await Products.findOne({
+                    where: { sku: item.sku },
+                    include: ["thumbnails", "featuredImage"],
+                });
+
                 if (item.hasOwnProperty("image")) {
-                    writeToLog("Uploading featured image");
-                    let imageId = await mapMedias(item.image, im); // featured image;
-                    item.uploadId = imageId[0];
+                    uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
                 }
 
                 if (item.hasOwnProperty("thumbnails")) {
-                    writeToLog("Uploading thumbnails image");
-                    let thumbnailsId = await mapMedias(item.thumbnails, im); // thumbnails image;
-                    item.thumbnails = thumbnailsId;
+                    for (let up of thumbs.thumbnails) {
+                        uploadIdsToDeleteonUpdate.push(up.id);
+                    }
                 }
+            }
 
+            if (item.hasOwnProperty("thumbnails")) {
+                writeToLog("Uploading thumbnails image");
+                let thumbnailsId = await mapMedias(item.thumbnails, im); // thumbnails image;
+                item.thumbnails = thumbnailsId;
+            }
+
+            if (req.query.requestType === "create") {
                 item.slug = item.name + "-" + item.sku;
                 item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
             }
-
-            console.log(item);
 
             const createProduct = await seqConnection.transaction(async (t) => {
                 let product = null;
@@ -340,7 +356,10 @@ route.get("/start/:id", async (req, res) => {
                     await product.addFilters(item.filters, { transaction: t });
                 }
 
-                if (item.hasOwnProperty("thumbnails") && req.query.requestType === "create") {
+                if (item.hasOwnProperty("thumbnails")) {
+                    if (req.query.requestType === "update") {
+                        await ProductsUploads.destroy({ where: { productId: product.id }, transaction: t });
+                    }
                     await product.addThumbnails(item.thumbnails, { transaction: t });
                 }
 
@@ -364,6 +383,21 @@ route.get("/start/:id", async (req, res) => {
         } catch (err) {
             errors++;
             writeToLog(err.message);
+        }
+    }
+
+    writeToLog("Deleting previous images");
+    let previousImages = await Uploads.findAll({
+        where: {
+            id: uploadIdsToDeleteonUpdate
+        }
+    });
+
+    for (let up of previousImages) {
+        if (fs.existsSync(up.path)) {
+            fs.unlinkSync(up.path);
+            fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-100x100."));
+            fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
         }
     }
 
