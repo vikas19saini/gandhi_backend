@@ -401,6 +401,12 @@ route.get("/start/:id", async (req, res) => {
         }
     }
 
+    await Uploads.destroy({
+        where: {
+            id: uploadIdsToDeleteonUpdate
+        }
+    });
+
     logs.end();
 
     await Imports.update({
