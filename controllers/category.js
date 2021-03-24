@@ -4,28 +4,69 @@ const { Categories, Uploads, Products, FilterValues } = require("../models/index
 
 route.get("/products/:slug", async (req, res) => {
     try {
-        let queryParams = {
-            where: {
-                status: 1
-            },
-            order: [["id", "desc"]],
-            distinct: true,
-            limit: parseInt(req.query.limit),
-            offset: parseInt(req.query.offset),
-            include: [{
+
+        let assosiations = [{
+            model: Uploads,
+            as: "featuredImage"
+        }, {
+            model: FilterValues,
+            as: "filters",
+            attributes: ["id"]
+        }];
+
+        let whereConditions = {
+            status: 1,
+        };
+
+        if (req.params.slug !== "search") {
+            assosiations.push({
                 model: Categories,
                 as: "categories",
                 where: { slug: req.params.slug },
                 required: true,
                 attributes: ["id"]
-            }, {
-                model: Uploads,
-                as: "featuredImage"
-            }, {
-                model: FilterValues,
-                as: "filters",
-                attributes: ["id"]
-            }]
+            });
+        } else {
+            whereConditions = {
+                [Op.and]: [
+                    {
+                        status: 1
+                    },
+                    {
+                        [Op.or]: [
+                            {
+                                name: {
+                                    [Op.substring]: req.query.query
+                                }
+                            },
+                            {
+                                tags: {
+                                    [Op.substring] : req.query.query
+                                }
+                            },
+                            {
+                                shortDescription: {
+                                    [Op.substring] : req.query.query
+                                }
+                            },
+                            {
+                                longDescription: {
+                                    [Op.substring] : req.query.query
+                                }
+                            }
+                        ]
+                    }
+                ],
+            }
+        }
+
+        let queryParams = {
+            where: whereConditions,
+            order: [["id", "desc"]],
+            distinct: true,
+            limit: parseInt(req.query.limit),
+            offset: parseInt(req.query.offset),
+            include: assosiations
         };
 
         if (req.query.start && req.query.end) {
@@ -35,12 +76,13 @@ route.get("/products/:slug", async (req, res) => {
         if (req.query.filters) {
             let filters = req.query.filters.split("|");
             filters = filters.map(filter => parseInt(filter));
-            queryParams.include[2].where = { id: filters };
+            queryParams.include[1].where = { id: filters };
         }
 
         let products = await Products.findAndCountAll(queryParams);
         return res.json(products);
     } catch (err) {
+        console.log(err)
         return res.status(400).json(err);
     }
 })
