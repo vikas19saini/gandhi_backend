@@ -581,11 +581,8 @@ async function mapMedias(files, importDir) {
             let copyTo = process.env.UPLOAD_DIR + destName
 
             if (!fs.existsSync(filePath)) {
-                filePath = filePath.replace(extesnion, extesnion.toUpperCase());
-                if (!fs.existsSync(filePath)) {
-                    writeToLog(`File ${filePath} not found`);
-                    continue;
-                }
+                writeToLog(`File ${filePath} not found`);
+                continue;
             }
 
             fs.copyFileSync(filePath, copyTo) // copying file to upload dir
