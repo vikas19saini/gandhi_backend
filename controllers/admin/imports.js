@@ -489,7 +489,7 @@ async function mapFilters(filters) {
     for (f of filters) {
         let filter = await FilterValues.findOne({
             where: {
-                name: f
+                name: f.trim()
             }
         })
 
