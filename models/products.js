@@ -139,7 +139,7 @@ Products.init({
         get: function () {
             let status = this.get('stockStatus');
             if (this.get('stockStatus')) {
-                if (this.get('stockStatus') && this.get('stockStatus') <= 0)
+                if (this.get('manageStock') && this.get('quantity') <= 0)
                     status = 0
             }
 

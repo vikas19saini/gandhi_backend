@@ -1,75 +1,53 @@
 const route = require("express").Router();
 const seqConnection = require("../models/connection");
 const { Currencies, Addresses, Carts, Orders, OrderAddresses,
-    OrdersProducts, OrdersCoupons, Products, Users, Uploads, Payments, OrdersHistories } = require("../models/index");
+    OrdersProducts, OrdersCoupons, Products, Users, Uploads, Payments, OrdersHistories, Coupons } = require("../models/index");
 const OrdersAddresses = require("../models/orders_addresses");
 const { sendOrderEmail } = require("../controllers/emails/mailer");
+const CartProducts = require("../models/cart_products");
 
-route.patch("/updateStatus", async (req, res) => {
-    try {
-        let order = await Orders.findByPk(req.body.orderId, {
-            raw: true,
-            nest: true,
-            include: [
-                {
-                    model: Users,
-                    as: "user"
-                },
-                {
-                    model: Products,
-                    as: "products",
-                    include: [{
-                        model: Uploads,
-                        as: "featuredImage"
-                    }]
-                }
-            ]
-        });
-
-        if (order.status === req.body.status) throw new Error("Status couldn't be updated");
-        await Orders.update({ status: req.body.status }, { where: { id: req.body.orderId } });
-        //sendOrderEmail(order);
-        return res.json(order);
-    } catch (e) {
-        return res.status(400).json(e);
-    }
+route.get("/", async (req, res) => {
+    Orders.findAll({
+        where: { userId: req.userId },
+        include: [
+            {
+                model: Products,
+                as: "products",
+                attributes: ["id"],
+                include: ["featuredImage"]
+            },
+            {
+                model: OrderAddresses,
+                as: "shippingAddress"
+            },
+            {
+                model: Coupons,
+                as: "coupons"
+            },
+            {
+                model: OrdersHistories,
+                as: "ordersHistories"
+            },
+            {
+                model: Payments,
+                as: "payments"
+            }
+        ]
+    }).then(data => {
+        return res.json(data);
+    }).catch(err => {
+        return res.status(500).json(err);
+    })
 });
-
 
 route.post("/payment", (req, res) => {
     Payments.create(req.body)
         .then((data) => {
-            return res.status(200).json();
+            return res.status(200).json({ message: "Payment details saved" });
         }).catch((err) => {
             console.log(err);
             return res.status(400).json(err);
         });
-});
-
-
-route.patch("/:orderId", async (req, res) => {
-    let reqBody = req.body;
-    try {
-        if (reqBody.action === "order") {
-            await Orders.update(reqBody, {
-                where: {
-                    id: req.params.orderId,
-                    userId: req.userId
-                }
-            });
-
-            return res.json({ message: "Successfully updated!" })
-        } else if (reqBody.action === "updateAllOrderData") {
-            let updateOrder = await saveOrder(req, req.params.orderId);
-            if (!updateOrder.status)
-                return res.status(422).json(updateOrder);
-
-            return res.json({ message: "Successfully updated!", order: updateOrder.order });
-        }
-    } catch (err) {
-        console.log(err)
-        return res.status(422).json(err);
-    }
 });
 
 route.get("/:orderId", async (req, res) => {
@@ -108,6 +86,7 @@ route.post("/", async (req, res) => {
         if (!createOrder.status)
             return res.status(422).json(createOrder);
 
+        await sendOrderEmail(createOrder.order.id);
         return res.json({ message: "Order saved", order: createOrder.order });
     } catch (error) {
         console.log(error)
@@ -115,22 +94,15 @@ route.post("/", async (req, res) => {
     }
 });
 
-async function saveOrder(req, orderId = null) {
-    let order = req.body;
+async function saveOrder(req) {
+    let order = req.body.order;
+    let cartId = req.body.cartId;
     let currency = await Currencies.findOne({
         where: {
             code: order.currencyCode
         },
         raw: true
     });
-
-    if (!currency) {
-        return { message: "Invalid currency code", status: false }
-    }
-
-    if (order.currencyValue !== currency.value) {
-        return { message: "Currency value didn't match", status: false }
-    }
 
     let shippingAddress = await Addresses.findOne({
         where: {
@@ -141,49 +113,23 @@ async function saveOrder(req, orderId = null) {
         nest: true
     })
 
-    if (!shippingAddress) {
-        return { message: "Invalid shipping address", status: false }
-    }
-
-    let customerCart = await Carts.findAll({
-        where: {
-            userId: req.userId
-        },
-        include: [{
-            model: Products,
-            as: "products"
-        }],
-        raw: true,
-        nest: true
+    let customerCart = await Carts.findByPk(cartId, {
+        include: ["products"],
     })
 
     let orderValue = 0, shippingCharges = order.shippingCharges, discount = 0, totalOrderValue = 0;
-    let anyOutOfStock = 0;
-    for (let cartProduct of customerCart) {
-        orderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice;
-        if (cartProduct.products.salePrice === 0) {
-            totalOrderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice;
+    for (let cp of customerCart.products) {
+        orderValue += cp.cartProducts.quantity * cp.ragularPrice;
+        if (cp.salePrice === 0) {
+            totalOrderValue += cp.cartProducts.quantity * cp.ragularPrice;
         } else {
-            totalOrderValue += cartProduct.products.cartProducts.quantity * cartProduct.products.salePrice;
-            discount += (cartProduct.products.cartProducts.quantity * cartProduct.products.ragularPrice) - (cartProduct.products.cartProducts.quantity * cartProduct.products.salePrice);
+            totalOrderValue += cp.cartProducts.quantity * cp.salePrice;
+            discount += (cp.cartProducts.quantity * cp.ragularPrice) - (cp.cartProducts.quantity * cp.salePrice);
         }
-
-        if (!Products.getCurrentStockStatus(cartProduct.products)) {
-            anyOutOfStock = 1;
-            break;
-        }
-    }
-
-    if (anyOutOfStock) {
-        return { message: "Product sold out! Check your cart", status: false };
     }
 
     totalOrderValue = totalOrderValue + shippingCharges;
     totalOrderValue = parseFloat(totalOrderValue.toFixed(2));
-
-    if (totalOrderValue !== order.amount) {
-        return { message: "Order value not matched!", status: false }
-    }
 
     let createOrder = await seqConnection.transaction(async (t) => {
 
@@ -198,61 +144,36 @@ async function saveOrder(req, orderId = null) {
             type: shippingAddress.type
         }, { transaction: t });
 
-        let newOrder = null;
+        let newOrder = await Orders.create({
+            userId: req.userId,
+            shippingAddressId: orderAddress.id,
+            currencyCode: currency.code,
+            currencyValue: currency.value,
+            orderValue: orderValue,
+            discount: discount,
+            shippingCharges: shippingCharges,
+            shippingMethod: order.shipingService,
+            total: totalOrderValue,
+            status: 1 // In process
+        }, { transaction: t });
 
-        // If updating order
-        if (orderId) {
-            let savedOrder = await Orders.findByPk(orderId, { transaction: t });
-            await OrdersAddresses.destroy({ where: { id: savedOrder.shippingAddressId } });
-            await OrdersProducts.destroy({ where: { orderId: orderId } })
-            await OrdersCoupons.destroy({ where: { orderId: orderId } });
-
-            await Orders.update({
-                userId: req.userId,
-                shippingAddressId: orderAddress.id,
-                currencyCode: currency.code,
-                currencyValue: currency.value,
-                orderValue: orderValue,
-                discount: discount,
-                shippingCharges: shippingCharges,
-                shippingMethod: order.shipingService,
-                total: totalOrderValue,
-                status: 0 // Create
-            }, {
-                where: {
-                    id: orderId
-                }, transaction: t
-            });
-
-            newOrder = await Orders.findByPk(orderId, { transaction: t });
-        } else {
-            newOrder = await Orders.create({
-                userId: req.userId,
-                shippingAddressId: orderAddress.id,
-                currencyCode: currency.code,
-                currencyValue: currency.value,
-                orderValue: orderValue,
-                discount: discount,
-                shippingCharges: shippingCharges,
-                shippingMethod: order.shipingService,
-                total: totalOrderValue,
-                status: 0 // Create
-            }, { transaction: t });
-        }
-
-        for (let cartProduct of customerCart) {
-            await newOrder.addProducts(cartProduct.products.id, {
+        for (let cp of customerCart.products) {
+            await newOrder.addProducts(cp.id, {
                 through: {
-                    title: cartProduct.products.name,
-                    sku: cartProduct.products.sku,
-                    ragularPrice: cartProduct.products.ragularPrice,
-                    salePrice: cartProduct.products.salePrice,
-                    quantity: cartProduct.products.cartProducts.quantity,
+                    title: cp.name,
+                    sku: cp.sku,
+                    ragularPrice: cp.ragularPrice,
+                    salePrice: cp.salePrice,
+                    quantity: cp.cartProducts.quantity,
                     discount: 0
                 },
                 transaction: t
             });
         }
+
+        await Carts.destroy({ where: { id: req.body.cartId } }, { transaction: t });
+        await CartProducts.destroy({ where: { cartId: req.body.cartId } }, { transaction: t });
+
         return newOrder;
     });
 

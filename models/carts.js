@@ -4,6 +4,11 @@ const seqConnection = require("./connection");
 class Carts extends Model { }
 
 Carts.init({
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true
+    },
     userId: {
         type: DataTypes.BIGINT,
         allowNull: true

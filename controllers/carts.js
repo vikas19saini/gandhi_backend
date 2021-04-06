@@ -4,6 +4,8 @@ const axios = require("axios");
 const seqConnection = require("../models/connection");
 const CartProducts = require("../models/cart_products");
 const { isAuthenticated, validateIsLoggedIn } = require("../middleware/auth");
+const { Op } = require("sequelize");
+const { stockIncDec } = require("./components/product");
 
 route.delete("/:cartId", async (req, res) => {
     Carts.destroy({
@@ -55,12 +57,141 @@ route.post("/", [validateIsLoggedIn], async (req, res) => {
     }
 });
 
+route.post("/allocateStock", [validateIsLoggedIn], async (req, res) => {
+    if (!req.body.cartId) {
+        return res.status(400).json({ message: "Cart ID is mandatory!" });
+    }
+
+    try {
+
+        let cart = await Carts.findByPk(req.body.cartId, {
+            include: ["products"]
+        })
+
+        if (cart.status)
+            return res.json({ message: "Stock already allocated!" })
+
+        let status = 1;
+
+        // Validating cart items
+        for (let cp of cart.products) {
+            if (cp.currentStockStatus && cp.manageStock) {
+                if ((cp.quantity < cp.cartProducts.quantity)) {
+                    status = 0;
+                    break;
+                }
+            }
+        }
+
+        if (!status)
+            return res.status(400).json({ message: "Product out of stock!" });
+
+
+        // Allocating stock
+        for (let cp of cart.products) {
+            await stockIncDec(cp, 'minus', cp.cartProducts.quantity);
+        }
+
+        await Carts.update({ status: 1 }, { where: { id: req.body.cartId } });
+        return res.json({ message: "Stock allocated" });
+
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 route.post("/sync", [isAuthenticated], async (req, res) => {
-    Carts.update({ userId: req.userId }, { where: { id: req.body.cartId } }).then((d) => {
-        return res.json({ message: "Sync" })
-    }).catch(err => {
+
+    try {
+
+        if (!req.body.cartId) {
+            Carts.findOne({
+                where: {
+                    userId: req.userId
+                },
+                include: [
+                    {
+                        model: Products,
+                        as: "products",
+                        attributes: ["id"]
+                    }
+                ]
+            }).then(cart => {
+                return res.json(cart);
+            })
+        } else {
+            let carts = await Carts.findAll({
+                where: {
+                    [Op.or]: [
+                        { userId: req.userId },
+                        { id: req.body.cartId }
+                    ]
+                },
+                include: [
+                    {
+                        model: Products,
+                        as: "products",
+                        attributes: ["id"]
+                    }
+                ]
+            });
+
+            let userCartProducts = [];
+            let cartIds = [];
+            for (let cart of carts) {
+                cartIds.push(cart.id);
+                for (let p of cart.products) {
+                    userCartProducts.push({
+                        productId: p.cartProducts.productId,
+                        quantity: p.cartProducts.quantity
+                    });
+                }
+            }
+
+            await CartProducts.destroy({
+                where: {
+                    cartId: cartIds
+                }
+            });
+
+            await Carts.update({
+                userId: req.userId
+            }, {
+                where: {
+                    id: req.body.cartId
+                }
+            })
+
+            let userCurrentCart = await Carts.findByPk(req.body.cartId);
+            for (let cp of userCartProducts) {
+                await userCurrentCart.addProducts([cp.productId], { through: { quantity: cp.quantity } });
+            }
+
+            await Carts.destroy({
+                where: {
+                    userId: req.userId,
+                    id: {
+                        [Op.ne]: req.body.cartId
+                    }
+                }
+            });
+
+            Carts.findByPk(req.body.cartId, {
+                include: [
+                    {
+                        model: Products,
+                        as: "products",
+                        attributes: ["id"]
+                    }
+                ]
+            }).then(cart => {
+                return res.json(cart);
+            });
+        }
+    } catch (err) {
         return res.status(400).json(err);
-    })
+    }
+
 });
 
 // Updating cart items
@@ -88,9 +219,9 @@ route.delete("/remove/:cartProductId", async (req, res) => {
     }
 });
 
-route.get("/calculateShipping/:addressId", [isAuthenticated], async (req, res) => {
+route.post("/calculateShipping/:addressId", [isAuthenticated], async (req, res) => {
     try {
-        let shippingDetails = await __calulateShipping(req.params.addressId, req.userId)
+        let shippingDetails = await __calulateShipping(req.params.addressId, req.userId, req.body.cartId)
         if (!shippingDetails) {
             return res.status(422).json({ message: "Shipping service not available at this location!" })
         }
@@ -100,7 +231,7 @@ route.get("/calculateShipping/:addressId", [isAuthenticated], async (req, res) =
     }
 });
 
-async function __calulateShipping(addressId, userId) {
+async function __calulateShipping(addressId, userId, cartId) {
     let address = await Addresses.findOne({
         where: {
             userId: userId,
@@ -162,7 +293,7 @@ async function __calulateShipping(addressId, userId) {
         }
     };
 
-    let parcelData = await parcelDetails(userId)
+    let parcelData = await parcelDetails(cartId)
     requestBody.shipment.parcels = [parcelData];
 
     let rates = [];
@@ -209,22 +340,18 @@ async function __calulateShipping(addressId, userId) {
     return false;
 }
 
-async function parcelDetails(userId) {
-    let cart = await Carts.findAll({
-        where: { userId: userId },
+async function parcelDetails(cartId) {
+    let cart = await Carts.findByPk(cartId, {
         include: [{
             model: Products,
             as: "products",
         }],
-        raw: true,
-        nest: true
     });
 
     let defaultCurrency = await Currencies.findOne({
         where: {
             value: 1
-        },
-        raw: true
+        }
     })
 
     let parcel = {
@@ -243,22 +370,21 @@ async function parcelDetails(userId) {
     }
 
     let products = [], totalWeighht = 0;
-    for (let cp of cart) {
-        console.log(cp)
-        totalWeighht += parseFloat((cp.products.shippingWeight * cp.products.cartProducts.quantity).toFixed(2));
+    for (let cp of cart.products) {
+        totalWeighht += parseFloat((cp.shippingWeight * cp.cartProducts.quantity).toFixed(2));
         products.push({
-            description: cp.products.name,
+            description: cp.name,
             origin_country: process.env.STORE_COUNTRY,
-            quantity: cp.products.cartProducts.quantity,
+            quantity: 1,
             price: {
-                amount: cp.products.salePrice ? cp.products.salePrice : cp.products.ragularPrice,
+                amount: cp.salePrice ? cp.salePrice : cp.ragularPrice,
                 currency: defaultCurrency.code
             },
             weight: {
-                value: parseFloat((cp.products.shippingWeight).toFixed(2)),
+                value: parseFloat((cp.shippingWeight).toFixed(2)),
                 unit: "kg"
             },
-            sku: cp.products.sku
+            sku: cp.sku
         });
     }
 

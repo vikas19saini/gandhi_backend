@@ -10,7 +10,8 @@ Subscribers.init({
     },
     email: {
         type: DataTypes.STRING(100),
-        allowNull: true
+        allowNull: true,
+        unique: true
     }
 }, {
     sequelize: seqConnection,

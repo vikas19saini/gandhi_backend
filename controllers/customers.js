@@ -1,7 +1,24 @@
 const route = require('express').Router();
-const { Users } = require("../models/index");
-const { sendOtp } = require("./emails/customer")
+const { Users, Enquiries } = require("../models/index");
+const { sendOtp } = require("./emails/customer");
+const multer = require("multer");
+const fs = require("fs");
 
+var storage = multer.diskStorage({
+    destination: process.env.UPLOAD_DIR.replace("uploads", "enquires"),
+    filename: (req, file, cb) => {
+        if (file) {
+            let fileName = file.originalname;
+            if (fs.existsSync(process.env.UPLOAD_DIR.replace("uploads", "enquires") + file.originalname)) {
+                fileName = Date.now() + file.originalname;
+            }
+
+            cb(null, fileName);
+        }
+    }
+});
+
+const upload = multer({ storage: storage, limits: { fileSize: parseInt(process.env.MAX_UPLOAD_FILE_SIZE), files: 1 } });
 
 route.post("/registartion", async (req, res) => {
     try {
@@ -31,6 +48,21 @@ route.post("/verify", async (req, res) => {
     } catch (err) {
         return res.status(500).json(err)
     }
+});
+
+route.post("/enquiry", upload.single('file'), async (req, res) => {
+    let request = req.body;
+    if (req.file) {
+        request = { ...req.body, ...{ image: req.file.filename } };
+    }
+
+
+    Enquiries.create(request).then((data) => {
+        return res.json({ message: "Successfully created" });
+    }).catch((err) => {
+        console.log(err)
+        return res.status(500).json(err);
+    })
 });
 
 module.exports = route;

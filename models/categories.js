@@ -21,6 +21,10 @@ Categories.init({
         type: DataTypes.STRING,
         allowNull: true
     },
+    layout: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     description: {
         type: DataTypes.STRING(1000),
         allowNull: true

@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer")
+const { Orders, Uploads, Products, OrderAddresses, Users } = require("../../models")
 const templateGenerator = require("./template")
+var dateFormat = require("dateformat");
 
 const mailer = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -28,9 +30,28 @@ const send = async (to, subject, template, context) => {
     }
 }
 
-const sendOrderEmail = async (order) => {
+const sendOrderEmail = async (orderId) => {
+    let order = await Orders.findByPk(orderId, {
+        include: [{
+            model: Products,
+            as: "products",
+            include: [
+                {
+                    model: Uploads,
+                    as: "featuredImage"
+                }
+            ]
+        }, {
+            model: OrderAddresses,
+            as: "shippingAddress"
+        }, {
+            model: Users,
+            as: "user"
+        }]
+    });
+
     if (order.status === 1) {
-        send(order.user.email, "Order received",)
+        send(order.user.email, `${process.env.BRAND_NAME} - Order received #${order.id}`, "processing", { order: order, date: dateFormat(order.createdAt, "dddd, mmmm dS, yyyy") })
     }
 }
 

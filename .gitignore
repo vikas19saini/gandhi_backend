@@ -1,4 +1,5 @@
 /.env
 /public/uploads
+/public/enquires
 /public/imports
 /node_modules/sharp

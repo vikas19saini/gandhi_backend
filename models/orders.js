@@ -60,6 +60,39 @@ Orders.init({
                 msg: "Invalid status"
             }
         }
+    },
+    completeAddress: {
+        type: new DataTypes.VIRTUAL,
+        get: function () {
+            if (!this.shippingAddress)
+                return;
+
+            let shippingAddress = this.shippingAddress;
+            let shippingAddressArr = [];
+
+            if (shippingAddress.name)
+                shippingAddressArr.push(shippingAddress.name);
+
+            if (shippingAddress.address)
+                shippingAddressArr.push(shippingAddress.address);
+
+            if (shippingAddress.city)
+                shippingAddressArr.push(shippingAddress.city);
+
+            if (shippingAddress.zone)
+                shippingAddressArr.push(shippingAddress.zone);
+
+            if (shippingAddress.country)
+                shippingAddressArr.push(shippingAddress.country);
+
+            if (shippingAddress.postcode)
+                shippingAddressArr.push(shippingAddress.postcode);
+
+            if (shippingAddress.phone)
+                shippingAddressArr.push(shippingAddress.phone);
+
+            return shippingAddressArr.join(", ");
+        }
     }
 }, {
     sequelize: seqConnection,
