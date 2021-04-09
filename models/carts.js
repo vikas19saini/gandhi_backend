@@ -13,6 +13,42 @@ Carts.init({
         type: DataTypes.BIGINT,
         allowNull: true
     },
+    couponId: {
+        type: DataTypes.BIGINT,
+        allowNull: true
+    },
+    cartValue: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    discount: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    couponDiscount: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    shippingCost: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    total: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    addressId: {
+        type: DataTypes.BIGINT,
+        allowNull: true
+    },
+    shippingMethod: {
+        type: DataTypes.STRING(225),
+        allowNull: true
+    },
+    eta: {
+        type: DataTypes.STRING(225),
+        allowNull: true
+    },
     status: {
         type: DataTypes.TINYINT,
         allowNull: false,

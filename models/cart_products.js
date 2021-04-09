@@ -13,6 +13,10 @@ CartProducts.init({
         type: DataTypes.FLOAT,
         allowNull: false
     },
+    discount: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
     cartId: {
         type: DataTypes.BIGINT,
         allowNull: false,

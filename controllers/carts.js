@@ -1,29 +1,12 @@
 const route = require("express").Router();
-const { Carts, Addresses, Products, Currencies } = require("../models/index");
+const { Carts, Addresses, Products, Currencies, Coupons, Categories, Users, Orders } = require("../models/index");
 const axios = require("axios");
 const seqConnection = require("../models/connection");
 const CartProducts = require("../models/cart_products");
 const { isAuthenticated, validateIsLoggedIn } = require("../middleware/auth");
 const { Op } = require("sequelize");
 const { stockIncDec } = require("./components/product");
-
-route.delete("/:cartId", async (req, res) => {
-    Carts.destroy({
-        where: {
-            id: req.params.cartId
-        }
-    }).then((d) => {
-        return CartProducts.destroy({
-            where: {
-                cartId: req.params.cartId
-            }
-        })
-    }).then((d) => {
-        return res.status(200).json();
-    }).catch(e => {
-        return res.status(404).json(e);
-    })
-});
+var dateFormat = require("dateformat");
 
 route.get("/:cartId", async (req, res) => {
     Carts.findByPk(req.params.cartId, {
@@ -33,6 +16,14 @@ route.get("/:cartId", async (req, res) => {
                 as: "products",
                 attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
                 include: ["featuredImage"]
+            },
+            {
+                model: Coupons,
+                as: "coupon"
+            },
+            {
+                model: Addresses,
+                as: "address"
             }
         ]
     }).then((d) => {
@@ -43,13 +34,15 @@ route.get("/:cartId", async (req, res) => {
 });
 
 // Creating new cart and add items
-route.post("/", [validateIsLoggedIn], async (req, res) => {
+route.post("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
     try {
         let cartTransaction = await seqConnection.transaction(async (t) => {
             let cart = await Carts.create({ userId: req.userId || null, status: 0 }, { transaction: t });
             await cart.addProducts([req.body.productId], { through: { quantity: req.body.quantity }, transaction: t })
             return cart;
-        })
+        });
+
+        await calculateCart(cartTransaction.id);
         return res.json(cartTransaction);
 
     } catch (err) {
@@ -57,7 +50,7 @@ route.post("/", [validateIsLoggedIn], async (req, res) => {
     }
 });
 
-route.post("/allocateStock", [validateIsLoggedIn], async (req, res) => {
+route.post("/allocateStock", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
     if (!req.body.cartId) {
         return res.status(400).json({ message: "Cart ID is mandatory!" });
     }
@@ -100,7 +93,95 @@ route.post("/allocateStock", [validateIsLoggedIn], async (req, res) => {
     }
 });
 
-route.post("/sync", [isAuthenticated], async (req, res) => {
+route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
+    let coupon = await Coupons.findOne({
+        where: {
+            [Op.and]: [
+                { code: req.body.couponCode },
+                { status: 1 },
+                {
+                    endDate: {
+                        [Op.gte]: dateFormat(new Date(), "yyyy-mm-dd")
+                    }
+                }
+            ]
+        },
+        include: [
+            {
+                model: Categories,
+                as: "categories",
+                attributes: ["id"]
+            },
+            {
+                model: Users,
+                as: "users",
+                attributes: ["id"]
+            }
+        ]
+    });
+
+    if (!coupon)
+        return res.status(400).json({ message: "Invalid coupon code" });
+
+    if (coupon.users.length > 0) {
+        let haveUser = coupon.users.filter(cu => cu.id === req.userId);
+        if (haveUser.length === 0)
+            return res.status(400).json({ message: "Invalid coupon code" });
+    }
+
+    let cart = await Carts.findByPk(req.body.cartId);
+    if ((cart.minSpend) && ((cart.total - cart.shippingCost) < cart.minSpend)) {
+        return res.status(400).json({ message: "Cart value is less than min spend!" });
+    }
+
+    if ((cart.maxSpend) && ((cart.total - cart.shippingCost) > cart.minSpend)) {
+        return res.status(400).json({ message: "Cart value is grater than max spend!" });
+    }
+
+    if (coupon.limitPerUser) {
+        let orders = await Orders.findAll({
+            where: {
+                userId: req.userId,
+                '$Coupons.code$': req.body.couponCode
+            },
+            include: [
+                {
+                    model: Coupons,
+                    as: "coupons",
+                    required: true
+                }
+            ]
+        });
+
+        if (orders && orders.length >= coupon.usageLimit) {
+            return res.status(400).json({ message: "Avail limit exceed!" });
+        }
+    }
+
+    if (coupon.usageLimit) {
+        let orders = await Orders.findAll({
+            include: [
+                {
+                    model: Coupons,
+                    as: "coupons",
+                    where: {
+                        code: req.body.couponCode
+                    }
+                }
+            ]
+        });
+
+        if (orders && orders.length >= coupon.usageLimit) {
+            return res.status(400).json({ message: "Invalid coupon code!" });
+        }
+    }
+
+    await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
+    await calculateCart(req.body.cartId);
+    return res.json(coupon);
+})
+
+route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
 
     try {
 
@@ -116,7 +197,8 @@ route.post("/sync", [isAuthenticated], async (req, res) => {
                         attributes: ["id"]
                     }
                 ]
-            }).then(cart => {
+            }).then(async (cart) => {
+                await calculateCart(cart.id);
                 return res.json(cart);
             })
         } else {
@@ -184,10 +266,12 @@ route.post("/sync", [isAuthenticated], async (req, res) => {
                         attributes: ["id"]
                     }
                 ]
-            }).then(cart => {
+            }).then(async (cart) => {
+                await calculateCart(cart.id);
                 return res.json(cart);
             });
         }
+
     } catch (err) {
         return res.status(400).json(err);
     }
@@ -195,14 +279,16 @@ route.post("/sync", [isAuthenticated], async (req, res) => {
 });
 
 // Updating cart items
-route.patch("/", [validateIsLoggedIn], async (req, res) => {
+route.patch("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
     try {
         let cartTransaction = await seqConnection.transaction(async (t) => {
             await Carts.update({ userId: req.userId || null, status: 0 }, { where: { id: req.body.cartId }, transaction: t });
             let cart = await Carts.findByPk(req.body.cartId);
             await cart.addProducts([req.body.productId], { through: { quantity: req.body.quantity }, transaction: t })
             return cart;
-        })
+        });
+
+        await calculateCart(cartTransaction.id);
         return res.json(cartTransaction);
 
     } catch (err) {
@@ -210,31 +296,38 @@ route.patch("/", [validateIsLoggedIn], async (req, res) => {
     }
 });
 
-route.delete("/remove/:cartProductId", async (req, res) => {
+route.post("/remove", [releaseQuantity], async (req, res) => {
     try {
-        await CartProducts.destroy({ where: { id: req.params.cartProductId } });
+        await CartProducts.destroy({ where: { id: req.body.cartProductId } });
+        await calculateCart(req.body.cartId);
         return res.json({ message: "Added to cart!" });
     } catch (err) {
-        return res.status(404).json(err);
+        return res.status(400).json(err);
     }
 });
 
-route.post("/calculateShipping/:addressId", [isAuthenticated], async (req, res) => {
+route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
     try {
-        let shippingDetails = await __calulateShipping(req.params.addressId, req.userId, req.body.cartId)
-        if (!shippingDetails) {
-            return res.status(422).json({ message: "Shipping service not available at this location!" })
-        }
-        return res.json(shippingDetails);
+        await Carts.update({ addressId: req.body.addressId }, { where: { id: req.body.cartId } });
+        await calculateCart(req.body.cartId);
+        return res.json({ message: "Cart updated" });
     } catch (err) {
         return res.status(500).json(err);
     }
 });
 
-async function __calulateShipping(addressId, userId, cartId) {
+route.post("/removeCoupon", [isAuthenticated], async (req, res) => {
+    Carts.update({ couponId: null }, { where: { id: req.body.cartId } }).then(async (r) => {
+        await calculateCart(req.body.cartId);
+        return res.json({ message: "Coupon removed" });
+    }).catch((err) => {
+        return res.status(400).json(err);
+    });
+});
+
+async function __calulateShipping(addressId, cart) {
     let address = await Addresses.findOne({
         where: {
-            userId: userId,
             id: parseInt(addressId)
         },
         include: ["country", "zone", "user"],
@@ -293,7 +386,7 @@ async function __calulateShipping(addressId, userId, cartId) {
         }
     };
 
-    let parcelData = await parcelDetails(cartId)
+    let parcelData = await parcelDetails(cart)
     requestBody.shipment.parcels = [parcelData];
 
     let rates = [];
@@ -340,13 +433,7 @@ async function __calulateShipping(addressId, userId, cartId) {
     return false;
 }
 
-async function parcelDetails(cartId) {
-    let cart = await Carts.findByPk(cartId, {
-        include: [{
-            model: Products,
-            as: "products",
-        }],
-    });
+async function parcelDetails(cart) {
 
     let defaultCurrency = await Currencies.findOne({
         where: {
@@ -392,6 +479,114 @@ async function parcelDetails(cartId) {
     parcel.items = products;
 
     return parcel;
+}
+
+async function releaseQuantity(req, res, next) {
+
+    if (req.body.cartId) {
+        let cart = await Carts.findByPk(req.body.cartId, {
+            include: [{
+                model: Coupons,
+                as: "coupon"
+            }, {
+                model: Products,
+                as: "products"
+            }]
+        });
+
+        if (cart.status === 1 && cart.products) {
+            for (let cp of cart.products) {
+                await stockIncDec(cp, "plus", cp.cartProducts.quantity);
+            }
+        }
+
+        await Carts.update({ status: 0, couponId: null }, { where: { id: req.body.cartId } });
+    }
+    next();
+}
+
+async function calculateCart(cartId) {
+    let cart = await Carts.findByPk(cartId, {
+        include: [{
+            model: Coupons,
+            as: "coupon"
+        }, {
+            model: Products,
+            as: "products"
+        }]
+    });
+
+    if (!cart)
+        return;
+
+    let cartValue = 0, discount = 0, couponDiscount = 0, shippingCost = 0, total = 0, shippingMethod = "", eta = "";
+    for (let cp of cart.products) {
+        let productDiscount = 0;
+        cartValue += cp.cartProducts.quantity * cp.ragularPrice; // Calculation cart value based on MRP
+
+        if (cp.salePrice === 0) {
+            let productDiscountAmount = calculateCouponDiscount(cart, cp);
+            total += (cp.cartProducts.quantity * cp.ragularPrice) - productDiscountAmount;
+            productDiscount = productDiscountAmount;
+            couponDiscount += productDiscountAmount;
+        } else {
+            total += cp.cartProducts.quantity * cp.salePrice;
+            discount += (cp.cartProducts.quantity * cp.ragularPrice) - (cp.cartProducts.quantity * cp.salePrice);
+            productDiscount = discount;
+        }
+
+        await CartProducts.update({
+            discount: productDiscount
+        }, {
+            where: {
+                id: cp.cartProducts.id
+            }
+        });
+    }
+
+    if (cart.addressId) {
+        let shippingMethods = await __calulateShipping(cart.addressId, cart);
+        if (shippingMethods) {
+            shippingMethod = shippingMethods[0].serviceName;
+            eta = shippingMethods[0].eta;
+            shippingCost = shippingMethods[0].cost;
+        } else {
+            throw new Error("Shipping is not available at this location!");
+        }
+
+        total += shippingCost;
+    }
+
+    let status = 0;
+    for (let cp of cart.products) {
+        if (!cp.currentStockStatus) {
+            status = 2;
+            break;
+        }
+    }
+
+    await Carts.update({
+        cartValue: cartValue,
+        discount: discount,
+        couponDiscount: couponDiscount,
+        shippingCost: shippingCost,
+        total: total,
+        shippingMethod: shippingMethod,
+        eta: eta,
+        status: status
+    }, { where: { id: cart.id } });
+}
+
+function calculateCouponDiscount(cart, cp) {
+    if (!cart.coupon) return 0;
+
+    if (cart.coupon.discountType === "fixed") {
+        return parseFloat((cart.coupon.amount / cart.products.length).toFixed(2));
+    }
+
+    if (cart.coupon.discountType === "percentage") {
+        return parseFloat((((cp.cartProducts.quantity * cp.ragularPrice) * cart.coupon.amount) / 100).toFixed(2));
+    }
 }
 
 module.exports = route;

@@ -34,6 +34,11 @@ Orders.init({
         allowNull: false,
         defaultValue: 0
     },
+    couponDiscount: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 0
+    },
     shippingCharges: {
         type: DataTypes.FLOAT,
         allowNull: false,

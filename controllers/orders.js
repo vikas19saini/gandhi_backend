@@ -95,41 +95,33 @@ route.post("/", async (req, res) => {
 });
 
 async function saveOrder(req) {
-    let order = req.body.order;
+    let currencyCode = req.body.currency;
     let cartId = req.body.cartId;
     let currency = await Currencies.findOne({
         where: {
-            code: order.currencyCode
-        },
-        raw: true
+            code: currencyCode
+        }
     });
 
-    let shippingAddress = await Addresses.findOne({
-        where: {
-            id: order.shippingAddressId
-        },
-        include: ["country", "zone"],
-        raw: true,
-        nest: true
-    })
-
     let customerCart = await Carts.findByPk(cartId, {
-        include: ["products"],
+        include: [
+            {
+                model: Products,
+                as: "products"
+            },
+            {
+                model: Coupons,
+                as: "coupon"
+            },
+            {
+                model: Addresses,
+                as: "address",
+                include: ["country", "zone"]
+            }
+        ],
     })
 
-    let orderValue = 0, shippingCharges = order.shippingCharges, discount = 0, totalOrderValue = 0;
-    for (let cp of customerCart.products) {
-        orderValue += cp.cartProducts.quantity * cp.ragularPrice;
-        if (cp.salePrice === 0) {
-            totalOrderValue += cp.cartProducts.quantity * cp.ragularPrice;
-        } else {
-            totalOrderValue += cp.cartProducts.quantity * cp.salePrice;
-            discount += (cp.cartProducts.quantity * cp.ragularPrice) - (cp.cartProducts.quantity * cp.salePrice);
-        }
-    }
-
-    totalOrderValue = totalOrderValue + shippingCharges;
-    totalOrderValue = parseFloat(totalOrderValue.toFixed(2));
+    let shippingAddress = customerCart.address;
 
     let createOrder = await seqConnection.transaction(async (t) => {
 
@@ -149,11 +141,13 @@ async function saveOrder(req) {
             shippingAddressId: orderAddress.id,
             currencyCode: currency.code,
             currencyValue: currency.value,
-            orderValue: orderValue,
-            discount: discount,
-            shippingCharges: shippingCharges,
-            shippingMethod: order.shipingService,
-            total: totalOrderValue,
+            orderValue: customerCart.cartValue,
+            discount: customerCart.discount || 0,
+            couponDiscount: customerCart.couponDiscount || 0,
+            shippingCharges: customerCart.shippingCost || 0,
+            shippingMethod: customerCart.shippingMethod,
+            total: customerCart.total,
+            paymentMethod: req.body.paymentMethod,
             status: 1 // In process
         }, { transaction: t });
 
@@ -165,7 +159,18 @@ async function saveOrder(req) {
                     ragularPrice: cp.ragularPrice,
                     salePrice: cp.salePrice,
                     quantity: cp.cartProducts.quantity,
-                    discount: 0
+                    discount: cp.cartProducts.discount || 0
+                },
+                transaction: t
+            });
+        }
+
+        if (customerCart.coupon) {
+            await newOrder.addCoupons(customerCart.coupon.id, {
+                through: {
+                    couponCode: customerCart.coupon.code,
+                    type: customerCart.coupon.type,
+                    couponValue: customerCart.coupon.amount,
                 },
                 transaction: t
             });
@@ -175,6 +180,12 @@ async function saveOrder(req) {
         await CartProducts.destroy({ where: { cartId: req.body.cartId } }, { transaction: t });
 
         return newOrder;
+    });
+
+    await OrdersHistories.create({
+        orderId: createOrder.id,
+        status: 1,
+        text: "Order received in process"
     });
 
     return { status: true, order: createOrder };
