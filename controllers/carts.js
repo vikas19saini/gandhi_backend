@@ -94,91 +94,96 @@ route.post("/allocateStock", [validateIsLoggedIn, releaseQuantity], async (req, 
 });
 
 route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
-    let coupon = await Coupons.findOne({
-        where: {
-            [Op.and]: [
-                { code: req.body.couponCode },
-                { status: 1 },
-                {
-                    endDate: {
-                        [Op.gte]: dateFormat(new Date(), "yyyy-mm-dd")
-                    }
-                }
-            ]
-        },
-        include: [
-            {
-                model: Categories,
-                as: "categories",
-                attributes: ["id"]
-            },
-            {
-                model: Users,
-                as: "users",
-                attributes: ["id"]
-            }
-        ]
-    });
-
-    if (!coupon)
-        return res.status(400).json({ message: "Invalid coupon code" });
-
-    if (coupon.users.length > 0) {
-        let haveUser = coupon.users.filter(cu => cu.id === req.userId);
-        if (haveUser.length === 0)
-            return res.status(400).json({ message: "Invalid coupon code" });
-    }
-
-    let cart = await Carts.findByPk(req.body.cartId);
-    if ((cart.minSpend) && ((cart.total - cart.shippingCost) < cart.minSpend)) {
-        return res.status(400).json({ message: "Cart value is less than min spend!" });
-    }
-
-    if ((cart.maxSpend) && ((cart.total - cart.shippingCost) > cart.minSpend)) {
-        return res.status(400).json({ message: "Cart value is grater than max spend!" });
-    }
-
-    if (coupon.limitPerUser) {
-        let orders = await Orders.findAll({
+    try {
+        let coupon = await Coupons.findOne({
             where: {
-                userId: req.userId,
-                '$Coupons.code$': req.body.couponCode
+                [Op.and]: [
+                    { code: req.body.couponCode },
+                    { status: 1 },
+                    {
+                        endDate: {
+                            [Op.gte]: dateFormat(new Date(), "yyyy-mm-dd")
+                        }
+                    }
+                ]
             },
             include: [
                 {
-                    model: Coupons,
-                    as: "coupons",
-                    required: true
-                }
-            ]
-        });
-
-        if (orders && orders.length >= coupon.usageLimit) {
-            return res.status(400).json({ message: "Avail limit exceed!" });
-        }
-    }
-
-    if (coupon.usageLimit) {
-        let orders = await Orders.findAll({
-            include: [
+                    model: Categories,
+                    as: "categories",
+                    attributes: ["id"]
+                },
                 {
-                    model: Coupons,
-                    as: "coupons",
-                    where: {
-                        code: req.body.couponCode
-                    }
+                    model: Users,
+                    as: "users",
+                    attributes: ["id"]
                 }
             ]
         });
 
-        if (orders && orders.length >= coupon.usageLimit) {
-            return res.status(400).json({ message: "Invalid coupon code!" });
-        }
-    }
+        if (!coupon)
+            return res.status(400).json({ message: "Invalid coupon code" });
 
-    await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
-    await calculateCart(req.body.cartId);
-    return res.json(coupon);
+        if (coupon.users.length > 0) {
+            let haveUser = coupon.users.filter(cu => cu.id === req.userId);
+            if (haveUser.length === 0)
+                return res.status(400).json({ message: "Invalid coupon code" });
+        }
+
+        let cart = await Carts.findByPk(req.body.cartId);
+        if ((cart.minSpend) && ((cart.total - cart.shippingCost) < cart.minSpend)) {
+            return res.status(400).json({ message: "Cart value is less than min spend!" });
+        }
+
+        if ((cart.maxSpend) && ((cart.total - cart.shippingCost) > cart.minSpend)) {
+            return res.status(400).json({ message: "Cart value is grater than max spend!" });
+        }
+
+        if (coupon.limitPerUser) {
+            let orders = await Orders.findAll({
+                where: {
+                    userId: req.userId,
+                    '$Coupons.code$': req.body.couponCode
+                },
+                include: [
+                    {
+                        model: Coupons,
+                        as: "coupons",
+                        required: true
+                    }
+                ]
+            });
+
+            if (orders && orders.length >= coupon.usageLimit) {
+                return res.status(400).json({ message: "Avail limit exceed!" });
+            }
+        }
+
+        if (coupon.usageLimit) {
+            let orders = await Orders.findAll({
+                include: [
+                    {
+                        model: Coupons,
+                        as: "coupons",
+                        where: {
+                            code: req.body.couponCode
+                        }
+                    }
+                ]
+            });
+
+            if (orders && orders.length >= coupon.usageLimit) {
+                return res.status(400).json({ message: "Invalid coupon code!" });
+            }
+        }
+
+        await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
+        await calculateCart(req.body.cartId);
+        return res.json(coupon);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).json({ message: "Invalid coupon code!" });
+    }
 })
 
 route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
