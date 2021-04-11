@@ -143,7 +143,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
             let orders = await Orders.findAll({
                 where: {
                     userId: req.userId,
-                    '$Coupons.code$': req.body.couponCode
+                    '$coupons.code$': req.body.couponCode
                 },
                 include: [
                     {
