@@ -182,7 +182,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
         return res.json(coupon);
     } catch (err) {
         console.log(err);
-        return res.status(400).json({ message: "Invalid coupon code!" });
+        return res.status(400).json(err);
     }
 })
 
