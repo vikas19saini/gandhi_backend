@@ -1,4 +1,5 @@
 const route = require('express').Router();
+const { Sequelize } = require('sequelize');
 const { Products, Categories } = require("../models/index");
 
 route.get("/new", async (req, res) => {
@@ -40,7 +41,8 @@ route.get("/relative/:pid", async (req, res) => {
                 attributes: ['id']
             }, "featuredImage"],
             distinct: true,
-            limit: 21
+            limit: 21,
+            /* order: Sequelize.literal('rand()') */
         })
 
         return res.json(products);
