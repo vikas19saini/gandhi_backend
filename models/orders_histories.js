@@ -19,6 +19,26 @@ OrdersHistories.init({
         type: DataTypes.TINYINT,
         allowNull: false
     },
+    statusName: {
+        type: new DataTypes.VIRTUAL,
+        get: function () {
+            if (!this.status) {
+                return "Created";
+            } else if (this.status === 1) {
+                return "Processing";
+            } else if (this.status === 2) {
+                return "Shipped";
+            } else if (this.status === 3) {
+                return "Delivered";
+            } else if (this.status === 4) {
+                return "Refunded";
+            } else if (this.status === 5) {
+                return "Cancelled";
+            } else if (this.status === 6) {
+                return "Payment Fail";
+            }
+        }
+    },
     text: {
         type: DataTypes.STRING(500),
         allowNull: false
@@ -27,7 +47,6 @@ OrdersHistories.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'ordersHistories',
-    timestamps: false,
     tableName: "order_history"
 });
 

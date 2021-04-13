@@ -3,6 +3,7 @@ const { Users, Enquiries } = require("../models/index");
 const { sendOtp } = require("./emails/customer");
 const multer = require("multer");
 const fs = require("fs");
+const { isAuthenticated } = require('../middleware/auth');
 
 var storage = multer.diskStorage({
     destination: process.env.UPLOAD_DIR.replace("uploads", "enquires"),
@@ -64,5 +65,26 @@ route.post("/enquiry", upload.single('file'), async (req, res) => {
         return res.status(500).json(err);
     })
 });
+
+route.get("/details", [isAuthenticated], async (req, res) => {
+    Users.findByPk(req.userId, {
+        attributes: ["name", "email", "phone", "additionalInfo"]
+    }).then((user) => {
+        return res.json(user);
+    }).catch((err) => {
+        return res.status(404).json(err);
+    })
+});
+
+route.patch("/details", [isAuthenticated], async (req, res) => {
+    Users.update({
+        name: req.body.name,
+        phone: req.body.phone,
+    }, { where: { id: req.userId } }).then((user) => {
+        return res.json({ message: "Updated" });
+    }).catch((err) => {
+        return res.status(400).json(err);
+    })
+})
 
 module.exports = route;

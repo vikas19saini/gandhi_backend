@@ -102,7 +102,7 @@ Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreig
 Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
 Orders.belongsToMany(Coupons, { through: OrdersCoupons, as: "coupons", foreignKey: "orderId", otherKey: "couponId" });
 Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey: "couponId", otherKey: "orderId" });
-Orders.hasMany(OrdersHistories, { as: "ordersHistories" });
+Orders.hasMany(OrdersHistories, { as: "histories" });
 Orders.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
 Orders.belongsTo(OrderAddresses, { as: "shippingAddress", foreignKey: "shippingAddressId", targetKey: "id" });
 Orders.hasMany(Payments, { as: "payments" });

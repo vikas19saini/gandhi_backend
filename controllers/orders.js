@@ -9,12 +9,14 @@ const CartProducts = require("../models/cart_products");
 route.get("/", async (req, res) => {
     Orders.findAll({
         where: { userId: req.userId },
+        order: [["id", "desc"]],
         include: [
             {
                 model: Products,
                 as: "products",
-                attributes: ["id"],
-                include: ["featuredImage"]
+                attributes: ["id", "slug"],
+                include: ["featuredImage"],
+                required: false
             },
             {
                 model: OrderAddresses,
@@ -26,7 +28,7 @@ route.get("/", async (req, res) => {
             },
             {
                 model: OrdersHistories,
-                as: "ordersHistories"
+                as: "histories"
             },
             {
                 model: Payments,
@@ -69,7 +71,7 @@ route.get("/:orderId", async (req, res) => {
             },
             {
                 model: OrdersHistories,
-                as: "ordersHistories"
+                as: "histories"
             }
         ]
     }).then((data) => {
@@ -169,7 +171,7 @@ async function saveOrder(req) {
             await newOrder.addCoupons(customerCart.coupon.id, {
                 through: {
                     couponCode: customerCart.coupon.code,
-                    type: customerCart.coupon.type,
+                    type: customerCart.coupon.discountType,
                     couponValue: customerCart.coupon.amount,
                 },
                 transaction: t
