@@ -4,7 +4,7 @@ const { Sliders, Currencies, Filters, FilterValues, Countries } = require("../mo
 route.get("/", async (req, res) => {
     let sliders = await Sliders.findAll({
         where: {
-            type: "main_slide",
+            type: "main_slider",
             status: 1
         },
         include: ['media', 'mobileMedia'],

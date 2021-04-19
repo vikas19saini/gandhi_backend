@@ -1,12 +1,11 @@
 const route = require("express").Router();
 const seqConnection = require("../models/connection");
-const { Currencies, Addresses, Carts, Orders, OrderAddresses,
-    OrdersProducts, OrdersCoupons, Products, Users, Uploads, Payments, OrdersHistories, Coupons } = require("../models/index");
-const OrdersAddresses = require("../models/orders_addresses");
+const { Currencies, Addresses, Carts, Orders, OrderAddresses, Products, Payments, OrdersHistories, Coupons } = require("../models/index");
 const { sendOrderEmail } = require("../controllers/emails/mailer");
 const CartProducts = require("../models/cart_products");
+const { isAuthenticated } = require("../middleware/auth");
 
-route.get("/", async (req, res) => {
+route.get("/", [isAuthenticated], async (req, res) => {
     Orders.findAll({
         where: { userId: req.userId },
         order: [["id", "desc"]],
@@ -42,7 +41,7 @@ route.get("/", async (req, res) => {
     })
 });
 
-route.post("/payment", (req, res) => {
+route.post("/payment", [isAuthenticated], (req, res) => {
     Payments.create(req.body)
         .then((data) => {
             return res.status(200).json({ message: "Payment details saved" });
@@ -52,7 +51,7 @@ route.post("/payment", (req, res) => {
         });
 });
 
-route.get("/:orderId", async (req, res) => {
+route.get("/:orderId", [isAuthenticated], async (req, res) => {
     Orders.findByPk(req.params.orderId, {
         include: [
             {
@@ -82,7 +81,23 @@ route.get("/:orderId", async (req, res) => {
     })
 });
 
-route.post("/", async (req, res) => {
+// For bankok bank integration
+route.post("/paymentSuccess", async (req, res) => {
+    console.log(req.body);
+    /* try {
+        let createOrder = await saveOrder(req);
+        if (!createOrder.status)
+            return res.status(422).json(createOrder);
+
+        await sendOrderEmail(createOrder.order.id);
+        return res.json({ message: "Order saved", order: createOrder.order });
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ message: "Order couldn't be saved!", err: error });
+    } */
+});
+
+route.post("/", [isAuthenticated], async (req, res) => {
     try {
         let createOrder = await saveOrder(req);
         if (!createOrder.status)
