@@ -42,7 +42,7 @@ route.get("/relative/:pid", async (req, res) => {
             }, "featuredImage"],
             distinct: true,
             limit: 21,
-            /* order: Sequelize.literal('rand()') */
+            order: Sequelize.literal('rand()')
         })
 
         return res.json(products);
