@@ -499,13 +499,15 @@ async function releaseQuantity(req, res, next) {
             }]
         });
 
-        if (cart.status === 1 && cart.products) {
-            for (let cp of cart.products) {
-                await stockIncDec(cp, "plus", cp.cartProducts.quantity);
+        if (cart) {
+            if (cart.status === 1 && cart.products) {
+                for (let cp of cart.products) {
+                    await stockIncDec(cp, "plus", cp.cartProducts.quantity);
+                }
             }
-        }
 
-        await Carts.update({ status: 0, couponId: null }, { where: { id: req.body.cartId } });
+            await Carts.update({ status: 0, couponId: null }, { where: { id: req.body.cartId } });
+        }
     }
     next();
 }
