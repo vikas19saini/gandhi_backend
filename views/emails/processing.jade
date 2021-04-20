@@ -98,7 +98,7 @@ html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microso
                   tr
                     td.lft_tx.table_detail(width='50%' valign='top')
                       img(src=product.featuredImage.miniThumbnailUrl)
-                      span(valign='top') #{product.title}
+                      span(valign='top') #{product.ordersProducts.title}
                     td.table_detail(width='25%' valign='top') #{product.ordersProducts.quantity}
                     td.table_detail(width='25%' valign='top') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
             

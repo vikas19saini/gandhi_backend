@@ -16,10 +16,6 @@ Payments.init({
         type: DataTypes.STRING(10),
         allowNull: true
     },
-    amount: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-    },
     currency: {
         type: DataTypes.STRING(5),
         allowNull: true

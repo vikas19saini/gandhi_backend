@@ -9,6 +9,10 @@ Orders.init({
         allowNull: false,
         unique: true
     },
+    code: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
     shippingAddressId: {
         type: DataTypes.BIGINT(20),
         allowNull: false

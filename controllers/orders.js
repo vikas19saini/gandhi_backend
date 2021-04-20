@@ -81,22 +81,6 @@ route.get("/:orderId", [isAuthenticated], async (req, res) => {
     })
 });
 
-// For bankok bank integration
-route.post("/paymentSuccess", async (req, res) => {
-    console.log(req.body);
-    /* try {
-        let createOrder = await saveOrder(req);
-        if (!createOrder.status)
-            return res.status(422).json(createOrder);
-
-        await sendOrderEmail(createOrder.order.id);
-        return res.json({ message: "Order saved", order: createOrder.order });
-    } catch (error) {
-        console.log(error)
-        return res.status(400).json({ message: "Order couldn't be saved!", err: error });
-    } */
-});
-
 route.post("/", [isAuthenticated], async (req, res) => {
     try {
         let createOrder = await saveOrder(req);
@@ -136,7 +120,11 @@ async function saveOrder(req) {
                 include: ["country", "zone"]
             }
         ],
-    })
+    });
+
+    if (!customerCart) {
+        return { status: false, message: "Invalid cart!" };
+    }
 
     let shippingAddress = customerCart.address;
 
@@ -155,6 +143,7 @@ async function saveOrder(req) {
 
         let newOrder = await Orders.create({
             userId: req.userId,
+            code: (new Date()).getFullYear() + cartId,
             shippingAddressId: orderAddress.id,
             currencyCode: currency.code,
             currencyValue: currency.value,
