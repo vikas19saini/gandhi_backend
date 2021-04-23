@@ -101,11 +101,14 @@ route.patch("/updateStatus", async (req, res) => {
 
 route.get("/:id", (req, res) => {
     Orders.findByPk(req.params.id, {
-        include: ["coupons", "products"]
+        include: ["coupons", "products", "shippingAddress", "coupons", "histories", "user"]
     }).then((data) => {
-        res.send(data).json();
+        if (!data)
+            return res.status(404).json();
+
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
