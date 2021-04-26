@@ -80,15 +80,15 @@ html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microso
 					td
 						table(align='center' role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%')
 							tbody
-								tr
+							<!-- tr
 									td.logo
-										img(src= process.env.WEB_URL + '/images/logo.png')
+										img(src= process.env.WEB_URL + '/images/logo.png') -->
 								tr
 									td.main_tx
 										h1 Verify your email to finish signing up for #{process.env.BRAND_NAME}
 								tr
 									td.main_tx
-										h2 To continue with your email verification, please enter the following code :
+										h2 To continue with your email verification, please enter the following code:
 								tr
 									td
 										button.code_bttn
@@ -105,15 +105,10 @@ html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microso
 							tbody
 								tr
 									td.footer_icon
-										a(href='#')
+										a(href='https://www.facebook.com/gandhifabrics.th')
 											img(src= process.env.WEB_URL + '/images/facebook.png')
-										a(href='#')
+										a(href='https://www.instagram.com/gandhi_fabrics/')
 											img(src= process.env.WEB_URL + '/images/instagram.png')
-										a(href='#')
-											img(src= process.env.WEB_URL + '/images/twiter.png')
-										a(href='#')
-											img(src= process.env.WEB_URL + '/images/whatsapp.png')
-										a(href='#')
-											img(src= process.env.WEB_URL + '/images/youtube.png')
 									td(width='50%' align='right')
-										img(src= process.env.WEB_URL + '/images/logo.png')
+										a(href= process.env.APP_URL)
+											img(src= process.env.WEB_URL + '/images/logo.png')

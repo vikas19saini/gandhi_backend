@@ -1,5 +1,6 @@
 const route = require("express").Router();
 const { Orders, OrdersProducts, OrdersCoupons, Coupons, Products, Addresses, OrderAddresses, OrdersHistories, Payments, Users } = require("../../models/index");
+const { sendOrderEmail } = require("../emails/mailer");
 
 route.get("/", async (req, res) => {
     let params = {
@@ -86,12 +87,12 @@ route.patch("/updateStatus", async (req, res) => {
         await Orders.update({ status: req.body.status }, { where: { id: req.body.orderId } });
         await OrdersHistories.create({
             orderId: req.body.orderId,
-            status: 2,
+            status: req.body.status,
             text: "Status updated by admin"
         });
 
+        sendOrderEmail(req.body.orderId); // Sending emails after updating order status
         return res.json({ message: "Status updated" });
-
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: "Couldn't update status" });

@@ -64,10 +64,10 @@ html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microso
                     img(src= process.env.WEB_URL + '/images/logo.png')
                 tr
                   td.main_tx
-                    h1 Thanks for your order
+                    h1 #{heading}
                 tr
                   td.main_tx
-                    h2 You’ll Receive An Email When your order Shipped. If You Have Any Question Call Us
+                    h2 #{text}
             table.table_custom(width='100%' cellspacing='0' cellpadding='0' border='0')
               tbody
                 tr
@@ -129,15 +129,10 @@ html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microso
               tbody
                 tr
                   td.footer_icon(width='50%')
-                    a(href='#')
+                    a(href='https://www.facebook.com/gandhifabrics.th')
                       img(src= process.env.WEB_URL + '/images/facebook.png')
-                    a(href='#')
+                    a(href='https://www.instagram.com/gandhi_fabrics/')
                       img(src= process.env.WEB_URL + '/images/instagram.png')
-                    a(href='#')
-                      img(src= process.env.WEB_URL + '/images/twiter.png')
-                    a(href='#')
-                      img(src= process.env.WEB_URL + '/images/whatsapp.png')
-                    a(href='#')
-                      img(src= process.env.WEB_URL + '/images/youtube.png')
                   td(width='50%' align='right')
-                    img(src= process.env.WEB_URL + '/images/logo.png')
+                    a(href= process.env.APP_URL)
+                      img(src= process.env.WEB_URL + '/images/logo.png')

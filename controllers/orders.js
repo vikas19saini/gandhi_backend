@@ -143,7 +143,7 @@ async function saveOrder(req) {
 
         let newOrder = await Orders.create({
             userId: req.userId,
-            code: (new Date()).getFullYear() + cartId,
+            code: (new Date()).getFullYear() + "/" + cartId,
             shippingAddressId: orderAddress.id,
             currencyCode: currency.code,
             currencyValue: currency.value,
