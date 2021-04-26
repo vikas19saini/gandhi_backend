@@ -40,6 +40,11 @@ route.get("/products/:slug", async (req, res) => {
                                 }
                             },
                             {
+                                sku: {
+                                    [Op.substring]: req.query.query
+                                }
+                            },
+                            {
                                 tags: {
                                     [Op.substring] : req.query.query
                                 }
