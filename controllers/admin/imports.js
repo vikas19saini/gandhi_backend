@@ -243,7 +243,7 @@ route.get("/errorExcel/:id", async (req, res) => {
             }
         });
 
-        if (!pro) {
+        if (pro.length === 0) {
             toFile.push(item);
         }
     }
