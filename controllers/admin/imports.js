@@ -248,7 +248,7 @@ route.get("/errorExcel/:id", async (req, res) => {
             toFile.push(item);
         }
     }
-
+    console.log(toFile.length);
     let columns = [];
 
     for (let index in toFile[0]) {
