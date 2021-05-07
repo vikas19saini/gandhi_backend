@@ -237,13 +237,14 @@ route.get("/errorExcel/:id", async (req, res) => {
     let toFile = [];
 
     for (item of productsList.rows) {
-        let pro = await Products.findAll({
-            where: {
-                sku: item.sku
-            }
-        });
-
-        if (pro.length === 0) {
+        try {
+            await Products.findAll({
+                where: {
+                    sku: item.sku.replace(/ /g, "")
+                },
+                rejectOnEmpty: true
+            });
+        } catch (e) {
             toFile.push(item);
         }
     }
