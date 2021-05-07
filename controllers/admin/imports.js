@@ -12,6 +12,7 @@ let logs = "";
 const sharp = require('sharp');
 const seqConnection = require("../../models/connection");
 const allowedFileFormats = ['png', 'jpg', 'jpeg'];
+var xlsx = require('json-as-xlsx');
 
 const schema = {
     sku: {
@@ -225,6 +226,50 @@ route.delete("/:id", async (req, res) => {
     }
 });
 
+route.get("/errorExcel/:id", async (req, res) => {
+    const im = await Imports.findByPk(req.params.id);
+    const productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
+
+    if (productsList.errors.length > 0) {
+        return res.status(500).json(productsList.errors);
+    }
+
+    let toFile = [];
+
+    for (item of productsList.rows) {
+        let pro = await Products.findAll({
+            where: {
+                sku: item.sku
+            }
+        });
+
+        if (!pro) {
+            toFile.push(item);
+        }
+    }
+
+    let columns = [];
+
+    for (let index in toFile[0]) {
+        columns.push({
+            label: index,
+            value: index
+        });
+    }
+
+    let errorFile = xlsx(columns, toFile, {
+        sheetName: 'Sheet1', // The name of the sheet
+        fileName: 'errorUpload', // The name of the spreadsheet
+        extraLength: 3, // A bigger number means that columns should be wider
+        writeOptions: {} // Style options from https://github.com/SheetJS/sheetjs#writing-options
+    }, false);
+
+    res.set({
+        'Content-Type': 'application/octet-stream',
+        'Content-disposition': `attachment; filename=errorUpload.xlsx`
+    })
+    return res.send(errorFile);
+});
 
 route.get("/start/:id", async (req, res) => {
 
