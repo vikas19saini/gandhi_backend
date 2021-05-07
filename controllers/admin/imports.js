@@ -244,11 +244,12 @@ route.get("/errorExcel/:id", async (req, res) => {
                 },
                 rejectOnEmpty: true
             });
-        } catch (e) {
             toFile.push(item);
+        } catch (e) {
+            //toFile.push(item);
         }
     }
-    console.log(toFile.length);
+
     let columns = [];
 
     for (let index in toFile[0]) {
