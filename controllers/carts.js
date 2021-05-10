@@ -347,7 +347,7 @@ async function __calulateShipping(addressId, cart) {
     if ("tha" === address.country.code_3.toLowerCase()) {
         return [{
             serviceName: "Thailandpost",
-            cost: 0,
+            cost: 100,
             eta: "2021-01-29T10:00:00+00:00"
         }];
     }
