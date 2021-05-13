@@ -1,4 +1,5 @@
 const route = require("express").Router();
+const { Op } = require("sequelize");
 const { Categories, Uploads, Products } = require("../../models/index");
 
 route.get("/", async (req, res) => {
@@ -15,7 +16,7 @@ route.get("/", async (req, res) => {
             {
                 model: Categories,
                 as: "ancestors"
-            }
+            },
         ],
         order: [
             [
@@ -26,7 +27,7 @@ route.get("/", async (req, res) => {
                 'hierarchy_level'
             ]
         ],
-        distinct: true
+        distinct: true,
     };
 
     if (req.query.limit) {
@@ -37,11 +38,36 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
-    try {
-        let categories = await Categories.findAndCountAll(params);
+    if (req.query.searchBy) {
+        params.where = {
+            name: {
+                [Op.substring]: req.query.searchBy
+            }
+        }
+    }
 
-        return res.json(categories);
+    try {
+        let totalRecords = await Categories.count(params);
+        let categories = await Categories.findAll(params);
+        let finalCategories = [];
+
+        for (let category of categories) {
+            let catProducts = await category.countProducts({
+                distinct: true
+            });
+
+            category = category.toJSON();
+            finalCategories.push({
+                ...category, ...{ totalProducts: catProducts }
+            })
+        }
+
+        return res.json({
+            count: totalRecords,
+            rows: finalCategories
+        });
     } catch (err) {
+        console.log(err);
         return res.status(400).json(err);
     }
 });
