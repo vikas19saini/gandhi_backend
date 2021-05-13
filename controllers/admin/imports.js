@@ -378,6 +378,7 @@ route.get("/start/:id", async (req, res) => {
             const createProduct = await seqConnection.transaction(async (t) => {
                 let product = null;
                 if ((req.query.requestType === "update") && (item.sku)) {
+                    console.log(item);
                     await Products.update(item, { where: { sku: item.sku }, transaction: t });
                     product = await Products.findOne({
                         where: {
