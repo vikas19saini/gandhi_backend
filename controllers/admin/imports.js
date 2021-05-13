@@ -378,13 +378,13 @@ route.get("/start/:id", async (req, res) => {
             const createProduct = await seqConnection.transaction(async (t) => {
                 let product = null;
                 if ((req.query.requestType === "update") && (item.sku)) {
-                    console.log(item);
                     await Products.update(item, { where: { sku: item.sku }, transaction: t });
                     product = await Products.findOne({
                         where: {
                             sku: item.sku
                         }, transaction: t
                     });
+                    console.log(product);
                 } else {
                     product = await Products.create(item, { transaction: t });
                 }
@@ -429,7 +429,7 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err);
+            console.log(err.message);
             writeToLog(err.message);
         }
     }
