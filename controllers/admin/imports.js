@@ -345,6 +345,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
                         fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
                     }
                 }
+                console.log("Deleted");
             } catch (error) {
                 console.log(error)
             }
