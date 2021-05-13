@@ -292,6 +292,8 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }],                
             });
 
+            console.log(thumbs.id);
+
             if (thumbs.uploadId) {
                 uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
             }
@@ -306,7 +308,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }
             });
 
-           /*  try {
+            try {
                 await seqConnection.transaction(async (t) => {
                     await Products.destroy({
                         where: {
@@ -350,7 +352,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }
             } catch (error) {
                 console.log(error)
-            } */
+            }
         }
 
         await Imports.update({
