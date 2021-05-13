@@ -248,7 +248,7 @@ route.get("/errorExcel/:id", async (req, res) => {
             toFile.push(item);
         }
     }
-    
+
     let columns = [];
 
     for (let index in toFile[0]) {
@@ -428,7 +428,7 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err.message);
+            console.log(err);
             writeToLog(err.message);
         }
     }
