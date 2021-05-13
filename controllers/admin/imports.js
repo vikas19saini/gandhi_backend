@@ -285,10 +285,11 @@ route.get("/deleteProducts/:id", async (req, res) => {
             let uploadIdsToDeleteonUpdate = [];
             let thumbs = await Products.findOne({
                 where: { sku: item.sku },
-                include: ["thumbnails", "featuredImage"],
+                //include: ["thumbnails", "featuredImage"],
             });
-            console.log(thumbs);
-            if (thumbs.uploadId) {
+            console.log(thumbs)
+            
+            /* if (thumbs.uploadId) {
                 uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
             }
 
@@ -347,10 +348,10 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }
             } catch (error) {
                 console.log(error)
-            }
+            } */
         }
 
-        await Imports.update({
+        /* await Imports.update({
             success: 0,
             updated: 0,
             error: 0,
@@ -359,7 +360,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
             where: {
                 id: parseInt(req.params.id)
             }
-        });
+        }); */
 
         return res.json({ message: "Successfully deleted!" });
     } catch (err) {
