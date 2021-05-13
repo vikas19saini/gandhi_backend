@@ -272,6 +272,96 @@ route.get("/errorExcel/:id", async (req, res) => {
     return res.send(errorFile);
 });
 
+route.get("/deleteProducts/:id", async (req, res) => {
+    try {
+        const im = await Imports.findByPk(req.params.id);
+        const productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
+
+        if (productsList.errors.length > 0) {
+            return res.status(500).json(productsList.errors);
+        }
+
+        for (item of productsList.rows) {
+            let uploadIdsToDeleteonUpdate = [];
+            let thumbs = await Products.findOne({
+                where: { sku: item.sku },
+                include: ["thumbnails", "featuredImage"],
+            });
+
+            if (thumbs.uploadId) {
+                uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
+            }
+
+            for (let up of thumbs.thumbnails) {
+                uploadIdsToDeleteonUpdate.push(up.id);
+            }
+
+            let previousImages = await Uploads.findAll({
+                where: {
+                    id: uploadIdsToDeleteonUpdate
+                }
+            });
+
+            await seqConnection.transaction(async (t) => {
+                await Products.destroy({
+                    where: {
+                        id: thumbs.id
+                    }, transaction: t
+                });
+                await ProductsAttributeValues.destroy({
+                    where: {
+                        productId: thumbs.id
+                    }, transaction: t
+                });
+                await ProductsCategories.destroy({
+                    where: {
+                        productId: thumbs.id
+                    }, transaction: t
+                });
+                await ProductsUploads.destroy({
+                    where: {
+                        productId: thumbs.id
+                    }, transaction: t
+                });
+                await ProductsFilterValues.destroy({
+                    where: {
+                        productId: thumbs.id
+                    }, transaction: t
+                });
+
+                await Uploads.destroy({
+                    where: {
+                        id: uploadIdsToDeleteonUpdate
+                    }, transaction: t
+                });
+            });
+
+            for (let up of previousImages) {
+                if (fs.existsSync(up.path)) {
+                    fs.unlinkSync(up.path);
+                    fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-100x100."));
+                    fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
+                }
+            }
+        }
+
+        await Imports.update({
+            success: 0,
+            updated: 0,
+            error: 0,
+            status: 0
+        }, {
+            where: {
+                id: req.params.id
+            }
+        });
+
+        return res.json({ message: "Successfully deleted!" });
+    } catch (err) {
+        return res.json(err);
+    }
+});
+
 route.get("/start/:id", async (req, res) => {
 
     const im = await Imports.findByPk(req.params.id);
@@ -384,7 +474,6 @@ route.get("/start/:id", async (req, res) => {
                             sku: item.sku
                         }, transaction: t
                     });
-                    console.log(product)
                 } else {
                     product = await Products.create(item, { transaction: t });
                 }
@@ -429,9 +518,8 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err);
+            console.log(err.message);
             writeToLog(err.message);
-            break;
         }
     }
 
