@@ -296,6 +296,8 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }],
             });
 
+            console.log(thumbs);
+
             if (thumbs.uploadId) {
                 uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
             }
@@ -309,7 +311,6 @@ route.get("/deleteProducts/:id", async (req, res) => {
                     id: uploadIdsToDeleteonUpdate
                 }
             });
-
 
             try {
                 await seqConnection.transaction(async (t) => {
