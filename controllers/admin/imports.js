@@ -302,46 +302,51 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }
             });
 
-            await seqConnection.transaction(async (t) => {
-                await Products.destroy({
-                    where: {
-                        id: thumbs.id
-                    }, transaction: t
-                });
-                await ProductsAttributeValues.destroy({
-                    where: {
-                        productId: thumbs.id
-                    }, transaction: t
-                });
-                await ProductsCategories.destroy({
-                    where: {
-                        productId: thumbs.id
-                    }, transaction: t
-                });
-                await ProductsUploads.destroy({
-                    where: {
-                        productId: thumbs.id
-                    }, transaction: t
-                });
-                await ProductsFilterValues.destroy({
-                    where: {
-                        productId: thumbs.id
-                    }, transaction: t
+
+            try {
+                await seqConnection.transaction(async (t) => {
+                    await Products.destroy({
+                        where: {
+                            id: thumbs.id
+                        }, transaction: t
+                    });
+                    await ProductsAttributeValues.destroy({
+                        where: {
+                            productId: thumbs.id
+                        }, transaction: t
+                    });
+                    await ProductsCategories.destroy({
+                        where: {
+                            productId: thumbs.id
+                        }, transaction: t
+                    });
+                    await ProductsUploads.destroy({
+                        where: {
+                            productId: thumbs.id
+                        }, transaction: t
+                    });
+                    await ProductsFilterValues.destroy({
+                        where: {
+                            productId: thumbs.id
+                        }, transaction: t
+                    });
+
+                    await Uploads.destroy({
+                        where: {
+                            id: uploadIdsToDeleteonUpdate
+                        }, transaction: t
+                    });
                 });
 
-                await Uploads.destroy({
-                    where: {
-                        id: uploadIdsToDeleteonUpdate
-                    }, transaction: t
-                });
-            });
-
-            for (let up of previousImages) {
-                if (fs.existsSync(up.path)) {
-                    fs.unlinkSync(up.path);
-                    fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-100x100."));
-                    fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
+                for (let up of previousImages) {
+                    if (fs.existsSync(up.path)) {
+                        fs.unlinkSync(up.path);
+                        fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-100x100."));
+                        fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
+                    }
                 }
+            } catch (error) {
+                console.log(error)
             }
         }
 
@@ -352,7 +357,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
             status: 0
         }, {
             where: {
-                id: req.params.id
+                id: parseInt(req.params.id)
             }
         });
 
