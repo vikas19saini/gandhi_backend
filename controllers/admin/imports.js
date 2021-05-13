@@ -280,16 +280,23 @@ route.get("/deleteProducts/:id", async (req, res) => {
         if (productsList.errors.length > 0) {
             return res.status(500).json(productsList.errors);
         }
-        
+
         for (item of productsList.rows) {
             let uploadIdsToDeleteonUpdate = [];
             let thumbs = await Products.findOne({
                 where: { sku: item.sku },
-                //include: ["thumbnails", "featuredImage"],
+                include: [{
+                    model: Uploads,
+                    as: "thumbnails",
+                    required: false
+                }, {
+                    model: Uploads,
+                    as: "featuredImage",
+                    required: false
+                }],
             });
-            console.log(thumbs)
-            
-            /* if (thumbs.uploadId) {
+
+            if (thumbs.uploadId) {
                 uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
             }
 
@@ -348,10 +355,10 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 }
             } catch (error) {
                 console.log(error)
-            } */
+            }
         }
 
-        /* await Imports.update({
+        await Imports.update({
             success: 0,
             updated: 0,
             error: 0,
@@ -360,7 +367,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
             where: {
                 id: parseInt(req.params.id)
             }
-        }); */
+        });
 
         return res.json({ message: "Successfully deleted!" });
     } catch (err) {
