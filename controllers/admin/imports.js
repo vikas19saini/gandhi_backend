@@ -384,7 +384,7 @@ route.get("/start/:id", async (req, res) => {
                             sku: item.sku
                         }, transaction: t
                     });
-                    console.log(product);
+                    console.log(product)
                 } else {
                     product = await Products.create(item, { transaction: t });
                 }
@@ -429,8 +429,9 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err.message);
+            console.log(err);
             writeToLog(err.message);
+            break;
         }
     }
 
