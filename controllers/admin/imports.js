@@ -295,7 +295,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
                 rejectOnEmpty: true
             });
 
-            console.log(thumbs.id);
+            /* console.log(thumbs.id); */
 
             if (thumbs.uploadId) {
                 uploadIdsToDeleteonUpdate.push(thumbs.uploadId);
