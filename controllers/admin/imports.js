@@ -280,7 +280,7 @@ route.get("/deleteProducts/:id", async (req, res) => {
         if (productsList.errors.length > 0) {
             return res.status(500).json(productsList.errors);
         }
-
+        console.log(productsList.rows);
         for (item of productsList.rows) {
             let uploadIdsToDeleteonUpdate = [];
             let thumbs = await Products.findOne({
@@ -345,7 +345,6 @@ route.get("/deleteProducts/:id", async (req, res) => {
                         fs.unlinkSync(up.path.replace(/\.(?=[^.]*$)/, "-350x350."));
                     }
                 }
-                console.log("Deleted");
             } catch (error) {
                 console.log(error)
             }
