@@ -1,6 +1,7 @@
 const route = require("express").Router();
 const { Products, ProductsAttributeValues, ProductsCategories, ProductsUploads, ProductsFilterValues } = require("../../models/index");
 const seqConnection = require("../../models/connection");
+const { Op } = require("sequelize");
 
 route.get("/", async (req, res) => {
     let params = {
@@ -19,22 +20,29 @@ route.get("/", async (req, res) => {
     if (req.query.include) {
         params.include = req.query.include.split(",");
     }
-    params.where = {}
-    if (req.query.category_id) {
-        params.where.category_id = req.query.category_id;
+
+    if (req.query.searchBy) {
+        params.where = {
+            [Op.or]: [
+                {
+                    sku: {
+                        [Op.substring]: req.query.searchBy
+                    }
+                },
+                {
+                    name: {
+                        [Op.substring]: req.query.searchBy
+                    }
+                },
+                {
+                    tags: {
+                        [Op.substring]: req.query.searchBy
+                    }
+                }
+            ]
+        }
     }
-    if (req.query.sku) {
-        params.where.sku = req.query.sku;
-    }
-    if (req.query.name) {
-        params.where.name = req.query.name;
-    }
-    if (req.query.stock_status) {
-        params.where.stock_status = req.query.stock_status;
-    }
-    if (req.query.status) {
-        params.where.status = req.query.status;
-    }
+
     try {
         let products = await Products.findAndCountAll(params);
 
