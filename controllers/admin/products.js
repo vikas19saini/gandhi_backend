@@ -6,7 +6,11 @@ const { Op } = require("sequelize");
 route.get("/", async (req, res) => {
     let params = {
         order: [["id", "desc"]],
-        distinct: true
+        distinct: true,
+        attributes: {
+            exclude: ["longDescription", "metaDescription", "metaTitle", "minOrderQuantity", "maxOrderQuantity", "shippingHeight", "shippingLength", "shippingWeight",
+            "shortDescription", "step", "tags", "updatedAt", "lengthClassId", "taxClassId", "weightClassId" ]
+        }
     };
 
     if (req.query.limit) {
