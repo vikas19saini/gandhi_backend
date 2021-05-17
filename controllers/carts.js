@@ -454,9 +454,9 @@ async function parcelDetails(cart) {
             unit: "kg"
         },
         dimension: {
-            width: 40,
-            height: 40,
-            depth: 40,
+            width: 10,
+            height: 10,
+            depth: 10,
             unit: "cm"
         },
     }
@@ -553,7 +553,9 @@ async function calculateCart(cartId) {
 
     if (cart.addressId) {
         let shippingMethods = await __calulateShipping(cart.addressId, cart);
+        
         if (shippingMethods) {
+            shippingMethods.sort((a, b) => (a.cost > b.cost) ? 1 : ((b.cost > a.cost) ? -1 : 0))
             shippingMethod = shippingMethods[0].serviceName;
             eta = shippingMethods[0].eta;
             shippingCost = shippingMethods[0].cost;
