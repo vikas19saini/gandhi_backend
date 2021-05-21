@@ -240,7 +240,7 @@ route.get("/errorExcel/:id", async (req, res) => {
         try {
             await Products.findAll({
                 where: {
-                    sku: item.sku.replace(/ /g, "")
+                    sku: item.sku.trim()
                 },
                 rejectOnEmpty: true
             });
