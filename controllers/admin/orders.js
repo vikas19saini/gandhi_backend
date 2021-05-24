@@ -113,14 +113,12 @@ route.get("/:id", (req, res) => {
                 }
             },
             attributes: ["id", "slug", "shippingWeight"]
-        }]
+        }],
+        rejectOnEmpty: true
     }).then((data) => {
-        if (!data)
-            return res.status(404).json();
-
         return res.json(data);
     }).catch((err) => {
-        console.log(err);
+        console.log(err)
         return res.status(404).json(err);
     })
 });

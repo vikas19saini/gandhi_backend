@@ -144,6 +144,7 @@ async function saveOrder(req) {
         let newOrder = await Orders.create({
             userId: req.userId,
             referenceNo: (new Date()).getFullYear() + "/" + cartId,
+            shipBy: customerCart.eta || "",
             shippingAddressId: orderAddress.id,
             currencyCode: currency.code,
             currencyValue: currency.value,
@@ -154,7 +155,7 @@ async function saveOrder(req) {
             shippingMethod: customerCart.shippingMethod,
             total: customerCart.total,
             paymentMethod: req.body.paymentMethod,
-            status: 1 // In process
+            status: 0 // In process
         }, { transaction: t });
 
         for (let cp of customerCart.products) {
@@ -190,8 +191,8 @@ async function saveOrder(req) {
 
     await OrdersHistories.create({
         orderId: createOrder.id,
-        status: 1,
-        text: "Order received in process"
+        status: 0,
+        text: `Order placed and payment captured (Checkout #${cartId}). Email sent to customer`
     });
 
     return { status: true, order: createOrder };

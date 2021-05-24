@@ -13,6 +13,14 @@ Orders.init({
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    trackingNo: {
+        type: DataTypes.STRING(225),
+        allowNull: true
+    },
+    shipBy: {
+        type: DataTypes.STRING(225),
+        allowNull: true
+    },
     shippingAddressId: {
         type: DataTypes.BIGINT(20),
         allowNull: false
@@ -65,7 +73,7 @@ Orders.init({
         defaultValue: 0,
         validate: {
             isIn: {
-                args: [[0, 1, 2, 3, 4, 5, 6]], // 0 - Created, 1 - Processing, 2 - Shipped, 3 - delivered, 4 - Refunded, 5 - Cancelled, 6 - Payment Fail
+                args: [[0, 1, 2, 3, 4, 5, 6]], // 0 - Processing, 1 - Packed, 2 - Shipped, 3 - delivered, 4 - Refunded, 5 - Cancelled, 6 - Payment Fail
                 msg: "Invalid status"
             }
         }
@@ -74,9 +82,9 @@ Orders.init({
         type: new DataTypes.VIRTUAL,
         get: function () {
             if (!this.status) {
-                return "Created";
-            } else if (this.status === 1) {
                 return "Processing";
+            } else if (this.status === 1) {
+                return "Packed";
             } else if (this.status === 2) {
                 return "Shipped";
             } else if (this.status === 3) {
