@@ -9,7 +9,7 @@ Orders.init({
         allowNull: false,
         unique: true
     },
-    code: {
+    referenceNo: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
@@ -99,8 +99,8 @@ Orders.init({
             let shippingAddress = this.shippingAddress;
             let shippingAddressArr = [];
 
-            if (shippingAddress.name)
-                shippingAddressArr.push(shippingAddress.name);
+            /* if (shippingAddress.name)
+                shippingAddressArr.push(shippingAddress.name); */
 
             if (shippingAddress.address)
                 shippingAddressArr.push(shippingAddress.address);
@@ -117,8 +117,8 @@ Orders.init({
             if (shippingAddress.postcode)
                 shippingAddressArr.push(shippingAddress.postcode);
 
-            if (shippingAddress.phone)
-                shippingAddressArr.push(shippingAddress.phone);
+            /* if (shippingAddress.phone)
+                shippingAddressArr.push(shippingAddress.phone); */
 
             return shippingAddressArr.join(", ");
         }

@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Orders, OrdersProducts, OrdersCoupons, Coupons, Products, Addresses, OrderAddresses, OrdersHistories, Payments, Users } = require("../../models/index");
+const { Orders, OrdersProducts, OrdersCoupons, Coupons, Products, Addresses, OrderAddresses, OrdersHistories, Payments, Users, Uploads } = require("../../models/index");
 const { sendOrderEmail } = require("../emails/mailer");
 
 route.get("/", async (req, res) => {
@@ -102,13 +102,25 @@ route.patch("/updateStatus", async (req, res) => {
 
 route.get("/:id", (req, res) => {
     Orders.findByPk(req.params.id, {
-        include: ["coupons", "products", "shippingAddress", "coupons", "histories", "user"]
+        include: ["coupons", "shippingAddress", "coupons", "histories", "user", {
+            model: Products,
+            as: "products",
+            include: {
+                model: Uploads,
+                as: "featuredImage",
+                attributes: {
+                    exclude: ["name", "createdAt", "updatedAt"]
+                }
+            },
+            attributes: ["id", "slug", "shippingWeight"]
+        }]
     }).then((data) => {
         if (!data)
             return res.status(404).json();
 
         return res.json(data);
     }).catch((err) => {
+        console.log(err);
         return res.status(404).json(err);
     })
 });
