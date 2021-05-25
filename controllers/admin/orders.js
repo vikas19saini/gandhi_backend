@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Orders, OrdersProducts, OrdersCoupons, Coupons, Products, Addresses, OrderAddresses, OrdersHistories, Payments, Users, Uploads } = require("../../models/index");
+const { Orders, Coupons, Products, OrderAddresses, OrdersHistories, Payments, Users, Uploads } = require("../../models/index");
 const { sendOrderEmail } = require("../emails/mailer");
 
 route.get("/", async (req, res) => {
@@ -88,7 +88,7 @@ route.patch("/updateStatus", async (req, res) => {
         await OrdersHistories.create({
             orderId: req.body.orderId,
             status: req.body.status,
-            text: "Status updated by admin"
+            text: req.body.comment
         });
 
         sendOrderEmail(req.body.orderId); // Sending emails after updating order status
@@ -99,10 +99,19 @@ route.patch("/updateStatus", async (req, res) => {
     }
 });
 
+route.patch("/tracking", async (req, res) => {
+    try {
+        let tracking = req.body.trackingNo;
+        await Orders.update({ trackingNo: tracking }, { where: { id: req.body.orderId } });
+        return res.json({ message: "Successfully updated" });
+    } catch (err) {
+        return res.status(500).json({ message: "Couldn't update status" });
+    }
+});
 
 route.get("/:id", (req, res) => {
     Orders.findByPk(req.params.id, {
-        include: ["coupons", "shippingAddress", "coupons", "histories", "user", {
+        include: ["coupons", "shippingAddress", "coupons", "histories", "user", "payments", {
             model: Products,
             as: "products",
             include: {
