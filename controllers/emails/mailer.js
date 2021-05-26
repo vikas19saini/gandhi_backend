@@ -79,7 +79,7 @@ const sendOrderEmail = async (orderId) => {
     }
 
     // Sending email to customer
-    send(order.user.email, subject, "orderCustomer", {
+    send(order.user.email, subject, "orderCustomer2", {
         order: order,
         date: dateFormat(order.createdAt, "dddd, mmmm dS, yyyy"),
         heading: heading,
