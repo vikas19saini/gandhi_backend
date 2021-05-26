@@ -128,7 +128,7 @@ html
           .p10
             h5 Delivering at
             .mt
-              p(style='margin: 5px 0px;') #{order.comleteAddress}
+              p(style='margin: 5px 0px;') #{order.completeAddress}
               p(style='margin: 5px 0px;') Arriving Date: #{eta}
         .col
           .p10
@@ -152,7 +152,7 @@ html
                     p(style='margin: 0px;')
                       a(href='#' style='font-size: inherit;font-weight: normal;text-decoration: none;') #{product.ordersProducts.title}
                   td(valign='center' style='text-align: right;')
-                    p(style='margin: 0px;') #{product.ordersProducts.ragularPrice} x #{product.ordersProducts.quantity}
+                    p(style='margin: 0px;') #{#{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")}} x #{product.ordersProducts.quantity}
                   td(valign='center' style='text-align: right;')
                     p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
       .row.m0.mt.bg(style='display: block;')
