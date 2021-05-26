@@ -111,7 +111,7 @@ route.patch("/tracking", async (req, res) => {
 
 route.get("/:id", (req, res) => {
     Orders.findByPk(req.params.id, {
-        include: ["coupons", "shippingAddress", "coupons", "histories", "user", "payments", {
+        include: ["coupons", "shippingAddress", "coupons", "user", "payments", {
             model: Products,
             as: "products",
             include: {
@@ -122,7 +122,11 @@ route.get("/:id", (req, res) => {
                 }
             },
             attributes: ["id", "slug", "shippingWeight"]
-        }],
+        }, {
+                model: OrdersHistories,
+                as: "histories",
+                order: ["createdAt", "ASC"]
+            }],
         rejectOnEmpty: true
     }).then((data) => {
         return res.json(data);
