@@ -125,7 +125,7 @@ route.get("/:id", (req, res) => {
         }, {
                 model: OrdersHistories,
                 as: "histories",
-                order: ["createdAt", "ASC"]
+                order: ["createdAt", "DESC"]
             }],
         rejectOnEmpty: true
     }).then((data) => {
