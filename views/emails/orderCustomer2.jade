@@ -102,7 +102,7 @@ html
   body(style='background-color: #ccc; padding: 20px 5px;')
     .container
       .row.m0.bg(style='text-align: center;padding: 10px 0px;')
-        a.navbar-brand(href= process.env.CLIENT_URL style='width: 100%;')
+        a.navbar-brand(href= process.env.APP_URL style='width: 100%;')
           img(src=process.env.WEB_URL + '/images/logo.png' style='width:120px;')
       .row.m0.mt.p10.pt20(style='background-color: #af9032a3;display: block;')
         .col-md-12
@@ -150,7 +150,7 @@ html
                     img(style='width: 50px;border-radius: 3px;' src=product.featuredImage.miniThumbnailUrl)
                   td(valign='center')
                     p(style='margin: 0px;')
-                      a(href=process.env.CLIENT_URL + "/product/" + product.slug style='font-size: inherit;font-weight: normal;text-decoration: none;') #{product.ordersProducts.title}
+                      a(href=process.env.APP_URL + "/product/" + product.slug style='font-size: inherit;font-weight: normal;text-decoration: none;') #{product.ordersProducts.title}
                   td(valign='center' style='text-align: right;')
                     p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")} x #{product.ordersProducts.quantity}
                   td(valign='center' style='text-align: right;')
@@ -199,5 +199,5 @@ html
             .mt
               p(style='margin: 5px 0px;') For queries, or any assistance contact us at ken@gandhifabrics.com
       .row.m0.bg.mt(style='text-align: center;padding: 10px 0px;')
-        a.navbar-brand(href= process.env.CLIENT_URL style='width: 100%;')
+        a.navbar-brand(href= process.env.APP_URL style='width: 100%;')
           img(src=process.env.WEB_URL + '/images/logo.png' style='width:120px;')
