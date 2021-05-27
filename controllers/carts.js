@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Carts, Addresses, Products, Currencies, Coupons, Categories, Users, Orders } = require("../models/index");
+const { Carts, Addresses, Products, Currencies, Coupons, Categories, Users, Orders, Uploads } = require("../models/index");
 const axios = require("axios");
 const seqConnection = require("../models/connection");
 const CartProducts = require("../models/cart_products");
@@ -14,8 +14,15 @@ route.get("/:cartId", async (req, res) => {
             {
                 model: Products,
                 as: "products",
+                through: { attributes: { exclude: ["createdAt", "deletedAt", "updatedAt"] } },
                 attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
-                include: ["featuredImage"]
+                include: [{
+                    model: Uploads,
+                    as: "featuredImage",
+                    attributes: {
+                        exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+                    },
+                }]
             },
             {
                 model: Coupons,

@@ -7,10 +7,14 @@ route.get("/products/:slug", async (req, res) => {
 
         let assosiations = [{
             model: Uploads,
-            as: "featuredImage"
+            as: "featuredImage",
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+            },
         }, {
             model: FilterValues,
             as: "filters",
+            through: { attributes: ["filterValueId", "productId"] },
             attributes: ["id"]
         }];
 
@@ -24,6 +28,7 @@ route.get("/products/:slug", async (req, res) => {
                 as: "categories",
                 where: { slug: req.params.slug },
                 required: true,
+                through: { attributes: ["categoryId", "productId"] },
                 attributes: ["id"]
             });
         } else {
@@ -46,17 +51,17 @@ route.get("/products/:slug", async (req, res) => {
                             },
                             {
                                 tags: {
-                                    [Op.substring] : req.query.query
+                                    [Op.substring]: req.query.query
                                 }
                             },
                             {
                                 shortDescription: {
-                                    [Op.substring] : req.query.query
+                                    [Op.substring]: req.query.query
                                 }
                             },
                             {
                                 longDescription: {
-                                    [Op.substring] : req.query.query
+                                    [Op.substring]: req.query.query
                                 }
                             }
                         ]
@@ -71,7 +76,8 @@ route.get("/products/:slug", async (req, res) => {
             distinct: true,
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset),
-            include: assosiations
+            include: assosiations,
+            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus"]
         };
 
         if (req.query.start && req.query.end) {

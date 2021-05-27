@@ -1,6 +1,6 @@
 const route = require('express').Router();
 const { Sequelize } = require('sequelize');
-const { Products, Categories } = require("../models/index");
+const { Products, Categories, Uploads, Attributes, AttributeValues } = require("../models/index");
 
 route.get("/new", async (req, res) => {
     try {
@@ -8,8 +8,15 @@ route.get("/new", async (req, res) => {
             where: {
                 status: 1
             },
-            order: [["id", "desc"]],
-            include: ['featuredImage'],
+            order: Sequelize.literal('rand()'),
+            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId"],
+            include: [{
+                model: Uploads,
+                as: "featuredImage",
+                attributes: {
+                    exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+                },
+            }],
             limit: 30
         })
 
@@ -38,15 +45,24 @@ route.get("/relative/:pid", async (req, res) => {
                     id: productCategories
                 },
                 required: true,
+                through: { attributes: ["categoryId", "productId"] },
                 attributes: ['id']
-            }, "featuredImage"],
+            }, {
+                model: Uploads,
+                as: "featuredImage",
+                attributes: {
+                    exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+                },
+            }],
             distinct: true,
             limit: 21,
-            order: Sequelize.literal('rand()')
+            order: Sequelize.literal('rand()'),
+            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId"]
         })
 
         return res.json(products);
     } catch (err) {
+        console.log(err)
         return res.status(500).json(err);
     }
 })
@@ -56,7 +72,32 @@ route.get("/:slug", async (req, res) => {
         where: {
             slug: req.params.slug
         },
-        include: ["categories", "filters", "thumbnails", "attributes", "featuredImage"]
+        include: [{
+            model: Uploads,
+            as: "thumbnails",
+            through: { attributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] } },
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+            },
+        }, {
+            model: AttributeValues,
+            as: "attributes",
+            through: { attributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] } },
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "attributeId", "sortOrder"]
+            },
+        }, {
+            model: Uploads,
+            as: "featuredImage",
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+            },
+        }],
+        order: [["attributes", "sortOrder", "asc"]],
+        attributes: {
+            exclude: ["shippingWidth", "shippingWeight", "shippingLength", "shippingHeight", "lengthClassId", "createdAt", "deletedAt", "updatedAt",
+                "status", "tags", "taxClassId", "weightClassId"]
+        }
     });
 
     if (product) {
