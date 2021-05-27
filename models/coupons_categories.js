@@ -22,7 +22,7 @@ CouponsCategories.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'couponsCategories',
-    timestamps: false,
+    paranoid: true,
 });
 
 

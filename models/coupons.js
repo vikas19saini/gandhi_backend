@@ -68,7 +68,8 @@ Coupons.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "coupons"
+    modelName: "coupons",
+    paranoid: true
 });
 
 module.exports = Coupons;

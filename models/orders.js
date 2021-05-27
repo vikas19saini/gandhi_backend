@@ -135,6 +135,7 @@ Orders.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "orders",
+    paranoid: true
 });
 
 module.exports = Orders;

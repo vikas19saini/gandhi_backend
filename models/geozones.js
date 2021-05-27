@@ -14,7 +14,7 @@ GeoZones.init({
     }
 }, {
     sequelize: seqConnection,
-    timestamps: false,
+    paranoid: true,
     underscored: true,
     modelName: 'geozone'
 });

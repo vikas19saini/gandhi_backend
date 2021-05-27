@@ -149,7 +149,8 @@ Products.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "products"
+    modelName: "products",
+    paranoid: true
 });
 
 Products.getCurrentStockStatus = (product) => {

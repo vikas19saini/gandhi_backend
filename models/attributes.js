@@ -16,6 +16,7 @@ Attributes.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "attributes",
+    paranoid: true
 });
 
 module.exports = Attributes;

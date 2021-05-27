@@ -47,7 +47,8 @@ Addresses.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "addresses"
+    modelName: "addresses",
+    paranoid: true
 });
 
 module.exports = Addresses;

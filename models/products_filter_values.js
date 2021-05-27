@@ -22,7 +22,7 @@ ProductsFilterValues.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'productsFilterValues',
-    timestamps: false,
+    paranoid: true
 });
 
 module.exports = ProductsFilterValues;

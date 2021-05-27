@@ -23,7 +23,8 @@ Taxes.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "taxes"
+    modelName: "taxes",
+    paranoid: true
 });
 
 module.exports = Taxes;

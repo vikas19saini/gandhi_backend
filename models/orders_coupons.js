@@ -35,7 +35,7 @@ OrdersCoupons.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'ordersCoupons',
-    timestamps: false,
+    paranoid: true
 });
 
 

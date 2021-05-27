@@ -56,7 +56,8 @@ Uploads.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "uploads"
+    modelName: "uploads",
+    paranoid: true
 })
 
 module.exports = Uploads;

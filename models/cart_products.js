@@ -29,7 +29,8 @@ CartProducts.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "cartProducts",
-    tableName: "cart_products"
+    tableName: "cart_products",
+    paranoid: true
 });
 
 module.exports = CartProducts;

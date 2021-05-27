@@ -21,6 +21,7 @@ AttributeValues.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "attributeValues",
+    paranoid: true
 });
 
 module.exports = AttributeValues;

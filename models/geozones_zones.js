@@ -14,7 +14,7 @@ GeoZonesZones.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'geozonesZones',
-    timestamps: false,
+    paranoid: true
 })
 
 module.exports = GeoZonesZones;

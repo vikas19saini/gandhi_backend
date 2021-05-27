@@ -25,6 +25,7 @@ FilterValues.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "filterValues",
+    paranoid: true
 });
 
 module.exports = FilterValues;

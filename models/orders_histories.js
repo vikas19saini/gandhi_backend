@@ -47,7 +47,8 @@ OrdersHistories.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'ordersHistories',
-    tableName: "order_history"
+    tableName: "order_history",
+    paranoid: true
 });
 
 

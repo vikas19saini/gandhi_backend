@@ -16,6 +16,7 @@ Filters.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "filters",
+    paranoid: true
 });
 
 module.exports = Filters;

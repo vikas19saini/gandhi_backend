@@ -32,6 +32,7 @@ Payments.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "payments",
+    paranoid: true
 });
 
 module.exports = Payments;

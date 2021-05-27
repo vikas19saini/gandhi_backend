@@ -57,7 +57,8 @@ Carts.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "carts"
+    modelName: "carts",
+    paranoid: true
 });
 
 module.exports = Carts;

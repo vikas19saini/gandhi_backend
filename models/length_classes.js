@@ -23,7 +23,8 @@ LengthClasses.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "lengthClasses"
+    modelName: "lengthClasses",
+    paranoid: true
 });
 
 module.exports = LengthClasses;

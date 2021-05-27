@@ -18,7 +18,7 @@ TaxesClasses.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    timestamps: false,
+    paranoid: true,
     modelName: "taxesClasses"
 });
 

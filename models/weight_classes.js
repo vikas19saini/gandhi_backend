@@ -23,7 +23,8 @@ WeightClasses.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "weightClasses"
+    modelName: "weightClasses",
+    paranoid: true
 });
 
 module.exports = WeightClasses;

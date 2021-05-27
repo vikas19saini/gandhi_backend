@@ -22,7 +22,7 @@ CouponsUsers.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'couponsUsers',
-    timestamps: false,
+    paranoid: true
 });
 
 

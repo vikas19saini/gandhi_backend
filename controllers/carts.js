@@ -392,7 +392,7 @@ async function __calulateShipping(addressId, cart) {
     };
 
     let parcelData = await parcelDetails(cart)
-    requestBody.shipment.parcels = [parcelData];
+    requestBody.shipment.parcels = parcelData;
 
     let rates = [];
     let requestData = await axios.post(process.env.POSTMEN_URL, requestBody, {
@@ -440,50 +440,114 @@ async function __calulateShipping(addressId, cart) {
 
 async function parcelDetails(cart) {
 
-    let defaultCurrency = await Currencies.findOne({
-        where: {
-            value: 1
-        }
-    })
-
-    let parcel = {
-        description: "Gandhi Box",
-        box_type: "custom",
-        weight: {
-            value: 0,
-            unit: "kg"
-        },
-        dimension: {
-            width: 10,
-            height: 10,
-            depth: 10,
-            unit: "cm"
-        },
-    }
-
-    let products = [], totalWeighht = 0;
-    for (let cp of cart.products) {
-        totalWeighht += parseFloat((cp.shippingWeight * cp.cartProducts.quantity).toFixed(2));
-        products.push({
-            description: cp.name,
-            origin_country: process.env.STORE_COUNTRY,
-            quantity: 1,
-            price: {
-                amount: cp.salePrice ? cp.salePrice : cp.ragularPrice,
-                currency: defaultCurrency.code
-            },
-            weight: {
-                value: parseFloat((cp.shippingWeight).toFixed(2)),
-                unit: "kg"
-            },
-            sku: cp.sku
+    try {
+        let defaultCurrency = await Currencies.findOne({
+            where: {
+                value: 1
+            }
         });
+
+        // Packing box dimenssions
+        let boxes = [
+            {
+                maxWeight: 2.5,
+                height: 22,
+                width: 35,
+                depth: 14
+            },
+            {
+                maxWeight: 3,
+                height: 31,
+                width: 36,
+                depth: 13
+            },
+            {
+                maxWeight: 5,
+                height: 23,
+                width: 36,
+                depth: 15
+            },
+            {
+                maxWeight: 7,
+                height: 24,
+                width: 37,
+                depth: 16
+            },
+        ];
+
+        let products = [], totalWeight = 0, parcels = [];
+        let totalNoOfBoxes = boxes.length;
+
+        let currentIndex = 0;
+        let cartProductsLength = cart.products.length;
+
+        while (currentIndex < cartProductsLength) {
+            let currentWeight = parseFloat((cart.products[currentIndex].shippingWeight * cart.products[currentIndex].cartProducts.quantity).toFixed(2));
+            totalWeight += currentWeight;
+            if (totalWeight > boxes[totalNoOfBoxes - 1].maxWeight) {
+                totalWeight = parseFloat((totalWeight - currentWeight).toFixed(2));
+                parcels.push({
+                    description: `Custom Box Wight ${totalWeight} Kg`,
+                    box_type: "custom",
+                    weight: {
+                        unit: "kg",
+                        value: totalWeight
+                    },
+                    dimension: {
+                        unit: "cm",
+                        height: boxes[totalNoOfBoxes - 1].height,
+                        width: boxes[totalNoOfBoxes - 1].width,
+                        depth: boxes[totalNoOfBoxes - 1].depth
+                    },
+                    items: products
+                });
+                totalWeight = 0;
+                products = [];
+            } else {
+                products.push({
+                    description: cart.products[currentIndex].name,
+                    origin_country: process.env.STORE_COUNTRY,
+                    quantity: 1,
+                    price: {
+                        amount: cart.products[currentIndex].salePrice ? cart.products[currentIndex].salePrice : cart.products[currentIndex].ragularPrice,
+                        currency: defaultCurrency.code
+                    },
+                    weight: {
+                        value: parseFloat((cart.products[currentIndex].shippingWeight).toFixed(2)),
+                        unit: "kg"
+                    },
+                    sku: cart.products[currentIndex].sku
+                });
+
+                currentIndex++;
+            }
+        }
+
+        if (totalWeight > 0) {
+            let boxesInner = boxes.filter((box) => box.maxWeight > totalWeight);
+            parcels.push({
+                description: `Custom Box Wight ${totalWeight} Kg`,
+                box_type: "custom",
+                weight: {
+                    unit: "kg",
+                    value: totalWeight
+                },
+                dimension: {
+                    unit: "cm",
+                    height: boxesInner[0].height,
+                    width: boxesInner[0].width,
+                    depth: boxesInner[0].depth
+                },
+                items: products
+            });
+        }
+
+        console.log(parcels);
+
+        return parcels
+    } catch (err) {
+        console.log(err);
     }
-
-    parcel.weight.value = totalWeighht;
-    parcel.items = products;
-
-    return parcel;
 }
 
 async function releaseQuantity(req, res, next) {
@@ -553,7 +617,7 @@ async function calculateCart(cartId) {
 
     if (cart.addressId) {
         let shippingMethods = await __calulateShipping(cart.addressId, cart);
-        
+
         if (shippingMethods) {
             shippingMethods.sort((a, b) => (a.cost > b.cost) ? 1 : ((b.cost > a.cost) ? -1 : 0))
             shippingMethod = shippingMethods[0].serviceName;

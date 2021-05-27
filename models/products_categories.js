@@ -22,7 +22,7 @@ ProductsCategories.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'productsCategories',
-    timestamps: false,
+    paranoid: true
 });
 
 

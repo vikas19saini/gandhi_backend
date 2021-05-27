@@ -48,7 +48,8 @@ Categories.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "categories"
+    modelName: "categories",
+    paranoid: true
 });
 
 Categories.findBySlug = async (slug) => {

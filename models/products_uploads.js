@@ -22,7 +22,7 @@ ProductsUploads.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'productsUploads',
-    timestamps: false,
+    paranoid: true
 });
 
 module.exports = ProductsUploads;

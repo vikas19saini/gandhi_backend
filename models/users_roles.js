@@ -14,7 +14,7 @@ UsersRoles.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'usersRoles',
-    timestamps: false,
+    paranoid: false
 });
 
 module.exports = UsersRoles;

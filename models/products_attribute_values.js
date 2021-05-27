@@ -26,7 +26,7 @@ ProductsAttributeValues.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'productsAttributeValues',
-    timestamps: false
+    paranoid: true
 });
 
 module.exports = ProductsAttributeValues;

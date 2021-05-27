@@ -15,7 +15,8 @@ Wishlists.init({
 }, {
     sequelize: seqConnection,
     underscored: true,
-    modelName: "wishlist"
+    modelName: "wishlist",
+    paranoid: true
 });
 
 module.exports = Wishlists;

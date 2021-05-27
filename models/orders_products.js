@@ -47,6 +47,7 @@ OrdersProducts.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: 'ordersProducts',
+    paranoid: true
 });
 
 

@@ -45,6 +45,7 @@ Users.init({
     sequelize: startConnection,
     underscored: true,
     modelName: 'users',
+    paranoid: true
 });
 
 module.exports = Users;

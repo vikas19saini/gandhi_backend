@@ -15,7 +15,7 @@ Countries.init({
     }
 }, {
     underscored: true,
-    timestamps: false,
+    paranoid: true,
     sequelize: seqConnection,
     modelName: 'countries'
 });
