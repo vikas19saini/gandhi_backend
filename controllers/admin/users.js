@@ -38,6 +38,8 @@ users.get('/', (req, res) => {
         }
     }
 
+    params.order = [["id", "desc"]];
+
     const users = Users.findAndCountAll(params);
     users.then((response) => {
         res.send(response).json();

@@ -22,9 +22,9 @@ route.get("/", async (req, res) => {
 
     try {
         const attributes = await Attributes.findAndCountAll(params);
-        res.send(attributes).json();
+        return res.json(attributes);
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -37,9 +37,9 @@ route.post("/", async (req, res) => {
                 }
             ]
         });
-        res.send(attribute).json();
+        return res.json(attribute);
     } catch (error) {
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -86,10 +86,9 @@ route.patch("/:id", async (req, res) => {
             return { message: "updated" };
         });
 
-        res.send(transactionResult).json();
+        return res.json(transactionResult)
     } catch (error) {
-        console.log(error);
-        res.status(500).send(error).json();
+        return res.status(500).json(error);
     }
 });
 
@@ -98,9 +97,9 @@ route.get("/:id", async (req, res) => {
         const arrtibute = await Attributes.findByPk(req.params.id, {
             include: ["attributeValues"]
         });
-        res.send(arrtibute).json();
+        return res.json(arrtibute);
     } catch (error) {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     }
 })
 
@@ -116,9 +115,9 @@ route.delete("/:id", async (req, res) => {
                 attributeId: req.params.id
             }
         });
-        res.send({ message: "deleted" }).json();
+        return res.json({ message: "deleted" });
     } catch (error) {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     }
 });
 
