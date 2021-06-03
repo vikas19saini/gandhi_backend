@@ -6,7 +6,13 @@
 
 var app = require('../app');
 var debug = require('debug')('node-practice:server');
-var http = require('http');
+var http = "";
+
+if (process.env.HTTPS) {
+  http = require("https");
+} else {
+  http = require('http');
+}
 
 /**
  * Get port from environment and store in Express.
