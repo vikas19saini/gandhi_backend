@@ -20,7 +20,10 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = (process.env.HTTPS === "true") ? http.createServer(app) : http.createServer(app);
+var server = (process.env.HTTPS === "true") ? http.createServer({
+  key: fs.readFileSync("/var/www/ssl/gandhi.key"),
+  cert: fs.readFileSync("/var/www/ssl/STAR_gandhifabrics_com.crt")
+}, app) : http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
