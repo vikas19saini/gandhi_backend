@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('node-practice:server');
 var http = (process.env.HTTPS === "true") ? require('https') : require('http');
+var fs = require("fs");
 
 /**
  * Get port from environment and store in Express.
@@ -19,7 +20,10 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = (process.env.HTTPS === "true") ? http.createServer({
+  key: "/var/www/ssl/gandhi.key",
+  cert: "/var/www/ssl/STAR_gandhifabrics_com.crt"
+}, app) : http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
