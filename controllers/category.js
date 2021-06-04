@@ -77,7 +77,7 @@ route.get("/products/:slug", async (req, res) => {
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset),
             include: assosiations,
-            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
+            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
         };
 
         if (req.query.start && req.query.end) {

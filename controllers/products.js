@@ -9,7 +9,7 @@ route.get("/new", async (req, res) => {
                 status: 1
             },
             order: Sequelize.literal('rand()'),
-            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"],
+            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"],
             include: [{
                 model: Uploads,
                 as: "featuredImage",
@@ -57,7 +57,7 @@ route.get("/relative/:pid", async (req, res) => {
             distinct: true,
             limit: 21,
             order: Sequelize.literal('rand()'),
-            attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"]
+            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"]
         })
 
         return res.json(products);
