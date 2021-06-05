@@ -72,28 +72,6 @@ route.get("/:slug", async (req, res) => {
         where: {
             slug: req.params.slug
         },
-        include: [{
-            model: Uploads,
-            as: "thumbnails",
-            through: { attributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] } },
-            attributes: {
-                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
-            },
-        }, {
-            model: AttributeValues,
-            as: "attributes",
-            through: { attributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] } },
-            attributes: {
-                exclude: ["deletedAt", "createdAt", "updatedAt", "attributeId", "sortOrder"]
-            },
-        }, {
-            model: Uploads,
-            as: "featuredImage",
-            attributes: {
-                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
-            },
-        }],
-        order: [["attributes", "sortOrder", "asc"]],
         attributes: {
             exclude: ["shippingWidth", "shippingWeight", "shippingLength", "shippingHeight", "lengthClassId", "createdAt", "deletedAt", "updatedAt",
                 "status", "tags", "taxClassId", "weightClassId"]
@@ -101,6 +79,35 @@ route.get("/:slug", async (req, res) => {
     });
 
     if (product) {
+        let attributes = await product.getAttributes({
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "attributeId", "sortOrder"]
+            },
+            joinTableAttributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] },
+            order: [["sortOrder", "asc"]]
+        });
+
+        let featuredImage = await product.getFeaturedImage({
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+            },
+        });
+
+        let thumbnails = await product.getThumbnails({
+            joinTableAttributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] },
+            attributes: {
+                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+            },
+        });
+
+        product = {
+            ...product.toJSON(), ...{
+                attributes: attributes,
+                featuredImage: featuredImage,
+                thumbnails: thumbnails
+            }
+        }
+
         return res.json(product);
     } else {
         return res.status(404).json({ message: "No Data Found" });
