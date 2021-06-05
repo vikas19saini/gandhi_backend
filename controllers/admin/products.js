@@ -185,13 +185,20 @@ route.delete("/:id", async (req, res) => {
 route.get("/download/all", async (req, res) => {
     Products.findAll(
         {
-            include: ["featuredImage", "thumbnails", "filters", "attributes", "categories"],
+            /* include: ["featuredImage", "thumbnails", "filters", "attributes", "categories"], */
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset)
         }
-    ).then((products) => {
+    ).then(async (products) => {
         let rows = [];
         for (let product of products) {
+
+            let featuredImage = await product.getFeaturedImage();
+            let thumbnails = await product.getThumbnails();
+            let categories = await product.getCategories();
+            let filters = await product.getFilters();
+            let attributes = await product.getAttributes();
+
             let row = {
                 name: product.name,
                 sku: product.sku,
@@ -204,18 +211,18 @@ route.get("/download/all", async (req, res) => {
                 shippingWeight: product.shippingWeight,
                 status: product.status,
                 stockStatus: product.stockStatus,
-                image: product.featuredImage ? product.featuredImage.fullUrl : "NULL",
-                thumbnails: product.thumbnails.map(th => th.fullUrl).join("||"),
-                categories: product.categories.map(cat => cat.slug).join("||"),
-                filters: product.filters.map(fil => fil.name).join("||"),
-                attributes: product.attributes.map(att => att.name).join("||"),
-                attributeValues: product.attributes.map(att => att.productsAttributeValues.attributeDescription).join("||"),
+                image: featuredImage ? featuredImage.fullUrl : "NULL",
+                thumbnails: thumbnails.map(th => th.fullUrl).join("||"),
+                categories: categories.map(cat => cat.slug).join("||"),
+                filters: filters.map(fil => fil.name).join("||"),
+                attributes: attributes.map(att => att.name).join("||"),
+                attributeValues: attributes.map(att => att.productsAttributeValues.attributeDescription).join("||"),
             }
 
             rows.push(row);
         }
 
-        /* let xlsx = require('json-as-xlsx');
+        let xlsx = require('json-as-xlsx');
 
         var buffer = xlsx([
             { label: 'sku', value: 'sku' },
@@ -241,8 +248,8 @@ route.get("/download/all", async (req, res) => {
             extraLength: 10
         }, false);
 
-        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer); */
-        return res.json(rows);
+        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer);
+        return res.json({status: "Success"});
     }).catch(err => {
         console.log(err);
         return res.status(500).json({ status: "fail" });
