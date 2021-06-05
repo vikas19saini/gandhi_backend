@@ -215,7 +215,7 @@ route.get("/download/all", async (req, res) => {
             rows.push(row);
         }
 
-        let xlsx = require('json-as-xlsx');
+        /* let xlsx = require('json-as-xlsx');
 
         var buffer = xlsx([
             { label: 'sku', value: 'sku' },
@@ -241,8 +241,8 @@ route.get("/download/all", async (req, res) => {
             extraLength: 10
         }, false);
 
-        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer);
-        return res.json({ status: "success" });
+        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer); */
+        return res.json(rows);
     }).catch(err => {
         console.log(err);
         return res.status(500).json({ status: "fail" });
