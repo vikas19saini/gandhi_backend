@@ -185,7 +185,9 @@ route.delete("/:id", async (req, res) => {
 route.get("/download/all", async (req, res) => {
     Products.findAll(
         {
-            include: ["featuredImage", "thumbnails", "filters", "attributes", "categories"]
+            include: ["featuredImage", "thumbnails", "filters", "attributes", "categories"],
+            limit: parseInt(req.query.limit),
+            offset: parseInt(req.query.offset)
         }
     ).then((products) => {
         let rows = [];
@@ -211,8 +213,6 @@ route.get("/download/all", async (req, res) => {
             }
 
             rows.push(row);
-
-            console.log("Row added");
         }
 
         let xlsx = require('json-as-xlsx');
@@ -239,16 +239,14 @@ route.get("/download/all", async (req, res) => {
             sheetName: 'Sheet1',
             fileName: 'AllProducts',
             extraLength: 10
-        }, false)
+        }, false);
 
-
-        writeFileSync(`${process.env.IMPORT_DIR}/AllProducts.xlsx`, buffer);
-        console.log("All products file generated");        
+        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer);
+        return res.json({ status: "success" });
     }).catch(err => {
         console.log(err);
+        return res.status(500).json({ status: "fail" });
     })
-
-    return res.json({ status: "success" });
 })
 
 module.exports = route;
