@@ -211,6 +211,8 @@ route.get("/download/all", async (req, res) => {
             }
 
             rows.push(row);
+
+            console.log("Row added");
         }
 
         let xlsx = require('json-as-xlsx');
@@ -241,11 +243,12 @@ route.get("/download/all", async (req, res) => {
 
 
         writeFileSync(`${process.env.IMPORT_DIR}/AllProducts.xlsx`, buffer);
-        return res.json({ status: "success" });
+        console.log("All products file generated");        
     }).catch(err => {
         console.log(err);
-        return res.status(500).json({ status: "fail" });
     })
+
+    return res.json({ status: "success" });
 })
 
 module.exports = route;
