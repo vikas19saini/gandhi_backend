@@ -18,9 +18,9 @@ route.get("/products/:slug", async (req, res) => {
             attributes: ["id"]
         }];
 
-        let whereConditions = {
-            status: 1,
-        };
+        let whereConditions = [
+            { status: 1 }
+        ];
 
         if (req.params.slug !== "search") {
             assosiations.push({
@@ -32,62 +32,80 @@ route.get("/products/:slug", async (req, res) => {
                 attributes: ["id"]
             });
         } else {
-            whereConditions = {
-                [Op.and]: [
+            whereConditions.push({
+                [Op.or]: [
                     {
-                        status: 1
+                        name: {
+                            [Op.substring]: req.query.query
+                        }
                     },
                     {
-                        [Op.or]: [
-                            {
-                                name: {
-                                    [Op.substring]: req.query.query
-                                }
-                            },
-                            {
-                                sku: {
-                                    [Op.substring]: req.query.query
-                                }
-                            },
-                            {
-                                tags: {
-                                    [Op.substring]: req.query.query
-                                }
-                            },
-                            {
-                                shortDescription: {
-                                    [Op.substring]: req.query.query
-                                }
-                            },
-                            {
-                                longDescription: {
-                                    [Op.substring]: req.query.query
-                                }
-                            }
-                        ]
+                        sku: {
+                            [Op.substring]: req.query.query
+                        }
+                    },
+                    {
+                        tags: {
+                            [Op.substring]: req.query.query
+                        }
+                    },
+                    {
+                        shortDescription: {
+                            [Op.substring]: req.query.query
+                        }
+                    },
+                    {
+                        longDescription: {
+                            [Op.substring]: req.query.query
+                        }
                     }
-                ],
-            }
+                ]
+            });
         }
 
-        let queryParams = {
-            where: whereConditions,
-            order: [["id", "desc"]],
-            distinct: true,
-            limit: parseInt(req.query.limit),
-            offset: parseInt(req.query.offset),
-            include: assosiations,
-            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
-        };
-
-        if (req.query.start && req.query.end) {
-            queryParams.where = { ...queryParams.where, ...{ ragularPrice: { [Op.between]: [parseInt(req.query.start), parseInt(req.query.end)] } } };
+        let orderBy;
+        if (req.query.sort) {
+            if (req.query.sort === "ragularPriceAsc") {
+                orderBy = ["ragularPrice", "asc"];
+            } else if (req.query.sort === "ragularPriceDesc") {
+                orderBy = ["ragularPrice", "desc"];
+            } else if (req.query.sort === "createdAtDesc") {
+                orderBy = ["createdAt", "desc"];
+            }
+        } else {
+            orderBy = ["id", "desc"];
         }
 
         if (req.query.filters) {
             let filters = req.query.filters.split("|");
-            filters = filters.map(filter => parseInt(filter));
-            queryParams.include[1].where = { id: filters };
+            let filtersArray = [];
+            for (let f of filters) {
+                filtersArray.push({
+                    tags: {
+                        [Op.substring]: f
+                    }
+                })
+            }
+
+            whereConditions.push({
+                [Op.or]: filtersArray
+            });
+        }
+
+        let queryParams = {
+            where: {
+                [Op.and]: whereConditions
+            },
+            order: [orderBy],
+            distinct: true,
+            limit: parseInt(req.query.limit),
+            offset: parseInt(req.query.offset),
+            include: assosiations,
+            attributes: ["id", "createdAt", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
+        };
+
+        if (req.query.start && req.query.end) {
+            queryParams.where = { ...queryParams.where, ...{ ragularPrice: { [Op.between]: [parseInt(req.query.start), parseInt(req.query.end)] } } };
         }
 
         let products = await Products.findAndCountAll(queryParams);

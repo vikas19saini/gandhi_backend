@@ -5,12 +5,14 @@ route.get("/config", async (req, res) => {
         name: "paypal",
         mode: process.env.PAYPAL_MODE,
         key: process.env.PAYPAL_KEY,
-        title: "Paypal Express Checkout"
+        title: "Paypal Express Checkout",
+        currencies: ["usd", "thb", "myr"]
     }, {
         name: "bank",
         url: process.env.BANK_PAYMENT_URL,
         merchantId: process.env.BANK_PAYMENT_ID,
-        title: "Pay by credit/debit card"
+        title: "Pay by credit/debit card",
+        currencies: ["usd"]
     }];
 
     return res.json(payments);

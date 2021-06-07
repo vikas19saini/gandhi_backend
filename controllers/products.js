@@ -1,6 +1,6 @@
 const route = require('express').Router();
 const { Sequelize } = require('sequelize');
-const { Products, Categories, Uploads, Attributes, AttributeValues } = require("../models/index");
+const { Products, Categories, Uploads } = require("../models/index");
 
 route.get("/new", async (req, res) => {
     try {

@@ -338,6 +338,7 @@ route.post("/removeCoupon", [isAuthenticated], async (req, res) => {
 });
 
 async function __calulateShipping(addressId, cart) {
+    
     let address = await Addresses.findOne({
         where: {
             id: parseInt(addressId)
@@ -402,13 +403,14 @@ async function __calulateShipping(addressId, cart) {
     requestBody.shipment.parcels = parcelData;
 
     let rates = [];
+    
     let requestData = await axios.post(process.env.POSTMEN_URL, requestBody, {
         headers: {
             'content-type': 'application/json',
             'postmen-api-key': process.env.POSTMEN_KEY
         }
     });
-
+    
     let body = requestData.data;
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
@@ -446,7 +448,7 @@ async function __calulateShipping(addressId, cart) {
 }
 
 async function parcelDetails(cart) {
-
+    
     try {
         let defaultCurrency = await Currencies.findOne({
             where: {
@@ -578,9 +580,6 @@ async function parcelDetails(cart) {
                 items: products
             });
         }
-
-        console.log(parcels);
-
         return parcels
     } catch (err) {
         console.log(err);
