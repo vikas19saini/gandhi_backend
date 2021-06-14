@@ -95,7 +95,7 @@ const schema = {
         type: Number
     }, image: {
         prop: 'image',
-        /* required: true, */
+        required: true,
         type: String
     }, thumbnails: {
         prop: 'thumbnails',
@@ -527,7 +527,7 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err.message);
+            console.log(err);
             writeToLog(err.message);
         }
     }
@@ -620,7 +620,6 @@ async function mapAttributes(attributes, attributeValues) {
             }
         }
     } catch (error) {
-        console.log(error);
         writeToLog(`*Exception - attribute name & their values are invalid`);
     }
 
