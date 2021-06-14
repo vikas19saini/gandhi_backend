@@ -95,7 +95,7 @@ const schema = {
         type: Number
     }, image: {
         prop: 'image',
-        required: true,
+        /* required: true, */
         type: String
     }, thumbnails: {
         prop: 'thumbnails',
