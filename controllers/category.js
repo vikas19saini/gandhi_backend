@@ -1,6 +1,6 @@
 const route = require('express').Router();
 const { Op } = require('sequelize');
-const { Categories, Uploads, Products, FilterValues } = require("../models/index");
+const { Categories, Uploads, Products } = require("../models/index");
 
 route.get("/products/:slug", async (req, res) => {
     try {
@@ -11,11 +11,6 @@ route.get("/products/:slug", async (req, res) => {
             attributes: {
                 exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
             },
-        }, {
-            model: FilterValues,
-            as: "filters",
-            through: { attributes: ["filterValueId", "productId"] },
-            attributes: ["id"]
         }];
 
         let whereConditions = [
