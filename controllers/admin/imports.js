@@ -42,9 +42,6 @@ const schema = {
     }, attributeValues: {
         prop: 'attributeValues',
         type: String
-    }, filters: {
-        prop: 'filters',
-        type: String
     }, ragularPrice: {
         prop: 'ragularPrice',
         type: Number,
@@ -408,11 +405,11 @@ route.get("/start/:id", async (req, res) => {
                 item.attributes = attributes;
             }
 
-            if (item.hasOwnProperty('filters')) {
+            /* if (item.hasOwnProperty('filters')) {
                 writeToLog("Fetching filters & their values");
                 let filterIds = await mapFilters(item.filters);
                 item.filters = filterIds;
-            }
+            } */
 
             if (item.hasOwnProperty('tax')) {
                 writeToLog("Fetching tax class & their values");
@@ -471,10 +468,10 @@ route.get("/start/:id", async (req, res) => {
 
             if (req.query.requestType === "create") {
                 item.slug = item.name + "-" + item.sku;
-                item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
+                item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "").replace(/[^a-zA-Z ]/g, "");
             }
 
-            const createProduct = await seqConnection.transaction(async (t) => {
+            await seqConnection.transaction(async (t) => {
                 let product = null;
                 if ((req.query.requestType === "update") && (item.sku)) {
                     await Products.update(item, { where: { sku: item.sku }, transaction: t });
@@ -494,12 +491,12 @@ route.get("/start/:id", async (req, res) => {
                     await product.addCategories(item.categories, { transaction: t })
                 }
 
-                if (item.hasOwnProperty("filters")) {
+                /* if (item.hasOwnProperty("filters")) {
                     if (req.query.requestType === "update") {
                         await ProductsFilterValues.destroy({ where: { productId: product.id }, transaction: t });
                     }
                     await product.addFilters(item.filters, { transaction: t });
-                }
+                } */
 
                 if (item.hasOwnProperty("thumbnails")) {
                     if (req.query.requestType === "update") {
@@ -626,7 +623,7 @@ async function mapAttributes(attributes, attributeValues) {
     return attributeObjs;
 }
 
-async function mapFilters(filters) {
+/* async function mapFilters(filters) {
     filters = filters.toString()
     filters = filters.indexOf("||") > -1 ? filters.split("||") : [filters.trim()]
     let filterIds = []
@@ -645,7 +642,7 @@ async function mapFilters(filters) {
     }
 
     return filterIds;
-}
+} */
 
 async function getTaxClass(className) {
     let taxClass = await TaxClasses.findOne({

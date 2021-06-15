@@ -1,5 +1,14 @@
-extends layout
-
-block content
-  h1= title
-  p Welcome to #{title}
+form(name='payFormCcard' method='post' action='https://psipay.bangkokbank.com/b2c/eng/payment/payForm.jsp')
+    input(type='hidden' name='merchantId' value='9987')
+    input(type='hidden' name='amount' value='142.80')
+    input(type='hidden' name='orderRef' value='151')
+    input(type='hidden' name='currCode' value='840')
+    input(type='hidden' name='successUrl' value='http://localhost:3010/payments')
+    input(type='hidden' name='failUrl' value='http://localhost:3010/payments')
+    input(type='hidden' name='cancelUrl' value='http://localhost:3010/payments')
+    input(type='hidden' name='payType' value='N')
+    input(type='hidden' name='payMethod' value='ALL')
+    input(type='hidden' name='lang' value='E')
+    input(type='hidden' name='remark' value='-')
+    input(type='hidden' name='redirect' value='30')
+    input.bag_bttn.check_out_bttn(type='submit' value='Pay Now')

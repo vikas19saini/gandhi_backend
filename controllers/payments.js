@@ -18,6 +18,11 @@ route.get("/config", async (req, res) => {
     return res.json(payments);
 });
 
-
+route.get("/", async (req, res) => {
+    res.render("index");
+});
+route.post("/", async (req, res) => {
+    console.log(req.body);
+});
 
 module.exports = route;

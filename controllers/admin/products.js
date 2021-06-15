@@ -62,7 +62,6 @@ route.post("/", async (req, res) => {
         const createProduct = await seqConnection.transaction(async (t) => {
             let product = await Products.create(req.body, { transaction: t });
             await product.addCategories(req.body.categories, { transaction: t });
-            await product.addFilters(req.body.filters, { transaction: t });
             await product.addThumbnails(req.body.thumbnails, { transaction: t });
             for (attr of req.body.attributes) {
                 await product.addAttributes([attr.attributeValueId], { through: { attributeDescription: attr.attributeDescription } }, { transaction: t });
@@ -85,7 +84,6 @@ route.patch("/:id", async (req, res) => {
                 }
             });
             req.body.categories ? await product.setCategories(req.body.categories, { transaction: t }) : await product.setCategories([], { transaction: t });
-            req.body.filters ? await product.setFilters(req.body.filters, { transaction: t }) : await product.setFilters([], { transaction: t });
             req.body.thumbnails ? await product.setThumbnails(req.body.thumbnails, { transaction: t }) : await product.setThumbnails([], { transaction: t });
 
             const productsAttributes = await ProductsAttributeValues.findAll({
@@ -138,7 +136,7 @@ route.patch("/status/:id", (req, res) => {
 
 route.get("/:id", (req, res) => {
     Products.findByPk(req.params.id, {
-        include: ["categories", "filters", "thumbnails", "attributes", "featuredImage", "taxClass", "lengthClass", "weightClass"]
+        include: ["categories", "thumbnails", "attributes", "featuredImage", "taxClass", "lengthClass", "weightClass"]
     }).then((data) => {
         return res.json(data);
     }).catch((err) => {
@@ -185,7 +183,6 @@ route.delete("/:id", async (req, res) => {
 route.get("/download/all", async (req, res) => {
     Products.findAll(
         {
-            /* include: ["featuredImage", "thumbnails", "filters", "attributes", "categories"], */
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset)
         }
@@ -196,7 +193,6 @@ route.get("/download/all", async (req, res) => {
             let featuredImage = await product.getFeaturedImage();
             let thumbnails = await product.getThumbnails();
             let categories = await product.getCategories();
-            let filters = await product.getFilters();
             let attributes = await product.getAttributes();
 
             let row = {
@@ -214,7 +210,6 @@ route.get("/download/all", async (req, res) => {
                 image: featuredImage ? featuredImage.fullUrl : "NULL",
                 thumbnails: thumbnails.map(th => th.fullUrl).join("||"),
                 categories: categories.map(cat => cat.slug).join("||"),
-                filters: filters.map(fil => fil.name).join("||"),
                 attributes: attributes.map(att => att.name).join("||"),
                 attributeValues: attributes.map(att => att.productsAttributeValues.attributeDescription).join("||"),
             }
@@ -233,7 +228,6 @@ route.get("/download/all", async (req, res) => {
             { label: 'categories', value: 'categories' },
             { label: 'attributes', value: 'attributes' },
             { label: 'attributeValues', value: 'attributeValues' },
-            { label: 'filters', value: 'filters' },
             { label: 'ragularPrice', value: 'ragularPrice' },
             { label: 'manageStock', value: 'manageStock' },
             { label: 'quantity', value: 'quantity' },

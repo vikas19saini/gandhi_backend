@@ -80,8 +80,8 @@ Categories.belongsToMany(Products, { through: ProductsCategories, as: "products"
 Products.belongsToMany(Uploads, { through: ProductsUploads, as: "thumbnails", foreignKey: "productId", otherKey: "uploadId" });
 Uploads.belongsToMany(Products, { through: ProductsUploads, as: "products", foreignKey: "uploadId", otherKey: "productId" });
 
-Products.belongsToMany(FilterValues, { through: ProductsFilterValues, as: "filters", foreignKey: "productId", otherKey: "filterValueId" });
-FilterValues.belongsToMany(Products, { through: ProductsFilterValues, as: "products", foreignKey: "filterValueId", otherKey: "productId" });
+/* Products.belongsToMany(FilterValues, { through: ProductsFilterValues, as: "filters", foreignKey: "productId", otherKey: "filterValueId" });
+FilterValues.belongsToMany(Products, { through: ProductsFilterValues, as: "products", foreignKey: "filterValueId", otherKey: "productId" }); */
 
 Products.belongsToMany(AttributeValues, { through: ProductsAttributeValues, as: "attributes", foreignKey: "productId", otherKey: "attributeValueId" });
 AttributeValues.belongsToMany(Products, { through: ProductsAttributeValues, as: "products", foreignKey: "attributeValueId", otherKey: "productId" })
