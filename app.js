@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+var compression = require('compression')
 require('dotenv').config({ path: __dirname + '/.env' });
 global.appRootDir = path.join(__dirname, 'views')
 
@@ -24,6 +25,7 @@ const validatingCors = function (req, callback) {
 
 // Enabling cors
 app.use(cors(validatingCors));
+app.use(compression());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

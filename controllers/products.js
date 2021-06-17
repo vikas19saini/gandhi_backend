@@ -27,17 +27,15 @@ route.get("/new", async (req, res) => {
 })
 
 route.get("/relative/:pid", async (req, res) => {
-    try {
-        let product = await Products.findByPk(req.params.pid, {
-            include: ["categories"],
-            attributes: ['id']
-        })
-
+    Products.findByPk(req.params.pid, {
+        include: ["categories"],
+        attributes: ['id']
+    }).then((product) => {
         let productCategories = product.categories.map(c => {
             return c.id
-        })
+        });
 
-        let products = await Products.findAll({
+        return Products.findAll({
             include: [{
                 model: Categories,
                 as: "categories",
@@ -56,15 +54,14 @@ route.get("/relative/:pid", async (req, res) => {
             }],
             distinct: true,
             limit: 21,
-            order: Sequelize.literal('rand()'),
+            order: [["id", "asc"]],
             attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"]
         })
-
+    }).then((products) => {
         return res.json(products);
-    } catch (err) {
-        console.log(err)
+    }).catch((err) => {
         return res.status(500).json(err);
-    }
+    });
 })
 
 route.get("/:slug", async (req, res) => {
