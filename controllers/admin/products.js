@@ -48,13 +48,26 @@ route.get("/", async (req, res) => {
         }
     }
 
-    try {
+    let totalRows = 0;
+    Products.count(params).then((total) => {
+        totalRows = total;
+        return Products.findAll(params);
+    }).then((products) => {
+        return res.json({
+            count: totalRows,
+            rows: products
+        })
+    }).catch((err) => {
+        return res.status(400).json(err);
+    })
+
+    /* try {
         let products = await Products.findAndCountAll(params);
 
         return res.json(products);
     } catch (err) {
         return res.status(400).json(err);
-    }
+    } */
 });
 
 route.post("/", async (req, res) => {
@@ -244,7 +257,7 @@ route.get("/download/all", async (req, res) => {
         }, false);
 
         writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer);
-        return res.json({status: "Success"});
+        return res.json({ status: "Success" });
     }).catch(err => {
         console.log(err);
         return res.status(500).json({ status: "fail" });
