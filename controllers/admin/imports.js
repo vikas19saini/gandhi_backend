@@ -14,7 +14,7 @@ const seqConnection = require("../../models/connection");
 const allowedFileFormats = ['png', 'jpg', 'jpeg'];
 var xlsx = require('json-as-xlsx');
 
-const schema = {
+const schemaUpdate = {
     sku: {
         prop: 'sku',
         type: String,
@@ -22,7 +22,6 @@ const schema = {
     }, name: {
         prop: 'name',
         type: String,
-        /* required: true */
     }, shortDescription: {
         prop: 'shortDescription',
         type: String
@@ -34,7 +33,6 @@ const schema = {
         type: String
     }, categories: {
         prop: 'categories',
-        /* required: true, */
         type: String
     }, attributes: {
         prop: 'attributes',
@@ -45,7 +43,6 @@ const schema = {
     }, ragularPrice: {
         prop: 'ragularPrice',
         type: Number,
-        /* required: true */
     }, salePrice: {
         prop: 'salePrice',
         type: Number
@@ -83,7 +80,6 @@ const schema = {
     }, shippingWeight: {
         prop: 'shippingWeight',
         type: Number,
-        /* required: true */
     }, lengthClass: {
         prop: 'lengthClass',
         type: String
@@ -92,7 +88,106 @@ const schema = {
         type: Number
     }, image: {
         prop: 'image',
-        /* required: true, */
+        type: String
+    }, thumbnails: {
+        prop: 'thumbnails',
+        type: String
+    }, status: {
+        prop: 'status',
+        type: (value) => {
+            if (value.trim().toLocaleLowerCase() === 'live')
+                return 1
+            return 0
+        }
+    }, stockStatus: {
+        prop: 'stockStatus',
+        type: (value) => {
+            if (value.trim().toLocaleLowerCase() === 'in')
+                return 1
+            return 0
+        }
+    }
+};
+
+const schema = {
+    sku: {
+        prop: 'sku',
+        type: String,
+        required: true
+    }, name: {
+        prop: 'name',
+        type: String,
+        required: true
+    }, shortDescription: {
+        prop: 'shortDescription',
+        type: String
+    }, longDescription: {
+        prop: 'longDescription',
+        type: String
+    }, tags: {
+        prop: 'tags',
+        type: String
+    }, categories: {
+        prop: 'categories',
+        required: true,
+        type: String
+    }, attributes: {
+        prop: 'attributes',
+        type: String
+    }, attributeValues: {
+        prop: 'attributeValues',
+        type: String
+    }, ragularPrice: {
+        prop: 'ragularPrice',
+        type: Number,
+        required: true
+    }, salePrice: {
+        prop: 'salePrice',
+        type: Number
+    }, tax: {
+        prop: 'tax',
+        type: String
+    }, quantity: {
+        prop: 'quantity',
+        type: String
+    }, manageStock: {
+        prop: 'manageStock',
+        type: (value) => {
+            if (value.toLocaleLowerCase() === "yes")
+                return 1
+            return 0
+        }
+    }, minOrderQuantity: {
+        prop: 'minOrderQuantity',
+        type: Number,
+    }, maxOrderQuantity: {
+        prop: 'maxOrderQuantity',
+        type: Number
+    }, step: {
+        prop: 'step',
+        type: String
+    }, shippingLength: {
+        prop: 'shippingLength',
+        type: Number
+    }, shippingWidth: {
+        prop: 'shippingWidth',
+        type: Number
+    }, shippingHeight: {
+        prop: 'shippingHeight',
+        type: Number
+    }, shippingWeight: {
+        prop: 'shippingWeight',
+        type: Number,
+        required: true
+    }, lengthClass: {
+        prop: 'lengthClass',
+        type: String
+    }, weightClass: {
+        prop: 'weightClass',
+        type: Number
+    }, image: {
+        prop: 'image',
+        required: true,
         type: String
     }, thumbnails: {
         prop: 'thumbnails',
@@ -371,7 +466,12 @@ route.get("/deleteProducts/:id", async (req, res) => {
 route.get("/start/:id", async (req, res) => {
 
     const im = await Imports.findByPk(req.params.id);
-    const productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
+    let productsList;
+    if (req.query.requestType === "update") {
+        productsList = await readXlsxFile(im.path + "/products.xlsx", { schemaUpdate });
+    } else {
+        productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
+    }
 
     if (productsList.errors.length > 0) {
         return res.status(500).json(productsList.errors);
