@@ -22,7 +22,7 @@ const schema = {
     }, name: {
         prop: 'name',
         type: String,
-        required: true
+        /* required: true */
     }, shortDescription: {
         prop: 'shortDescription',
         type: String
@@ -34,7 +34,7 @@ const schema = {
         type: String
     }, categories: {
         prop: 'categories',
-        required: true,
+        /* required: true, */
         type: String
     }, attributes: {
         prop: 'attributes',
@@ -45,7 +45,7 @@ const schema = {
     }, ragularPrice: {
         prop: 'ragularPrice',
         type: Number,
-        required: true
+        /* required: true */
     }, salePrice: {
         prop: 'salePrice',
         type: Number
@@ -83,7 +83,7 @@ const schema = {
     }, shippingWeight: {
         prop: 'shippingWeight',
         type: Number,
-        required: true
+        /* required: true */
     }, lengthClass: {
         prop: 'lengthClass',
         type: String
