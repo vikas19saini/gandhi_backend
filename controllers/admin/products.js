@@ -181,11 +181,6 @@ route.delete("/:id", async (req, res) => {
                     productId: req.params.id
                 }, transaction: t
             });
-            await ProductsFilterValues.destroy({
-                where: {
-                    productId: req.params.id
-                }, transaction: t
-            });
             return { message: "Successfully deleted" };
         });
         return res.json(productTransaction);
