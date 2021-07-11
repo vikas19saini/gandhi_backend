@@ -473,7 +473,7 @@ route.get("/start/:id", async (req, res) => {
         productsList = await readXlsxFile(im.path + "/products.xlsx", { schema });
     }
 
-    if (productsList.errors.length > 0) {
+    if (productsList.errors && productsList.errors.length > 0) {
         return res.status(500).json(productsList.errors);
     }
 
