@@ -475,8 +475,8 @@ route.get("/start/:id", async (req, res) => {
             }
 
             if (req.query.requestType === "create") {
-                item.slug = item.name + "-" + item.sku;
-                item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "").replace(/[^a-zA-Z ]/g, "");
+                item.slug = item.name + "-" + item.sku + "";
+                item.slug = item.slug.toLocaleLowerCase().replace(/ /g, "");
             }
 
             await seqConnection.transaction(async (t) => {
@@ -532,7 +532,7 @@ route.get("/start/:id", async (req, res) => {
 
         } catch (err) {
             errors++;
-            console.log(err);
+            /* console.log(err); */
             writeToLog(err.message);
         }
     }
