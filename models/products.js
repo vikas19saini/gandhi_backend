@@ -84,7 +84,7 @@ Products.init({
     },
     step: {
         type: DataTypes.DOUBLE,
-        defaultValue: 1
+        defaultValue: 0.1
     },
     shippingLength: {
         type: DataTypes.FLOAT,
