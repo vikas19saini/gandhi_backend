@@ -41,7 +41,7 @@ OrdersHistories.init({
     },
     text: {
         type: DataTypes.STRING(500),
-        allowNull: false
+        allowNull: false,
     }
 }, {
     sequelize: seqConnection,

@@ -1,5 +1,11 @@
 const { DataTypes, Model } = require("sequelize");
+const { sendOrderEmail } = require("../mailers/mailer");
+const Carts = require("./carts");
+const CartProducts = require("./cart_products");
 const seqConnection = require("./connection");
+const OrdersHistories = require("./orders_histories");
+const Products = require("./products");
+const Uploads = require("./uploads");
 
 class Orders extends Model { }
 
@@ -137,5 +143,84 @@ Orders.init({
     modelName: "orders",
     paranoid: true
 });
+
+Orders.afterCreate(async (orderInstance, options) => {
+    try {
+        let order = await getOrder(orderInstance.id);
+        sendOrderEmail(order);
+        let cartId = order.referenceNo.split("/")[1];
+
+        // Saving order history
+        await saveOrderHistory(order);
+
+        // Deleting rows from cart table
+        await Carts.destroy({ where: { id: parseInt(cartId) } });
+        await CartProducts.destroy({ where: { cartId: parseInt(cartId) } });
+
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+Orders.beforeUpdate(async (order) => {
+    if (order.status === order.previous('status')) {
+        throw new Error("Same status can't update");
+    }
+});
+
+Orders.afterUpdate(async (orderInstance) => {
+    let order = await getOrder(orderInstance.id);
+    await saveOrderHistory(orderInstance);
+    sendOrderEmail(order);
+
+    if (order.status === 4 || order.status === 5) {
+        await releaseQuantity(order);
+    }
+});
+
+async function getOrder(orderId) {
+    return await Orders.findByPk(orderId, {
+        include: [{
+            model: Products,
+            as: "products",
+            include: [
+                {
+                    model: Uploads,
+                    as: "featuredImage"
+                }
+            ]
+        }, "shippingAddress", "user"]
+    });
+}
+
+async function saveOrderHistory(order) {
+    let text = "";
+    if (order.status === 0) {
+        text = "Order placed and payment captured. Email sent to customer";
+    } else if (order.status === 1) {
+        text = "Order packed, all items marked as fullfilled, email sent to customer.";
+    } else if (order.status === 2) {
+        text = "Order shipped, email sent to customer.";
+    } else if (order.status === 3) {
+        text = "Order successfully delivered, email sent to customer.";
+    } else if (order.status === 4) {
+        text = "Refund generated to the customer, email sent to customer.";
+    } else if (order.status === 5) {
+        text = "Order cancelled, email sent to customer.";
+    } else if (order.status === 6) {
+        text = "Payment fail or payment declined by the payment method.";
+    }
+    await OrdersHistories.create({
+        orderId: order.id,
+        status: order.status,
+        text: text
+    });
+}
+
+async function releaseQuantity(order) {
+    for(let product of order.products){
+        product.releaseQuantity();
+    }
+}
 
 module.exports = Orders;

@@ -1,6 +1,7 @@
 const { DataTypes, Model } = require("sequelize");
 const passwordHash = require('password-hash');
 const startConnection = require("./connection");
+const { sendOtp } = require("../mailers/mailer");
 
 class Users extends Model { }
 
@@ -46,6 +47,10 @@ Users.init({
     underscored: true,
     modelName: 'users',
     paranoid: true
+});
+
+Users.afterCreate(async (user, options) => {
+    sendOtp(user); // Sending Otp
 });
 
 module.exports = Users;

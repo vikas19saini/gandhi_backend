@@ -1,7 +1,6 @@
 const route = require("express").Router();
 const seqConnection = require("../models/connection");
-const { Currencies, Addresses, Carts, Orders, OrderAddresses, Products, Payments, OrdersHistories, Coupons } = require("../models/index");
-const { sendOrderEmail } = require("../controllers/emails/mailer");
+const { Currencies, Addresses, Carts, Orders, OrderAddresses, Products, Payments, OrdersHistories, Coupons, OrdersProducts, OrdersCoupons } = require("../models/index");
 const CartProducts = require("../models/cart_products");
 const { isAuthenticated } = require("../middleware/auth");
 
@@ -87,7 +86,6 @@ route.post("/", [isAuthenticated], async (req, res) => {
         if (!createOrder.status)
             return res.status(422).json(createOrder);
 
-        await sendOrderEmail(createOrder.order.id);
         return res.json({ message: "Order saved", order: createOrder.order });
     } catch (error) {
         console.log(error)
@@ -128,9 +126,32 @@ async function saveOrder(req) {
 
     let shippingAddress = customerCart.address;
 
-    let createOrder = await seqConnection.transaction(async (t) => {
-
-        let orderAddress = await OrderAddresses.create({
+    let orderData = {
+        userId: req.userId,
+        referenceNo: (new Date()).getFullYear() + "/" + cartId,
+        shipBy: customerCart.eta || "",
+        currencyCode: currency.code,
+        currencyValue: currency.value,
+        orderValue: customerCart.cartValue,
+        discount: customerCart.discount || 0,
+        couponDiscount: customerCart.couponDiscount || 0,
+        shippingCharges: customerCart.shippingCost || 0,
+        shippingMethod: customerCart.shippingMethod,
+        total: customerCart.total,
+        paymentMethod: req.body.paymentMethod,
+        status: 0, // In process
+        orderProducts: customerCart.products.map((cp) => {
+            return {
+                productId: cp.id,
+                title: cp.name,
+                sku: cp.sku,
+                ragularPrice: cp.ragularPrice,
+                salePrice: cp.salePrice,
+                quantity: cp.cartProducts.quantity,
+                discount: cp.cartProducts.discount || 0
+            }
+        }),
+        shippingAddress: {
             address: shippingAddress.address,
             city: shippingAddress.city,
             country: shippingAddress.country.name,
@@ -139,63 +160,32 @@ async function saveOrder(req) {
             name: shippingAddress.name,
             phone: shippingAddress.phone,
             type: shippingAddress.type
-        }, { transaction: t });
-
-        let newOrder = await Orders.create({
-            userId: req.userId,
-            referenceNo: (new Date()).getFullYear() + "/" + cartId,
-            shipBy: customerCart.eta || "",
-            shippingAddressId: orderAddress.id,
-            currencyCode: currency.code,
-            currencyValue: currency.value,
-            orderValue: customerCart.cartValue,
-            discount: customerCart.discount || 0,
-            couponDiscount: customerCart.couponDiscount || 0,
-            shippingCharges: customerCart.shippingCost || 0,
-            shippingMethod: customerCart.shippingMethod,
-            total: customerCart.total,
-            paymentMethod: req.body.paymentMethod,
-            status: 0 // In process
-        }, { transaction: t });
-
-        for (let cp of customerCart.products) {
-            await newOrder.addProducts(cp.id, {
-                through: {
-                    title: cp.name,
-                    sku: cp.sku,
-                    ragularPrice: cp.ragularPrice,
-                    salePrice: cp.salePrice,
-                    quantity: cp.cartProducts.quantity,
-                    discount: cp.cartProducts.discount || 0
-                },
-                transaction: t
-            });
         }
+    };
 
-        if (customerCart.coupon) {
-            await newOrder.addCoupons(customerCart.coupon.id, {
-                through: {
-                    couponCode: customerCart.coupon.code,
-                    type: customerCart.coupon.discountType,
-                    couponValue: customerCart.coupon.amount,
-                },
-                transaction: t
-            });
-        }
+    if (customerCart.coupon) {
+        orderData.orderCoupons = [{
+            couponId: customerCart.coupon.id,
+            couponCode: customerCart.coupon.code,
+            type: customerCart.coupon.discountType,
+            couponValue: customerCart.coupon.amount
+        }];
+    }
 
-        await Carts.destroy({ where: { id: req.body.cartId } }, { transaction: t });
-        await CartProducts.destroy({ where: { cartId: req.body.cartId } }, { transaction: t });
-
-        return newOrder;
+    let order = await Orders.create(orderData, {
+        include: [{
+            model: OrdersProducts,
+            as: "orderProducts"
+        }, {
+            model: OrderAddresses,
+            as: "shippingAddress"
+        }, {
+            model: OrdersCoupons,
+            as: "orderCoupons"
+        }],
     });
 
-    await OrdersHistories.create({
-        orderId: createOrder.id,
-        status: 0,
-        text: `Order placed and payment captured (Checkout #${cartId}). Email sent to customer`
-    });
-
-    return { status: true, order: createOrder };
+    return { status: true, order: order };
 }
 
 module.exports = route;

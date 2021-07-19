@@ -99,6 +99,9 @@ Addresses.belongsTo(Countries, { as: "country", foreignKey: "country_id", target
 Addresses.belongsTo(Zones, { as: "zone", foreignKey: "zoneId", targetKey: "id" });
 
 Orders.belongsToMany(Products, { through: OrdersProducts, as: "products", foreignKey: "orderId", otherKey: "productId" });
+Orders.hasMany(OrdersProducts, { as: "orderProducts" });
+Orders.hasMany(OrdersCoupons, { as: "orderCoupons" });
+
 Products.belongsToMany(Orders, { through: OrdersProducts, as: "orders", foreignKey: "productId", otherKey: "orderId" });
 Orders.belongsToMany(Coupons, { through: OrdersCoupons, as: "coupons", foreignKey: "orderId", otherKey: "couponId" });
 Coupons.belongsToMany(Orders, { through: OrdersCoupons, as: "orders", foreignKey: "couponId", otherKey: "orderId" });

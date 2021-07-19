@@ -1,6 +1,5 @@
 const route = require('express').Router();
 const { Users, Enquiries } = require("../models/index");
-const { sendOtp } = require("./emails/customer");
 const multer = require("multer");
 const fs = require("fs");
 const { isAuthenticated } = require('../middleware/auth');
@@ -24,8 +23,8 @@ const upload = multer({ storage: storage, limits: { fileSize: parseInt(process.e
 route.post("/registartion", async (req, res) => {
     try {
         req.body.otp = ("" + Math.random()).substring(2, 8)
-        let user = await Users.create(req.body)
-        await sendOtp(user)
+        await Users.create(req.body)
+    
         return res.json({ message: "Successfully created" })
     } catch (err) {
         return res.status(400).json(err);

@@ -58,18 +58,15 @@ route.post("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
 });
 
 route.post("/allocateStock", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
-    if (!req.body.cartId) {
-        return res.status(400).json({ message: "Cart ID is mandatory!" });
-    }
-
     try {
+
+        if (!req.body.cartId) throw new Error("Cart ID is mandatory!");
 
         let cart = await Carts.findByPk(req.body.cartId, {
             include: ["products"]
         })
 
-        if (cart.status)
-            return res.json({ message: "Stock already allocated!" })
+        if (cart.status) return res.json({ message: "Stock already allocated!" })
 
         let status = 1;
 
@@ -83,18 +80,15 @@ route.post("/allocateStock", [validateIsLoggedIn, releaseQuantity], async (req, 
             }
         }
 
-        if (!status)
-            return res.status(400).json({ message: "Product out of stock!" });
-
+        if (!status) return res.status(400).json({ message: "Product out of stock!" });
 
         // Allocating stock
         for (let cp of cart.products) {
-            await stockIncDec(cp, 'minus', cp.cartProducts.quantity);
+            cp.lockQuantity();
         }
 
         await Carts.update({ status: 1 }, { where: { id: req.body.cartId } });
         return res.json({ message: "Stock allocated" });
-
     } catch (err) {
         return res.status(500).json(err);
     }
@@ -186,6 +180,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
 
         await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
         await calculateCart(req.body.cartId);
+
         return res.json(coupon);
     } catch (err) {
         console.log(err);
@@ -338,7 +333,7 @@ route.post("/removeCoupon", [isAuthenticated], async (req, res) => {
 });
 
 async function __calulateShipping(addressId, cart) {
-    
+
     let address = await Addresses.findOne({
         where: {
             id: parseInt(addressId)
@@ -403,14 +398,14 @@ async function __calulateShipping(addressId, cart) {
     requestBody.shipment.parcels = parcelData;
 
     let rates = [];
-    
+
     let requestData = await axios.post(process.env.POSTMEN_URL, requestBody, {
         headers: {
             'content-type': 'application/json',
             'postmen-api-key': process.env.POSTMEN_KEY
         }
     });
-    
+
     let body = requestData.data;
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
@@ -448,7 +443,7 @@ async function __calulateShipping(addressId, cart) {
 }
 
 async function parcelDetails(cart) {
-    
+
     try {
         let defaultCurrency = await Currencies.findOne({
             where: {
@@ -602,7 +597,7 @@ async function releaseQuantity(req, res, next) {
         if (cart) {
             if (cart.status === 1 && cart.products) {
                 for (let cp of cart.products) {
-                    await stockIncDec(cp, "plus", cp.cartProducts.quantity);
+                    cp.releaseQuantity(true);
                 }
             }
 

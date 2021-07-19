@@ -162,4 +162,28 @@ Products.getCurrentStockStatus = (product) => {
     return product.stockStatus
 }
 
+Products.prototype.releaseQuantity = function (isCart = false) {
+    if (this.manageStock) {
+        Products.update({
+            quantity: isCart ? this.quantity + this.cartProducts.quantity : this.quantity + this.ordersProducts.quantity
+        }, {
+            where: { id: this.id }
+        })
+    }
+}
+
+Products.prototype.lockQuantity = function () {
+    if (this.manageStock) {
+        if (this.quantity > this.cartProducts.quantity) {
+            Products.update({
+                quantity: this.quantity - this.cartProducts.quantity
+            }, {
+                where: { id: this.id }
+            });
+        } else {
+            throw new Error("Stock allocation failed! Insufficient stock");
+        }
+    }
+}
+
 module.exports = Products;
