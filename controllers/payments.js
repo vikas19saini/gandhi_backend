@@ -12,7 +12,15 @@ route.get("/config", async (req, res) => {
         url: process.env.BANK_PAYMENT_URL,
         merchantId: process.env.BANK_PAYMENT_ID,
         title: "Pay by credit/debit card",
+        currencyCode: 840,
         currencies: ["usd"]
+    }, {
+        name: "bank",
+        url: process.env.BANK_PAYMENT_URL,
+        merchantId: process.env.BANK_PAYMENT_ID_THAI,
+        title: "Pay by credit/debit card",
+        currencyCode: 764,
+        currencies: ["thb"]
     }];
 
     return res.json(payments);
