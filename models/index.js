@@ -114,6 +114,7 @@ Carts.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
 Carts.belongsTo(Coupons, { as: "coupon", foreignKey: "couponId", targetKey: "id" });
 Carts.belongsTo(Addresses, { as: "address", foreignKey: "addressId", targetKey: "id" });
 Carts.belongsToMany(Products, { through: CartProducts, as: "products", foreignKey: "cartId", otherKey: "productId" });
+CartProducts.belongsTo(Products, { as: "product" });
 
 Wishlists.belongsTo(Users, { as: "user" })
 Wishlists.belongsTo(Products, { as: "product" })

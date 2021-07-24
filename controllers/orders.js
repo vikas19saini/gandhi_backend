@@ -1,7 +1,5 @@
 const route = require("express").Router();
-const seqConnection = require("../models/connection");
 const { Currencies, Addresses, Carts, Orders, OrderAddresses, Products, Payments, OrdersHistories, Coupons, OrdersProducts, OrdersCoupons } = require("../models/index");
-const CartProducts = require("../models/cart_products");
 const { isAuthenticated } = require("../middleware/auth");
 
 route.get("/", [isAuthenticated], async (req, res) => {

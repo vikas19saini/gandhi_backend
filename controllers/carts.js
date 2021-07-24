@@ -5,7 +5,6 @@ const seqConnection = require("../models/connection");
 const CartProducts = require("../models/cart_products");
 const { isAuthenticated, validateIsLoggedIn } = require("../middleware/auth");
 const { Op } = require("sequelize");
-const { stockIncDec } = require("./components/product");
 var dateFormat = require("dateformat");
 
 route.get("/:cartId", async (req, res) => {
@@ -15,7 +14,7 @@ route.get("/:cartId", async (req, res) => {
                 model: Products,
                 as: "products",
                 through: { attributes: { exclude: ["createdAt", "deletedAt", "updatedAt"] } },
-                attributes: ["id", "name", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
+                attributes: ["id", "name", "sku", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
                 include: [{
                     model: Uploads,
                     as: "featuredImage",
@@ -32,7 +31,8 @@ route.get("/:cartId", async (req, res) => {
                 model: Addresses,
                 as: "address"
             }
-        ]
+        ],
+        rejectOnEmpty: true
     }).then((d) => {
         return res.json(d);
     }).catch(e => {
@@ -41,7 +41,7 @@ route.get("/:cartId", async (req, res) => {
 });
 
 // Creating new cart and add items
-route.post("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
+route.post("/", [validateIsLoggedIn], async (req, res) => {
     try {
         let cartTransaction = await seqConnection.transaction(async (t) => {
             let cart = await Carts.create({ userId: req.userId || null, status: 0 }, { transaction: t });
@@ -49,7 +49,6 @@ route.post("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
             return cart;
         });
 
-        await calculateCart(cartTransaction.id);
         return res.json(cartTransaction);
 
     } catch (err) {
@@ -57,39 +56,25 @@ route.post("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
     }
 });
 
-route.post("/allocateStock", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
+route.post("/allocateStock", [validateIsLoggedIn], async (req, res) => {
     try {
 
         if (!req.body.cartId) throw new Error("Cart ID is mandatory!");
 
         let cart = await Carts.findByPk(req.body.cartId, {
             include: ["products"]
-        })
+        });
 
-        if (cart.status) return res.json({ message: "Stock already allocated!" })
-
-        let status = 1;
-
-        // Validating cart items
         for (let cp of cart.products) {
-            if (cp.currentStockStatus && cp.manageStock) {
-                if ((cp.quantity < cp.cartProducts.quantity)) {
-                    status = 0;
-                    break;
-                }
+            if (cp.cartProducts.status !== 1) {
+                let status = await cp.allocateStock(cp.cartProducts.quantity);
+                await CartProducts.update({ status: status }, { where: { id: cp.cartProducts.id } });
             }
         }
 
-        if (!status) return res.status(400).json({ message: "Product out of stock!" });
-
-        // Allocating stock
-        for (let cp of cart.products) {
-            cp.lockQuantity();
-        }
-
-        await Carts.update({ status: 1 }, { where: { id: req.body.cartId } });
         return res.json({ message: "Stock allocated" });
     } catch (err) {
+        console.log(err);
         return res.status(500).json(err);
     }
 });
@@ -179,7 +164,6 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
         }
 
         await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
-        await calculateCart(req.body.cartId);
 
         return res.json(coupon);
     } catch (err) {
@@ -188,7 +172,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
     }
 })
 
-route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
+route.post("/sync", [isAuthenticated], async (req, res) => {
 
     try {
 
@@ -205,7 +189,6 @@ route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
                     }
                 ]
             }).then(async (cart) => {
-                await calculateCart(cart.id);
                 return res.json(cart);
             })
         } else {
@@ -274,7 +257,6 @@ route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
                     }
                 ]
             }).then(async (cart) => {
-                await calculateCart(cart.id);
                 return res.json(cart);
             });
         }
@@ -286,28 +268,40 @@ route.post("/sync", [isAuthenticated, releaseQuantity], async (req, res) => {
 });
 
 // Updating cart items
-route.patch("/", [validateIsLoggedIn, releaseQuantity], async (req, res) => {
+route.patch("/", [validateIsLoggedIn], async (req, res) => {
     try {
-        let cartTransaction = await seqConnection.transaction(async (t) => {
-            await Carts.update({ userId: req.userId || null, status: 0 }, { where: { id: req.body.cartId }, transaction: t });
-            let cart = await Carts.findByPk(req.body.cartId);
-            await cart.addProducts([req.body.productId], { through: { quantity: req.body.quantity }, transaction: t })
-            return cart;
-        });
 
-        await calculateCart(cartTransaction.id);
-        return res.json(cartTransaction);
+        if (!req.body.cartId || !req.body.productId || !req.body.quantity) throw new Error("Cart id, product id & quantity is mandatory");
 
+        let cart = await Carts.findByPk(req.body.cartId);
+        cart.userId = req.userId || null;
+        await cart.save();
+
+        if (req.body.cartProductId) {
+            let cartProduct = await CartProducts.findByPk(req.body.cartProductId, { include: ["product"] });
+            cartProduct.quantity = req.body.quantity;
+            cartProduct.status = 0;
+            await cartProduct.save();
+        } else {
+            await CartProducts.create({
+                cartId: req.body.cartId,
+                productId: req.body.productId,
+                quantity: req.body.quantity
+            });
+        }
+
+        return res.json({ message: "Cart updated" });
     } catch (err) {
-        return res.status(400).json(err)
+        console.log(err);
+        return res.status(400).json({ message: err.message })
     }
 });
 
-route.post("/remove", [releaseQuantity], async (req, res) => {
+route.post("/remove", async (req, res) => {
     try {
-        await CartProducts.destroy({ where: { id: req.body.cartProductId } });
-        await calculateCart(req.body.cartId);
-        return res.json({ message: "Added to cart!" });
+        let cartProduct = await CartProducts.findByPk(req.body.cartProductId, { include: ["product"] });
+        await cartProduct.destroy();
+        return res.json({ message: "Removed from cart!" });
     } catch (err) {
         return res.status(400).json(err);
     }
@@ -315,8 +309,22 @@ route.post("/remove", [releaseQuantity], async (req, res) => {
 
 route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
     try {
-        await Carts.update({ addressId: req.body.addressId }, { where: { id: req.body.cartId } });
-        await calculateCart(req.body.cartId);
+
+        if (!req.body.addressId || !req.body.cartId) throw new Error("Address id and cart id is mandatory!");
+
+        let cart = await Carts.findByPk(req.body.cartId, { include: [{ model: Coupons, as: "coupon" }, { model: Products, as: "products" }], rejectOnEmpty: true });
+
+        let shippingMethods = await __calulateShipping(req.body.addressId, cart);
+        if (shippingMethods) {
+            shippingMethods.sort((a, b) => (a.cost > b.cost) ? 1 : ((b.cost > a.cost) ? -1 : 0))
+            shippingMethod = shippingMethods[0].serviceName;
+            eta = shippingMethods[0].eta;
+            shippingCost = shippingMethods[0].cost;
+            await Carts.update({ addressId: req.body.addressId, shippingCost: shippingCost, eta: eta, shippingMethod: shippingMethod }, { where: { id: req.body.cartId } });
+        } else {
+            throw new Error("Shipping is not available at this location!");
+        }
+
         return res.json({ message: "Cart updated" });
     } catch (err) {
         return res.status(500).json(err);
@@ -325,12 +333,27 @@ route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
 
 route.post("/removeCoupon", [isAuthenticated], async (req, res) => {
     Carts.update({ couponId: null }, { where: { id: req.body.cartId } }).then(async (r) => {
-        await calculateCart(req.body.cartId);
         return res.json({ message: "Coupon removed" });
     }).catch((err) => {
         return res.status(400).json(err);
     });
 });
+
+route.post("/calculateCart", async (req, res) => {
+    try {
+        if (!req.body.cartId) throw new Error("Please provide cart id");
+
+        let cart = await Carts.findByPk(req.body.cartId, {
+            include: [{ model: Coupons, as: "coupon" }, { model: Products, as: "products" }], rejectOnEmpty: true
+        });
+
+        await cart.calculateCart();
+        return res.json({ message: "Cart calculated" });
+    } catch (err) {
+        console.log(err);
+        return res.status(400).json({ message: err.message });
+    }
+})
 
 async function __calulateShipping(addressId, cart) {
 
@@ -340,12 +363,9 @@ async function __calulateShipping(addressId, cart) {
         },
         include: ["country", "zone", "user"],
         raw: true,
-        nest: true
+        nest: true,
+        rejectOnEmpty: true
     });
-
-    if (!address) {
-        return false;
-    }
 
     if ("tha" === address.country.code_3.toLowerCase()) {
         return [{
@@ -578,118 +598,6 @@ async function parcelDetails(cart) {
         return parcels
     } catch (err) {
         console.log(err);
-    }
-}
-
-async function releaseQuantity(req, res, next) {
-
-    if (req.body.cartId) {
-        let cart = await Carts.findByPk(req.body.cartId, {
-            include: [{
-                model: Coupons,
-                as: "coupon"
-            }, {
-                model: Products,
-                as: "products"
-            }]
-        });
-
-        if (cart) {
-            if (cart.status === 1 && cart.products) {
-                for (let cp of cart.products) {
-                    cp.releaseQuantity(true);
-                }
-            }
-
-            await Carts.update({ status: 0, couponId: null }, { where: { id: req.body.cartId } });
-        }
-    }
-    next();
-}
-
-async function calculateCart(cartId) {
-    let cart = await Carts.findByPk(cartId, {
-        include: [{
-            model: Coupons,
-            as: "coupon"
-        }, {
-            model: Products,
-            as: "products"
-        }]
-    });
-
-    if (!cart)
-        return;
-
-    let cartValue = 0, discount = 0, couponDiscount = 0, shippingCost = 0, total = 0, shippingMethod = "", eta = "";
-    for (let cp of cart.products) {
-        let productDiscount = 0;
-        cartValue += cp.cartProducts.quantity * cp.ragularPrice; // Calculation cart value based on MRP
-
-        if (cp.salePrice === 0) {
-            let productDiscountAmount = calculateCouponDiscount(cart, cp);
-            total += (cp.cartProducts.quantity * cp.ragularPrice) - productDiscountAmount;
-            productDiscount = productDiscountAmount;
-            couponDiscount += productDiscountAmount;
-        } else {
-            total += cp.cartProducts.quantity * cp.salePrice;
-            discount += (cp.cartProducts.quantity * cp.ragularPrice) - (cp.cartProducts.quantity * cp.salePrice);
-            productDiscount = discount;
-        }
-
-        await CartProducts.update({
-            discount: productDiscount
-        }, {
-            where: {
-                id: cp.cartProducts.id
-            }
-        });
-    }
-
-    if (cart.addressId) {
-        let shippingMethods = await __calulateShipping(cart.addressId, cart);
-
-        if (shippingMethods) {
-            shippingMethods.sort((a, b) => (a.cost > b.cost) ? 1 : ((b.cost > a.cost) ? -1 : 0))
-            shippingMethod = shippingMethods[0].serviceName;
-            eta = shippingMethods[0].eta;
-            shippingCost = shippingMethods[0].cost;
-        } else {
-            throw new Error("Shipping is not available at this location!");
-        }
-
-        total += shippingCost;
-    }
-
-    let status = 0;
-    for (let cp of cart.products) {
-        if (!cp.currentStockStatus) {
-            status = 2;
-            break;
-        }
-    }
-
-    await Carts.update({
-        cartValue: cartValue,
-        discount: discount,
-        couponDiscount: couponDiscount,
-        shippingCost: shippingCost,
-        total: total,
-        shippingMethod: shippingMethod,
-        eta: eta,
-        status: status
-    }, { where: { id: cart.id } });
-}
-
-function calculateCouponDiscount(cart, cp) {
-    if (!cart.coupon) return 0;
-
-    if (cart.coupon.discountType === "fixed") {
-        return parseFloat((cart.coupon.amount / cart.products.length).toFixed(2));
-    }
-
-    if (cart.coupon.discountType === "percentage") {
-        return parseFloat((((cp.cartProducts.quantity * cp.ragularPrice) * cart.coupon.amount) / 100).toFixed(2));
     }
 }
 

@@ -162,27 +162,50 @@ Products.getCurrentStockStatus = (product) => {
     return product.stockStatus
 }
 
-Products.prototype.releaseQuantity = function (isCart = false) {
-    if (this.manageStock) {
-        Products.update({
-            quantity: isCart ? this.quantity + this.cartProducts.quantity : this.quantity + this.ordersProducts.quantity
-        }, {
-            where: { id: this.id }
-        })
+Products.prototype.releaseQuantity = async function (isCart = false) {
+    try {
+        if (this.manageStock) {
+            this.quantity = isCart ? this.quantity + this.cartProducts.quantity : this.quantity + this.ordersProducts.quantity;
+            await this.save();
+        }
+    } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
     }
 }
 
-Products.prototype.lockQuantity = function () {
-    if (this.manageStock) {
-        if (this.quantity > this.cartProducts.quantity) {
-            Products.update({
-                quantity: this.quantity - this.cartProducts.quantity
-            }, {
-                where: { id: this.id }
-            });
-        } else {
-            throw new Error("Stock allocation failed! Insufficient stock");
+Products.prototype.releaseCartQuantity = async function (qtyToAdd = 0) {
+    try {
+        if (this.manageStock) {
+            this.quantity = this.quantity + qtyToAdd;
+            await this.save();
         }
+    } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
+    }
+}
+
+Products.prototype.allocateStock = async function (qty = 0) {
+    try {
+        let status = 0;
+        if (!this.currentStockStatus) {
+            status = 2;
+        } else if (this.manageStock && this.quantity < qty) {
+            status = 2;
+        } else {
+            status = 1;
+        }
+
+        if (status === 1 && this.manageStock) {
+            this.quantity = this.quantity - qty;
+            await this.save();
+        }
+
+        return status;
+    } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
     }
 }
 
