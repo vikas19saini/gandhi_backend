@@ -428,7 +428,7 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
-    
+
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
         for (let rate of availableRates) {
@@ -563,8 +563,12 @@ async function parcelDetails(cart) {
                 }
             });
 
+            weight = Math.ceil(weight)
+            
             let availBoxed = boxes.filter(box => box.maxWeight <= weight);
             let boxLength = availBoxed.length;
+
+            console.log("Weight: " + weight);
 
             return {
                 description: `Custom Box Wight ${weight} Kg`,
