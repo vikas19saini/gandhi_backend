@@ -327,6 +327,7 @@ route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
 
         return res.json({ message: "Cart updated" });
     } catch (err) {
+        console.log(err);
         return res.status(500).json(err);
     }
 });
@@ -427,6 +428,7 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
+    
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
         for (let rate of availableRates) {
@@ -529,73 +531,59 @@ async function parcelDetails(cart) {
             },
         ];
 
-        let products = [], totalWeight = 0, parcels = [];
         let totalNoOfBoxes = boxes.length;
 
-        let currentIndex = 0;
-        let cartProductsLength = cart.products.length;
-
-        while (currentIndex < cartProductsLength) {
-            let currentWeight = parseFloat((cart.products[currentIndex].shippingWeight * cart.products[currentIndex].cartProducts.quantity).toFixed(2));
-            totalWeight += currentWeight;
-            if (totalWeight > boxes[totalNoOfBoxes - 1].maxWeight) {
-                totalWeight = parseFloat((totalWeight - currentWeight).toFixed(2));
-                parcels.push({
-                    description: `Custom Box Wight ${totalWeight} Kg`,
-                    box_type: "custom",
-                    weight: {
-                        unit: "kg",
-                        value: totalWeight
-                    },
-                    dimension: {
-                        unit: "cm",
-                        height: boxes[totalNoOfBoxes - 1].height,
-                        width: boxes[totalNoOfBoxes - 1].width,
-                        depth: boxes[totalNoOfBoxes - 1].depth
-                    },
-                    items: products
-                });
-                totalWeight = 0;
-                products = [];
+        let weight = 0, allProductsGroup = [[]];
+        for (let product of cart.products) {
+            weight += product.shippingWeight * product.cartProducts.quantity;
+            if (weight <= boxes[totalNoOfBoxes - 1].maxWeight) {
+                allProductsGroup[allProductsGroup.length - 1].push(product);
             } else {
-                products.push({
-                    description: cart.products[currentIndex].name,
-                    origin_country: process.env.STORE_COUNTRY,
-                    quantity: 1,
-                    price: {
-                        amount: cart.products[currentIndex].salePrice ? cart.products[currentIndex].salePrice : cart.products[currentIndex].ragularPrice,
-                        currency: defaultCurrency.code
-                    },
-                    weight: {
-                        value: parseFloat((cart.products[currentIndex].shippingWeight).toFixed(2)),
-                        unit: "kg"
-                    },
-                    sku: cart.products[currentIndex].sku
-                });
-
-                currentIndex++;
+                allProductsGroup.push([product]);
             }
         }
 
-        if (totalWeight > 0) {
-            let boxesInner = boxes.filter((box) => box.maxWeight > totalWeight);
-            parcels.push({
-                description: `Custom Box Wight ${totalWeight} Kg`,
+        let parcels = allProductsGroup.map((productGroup) => {
+            let weight = 0;
+            let items = productGroup.map((product) => {
+                weight += product.shippingWeight * product.cartProducts.quantity;
+                return {
+                    description: product.name,
+                    origin_country: process.env.STORE_COUNTRY,
+                    quantity: product.cartProducts.quantity,
+                    price: {
+                        amount: product.salePrice ? product.salePrice : product.ragularPrice,
+                        currency: defaultCurrency.code
+                    },
+                    weight: {
+                        value: product.shippingWeight,
+                        unit: "kg"
+                    },
+                    sku: product.sku
+                }
+            });
+
+            let availBoxed = boxes.filter(box => box.maxWeight <= weight);
+            let boxLength = availBoxed.length;
+
+            return {
+                description: `Custom Box Wight ${weight} Kg`,
                 box_type: "custom",
                 weight: {
                     unit: "kg",
-                    value: totalWeight
+                    value: weight
                 },
                 dimension: {
                     unit: "cm",
-                    height: boxesInner[0].height,
-                    width: boxesInner[0].width,
-                    depth: boxesInner[0].depth
+                    height: availBoxed[boxLength - 1].height,
+                    width: availBoxed[boxLength - 1].width,
+                    depth: availBoxed[boxLength - 1].depth
                 },
-                items: products
-            });
-        }
-        return parcels
+                items: items
+            };
+        });
+
+        return parcels;
     } catch (err) {
         console.log(err);
     }
