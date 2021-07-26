@@ -428,7 +428,7 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
-
+    console.log(body);
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
         for (let rate of availableRates) {
