@@ -428,9 +428,7 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
-    console.log(JSON.stringify(parcelData));
-    console.log("----------------------------------------");
-    console.log(JSON.stringify(body));
+    
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
         for (let rate of availableRates) {
@@ -552,7 +550,7 @@ async function parcelDetails(cart) {
                 return {
                     description: product.name,
                     origin_country: process.env.STORE_COUNTRY,
-                    quantity: product.cartProducts.quantity,
+                    quantity: Math.floor(product.cartProducts.quantity),
                     price: {
                         amount: product.salePrice ? product.salePrice : product.ragularPrice,
                         currency: defaultCurrency.code
@@ -569,8 +567,6 @@ async function parcelDetails(cart) {
 
             let availBoxed = boxes.filter(box => box.maxWeight <= weight);
             let boxLength = availBoxed.length;
-
-            console.log("Weight: " + weight);
 
             return {
                 description: `Custom Box Wight ${weight} Kg`,
