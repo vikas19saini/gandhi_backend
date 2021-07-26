@@ -428,6 +428,8 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
+    console.log(JSON.stringify(parcelData));
+    console.log("----------------------------------------");
     console.log(JSON.stringify(body));
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
@@ -564,7 +566,7 @@ async function parcelDetails(cart) {
             });
 
             weight = Math.ceil(weight)
-            
+
             let availBoxed = boxes.filter(box => box.maxWeight <= weight);
             let boxLength = availBoxed.length;
 
