@@ -31,7 +31,8 @@ const login = async (userName, password) => {
     if (!user.status) {
         return {
             status: false,
-            message: "Inactive account!"
+            message: "Inactive account!",
+            statusCode: 1100
         }
     }
 

@@ -53,4 +53,8 @@ Users.afterCreate(async (user, options) => {
     sendOtp(user); // Sending Otp
 });
 
+Users.afterUpdate(async (user, option) => {
+    if (option.sendOtp) sendOtp(user);
+})
+
 module.exports = Users;

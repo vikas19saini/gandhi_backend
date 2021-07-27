@@ -7,7 +7,7 @@ route.post("/login", (req, res) => {
         if (data.status) {
             return res.json(data)
         } else {
-            return res.status(401).json({ ...data, ...{ statusCode: 1100 } })
+            return res.status(401).json({ ...data })
         }
 
     })

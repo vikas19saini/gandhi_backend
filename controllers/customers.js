@@ -24,7 +24,7 @@ route.post("/registartion", async (req, res) => {
     try {
         req.body.otp = ("" + Math.random()).substring(2, 8)
         await Users.create(req.body)
-    
+
         return res.json({ message: "Successfully created" })
     } catch (err) {
         return res.status(400).json(err);
@@ -75,6 +75,24 @@ route.get("/details", [isAuthenticated], async (req, res) => {
     })
 });
 
+route.post("/resendOtp", async (req, res) => {
+    try {
+        let otp = ("" + Math.random()).substring(2, 8)
+        let user = await Users.findOne({
+            where: {
+                email: req.body.email
+            }
+        });
+
+        user.otp = otp;
+        await user.save({ sendOtp: true });
+
+        return res.json({ message: "Successfully created" })
+    } catch (err) {
+        return res.status(400).json(err);
+    }
+});
+
 route.patch("/details", [isAuthenticated], async (req, res) => {
     Users.update({
         name: req.body.name,
@@ -84,6 +102,6 @@ route.patch("/details", [isAuthenticated], async (req, res) => {
     }).catch((err) => {
         return res.status(400).json(err);
     })
-})
+});
 
 module.exports = route;
