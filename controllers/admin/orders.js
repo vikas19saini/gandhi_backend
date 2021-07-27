@@ -1,5 +1,5 @@
 const route = require("express").Router();
-const { Orders, Coupons, Products, OrderAddresses, OrdersHistories, Payments, Users, Uploads } = require("../../models/index");
+const { Orders, Coupons, Products, OrderAddresses, OrdersHistories, Payments, Users, Uploads, Shipments } = require("../../models/index");
 
 route.get("/", async (req, res) => {
     let params = {
@@ -12,6 +12,10 @@ route.get("/", async (req, res) => {
                 model: Products,
                 as: "products",
                 include: ["featuredImage"]
+            },
+            {
+                model: Shipments,
+                as: "shipment"
             },
             {
                 model: Coupons,

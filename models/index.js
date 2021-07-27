@@ -43,6 +43,8 @@ const Carts = require("./carts");
 const Wishlists = require("./wishlist")
 const CartProducts = require("./cart_products");
 const Payments = require("./payments");
+const Shipments = require("./shipments");
+const Manifests = require("./manifests");
 
 Users.belongsToMany(Roles, { through: UsersRoles, hooks: true });
 
@@ -109,6 +111,8 @@ Orders.hasMany(OrdersHistories, { as: "histories" });
 Orders.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
 Orders.belongsTo(OrderAddresses, { as: "shippingAddress", foreignKey: "shippingAddressId", targetKey: "id" });
 Orders.hasMany(Payments, { as: "payments" });
+Orders.hasMany(Shipments, { as: "shipment" });
+Shipments.belongsTo(Orders, { as: "order" });
 
 Carts.belongsTo(Users, { as: "user", foreignKey: "userId", targetKey: "id" });
 Carts.belongsTo(Coupons, { as: "coupon", foreignKey: "couponId", targetKey: "id" });
@@ -116,13 +120,13 @@ Carts.belongsTo(Addresses, { as: "address", foreignKey: "addressId", targetKey: 
 Carts.belongsToMany(Products, { through: CartProducts, as: "products", foreignKey: "cartId", otherKey: "productId" });
 CartProducts.belongsTo(Products, { as: "product" });
 
-Wishlists.belongsTo(Users, { as: "user" })
-Wishlists.belongsTo(Products, { as: "product" })
+Wishlists.belongsTo(Users, { as: "user" });
+Wishlists.belongsTo(Products, { as: "product" });
 
 module.exports = {
     Users, Roles, Menus, RolesMenus, UsersRoles, Countries, Zones, Currencies, GeoZones, GeoZonesZones, Taxes, TaxClasses,
     WeightClasses, LengthClasses, Uploads, Categories, Filters, FilterValues, Attributes, AttributeValues, Coupons, Products,
     ProductsAttributeValues, ProductsFilterValues, ProductsCategories, ProductsUploads, CouponsCategories, CouponsUsers, Sliders,
     Addresses, Subscribers, Imports, Enquiries, EmailSmsTemplates, Settings, Orders, OrdersProducts, OrdersCoupons, OrderAddresses,
-    OrdersHistories, Carts, Wishlists, Payments
+    OrdersHistories, Carts, Wishlists, Payments, Shipments, Manifests
 }

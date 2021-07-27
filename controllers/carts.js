@@ -6,6 +6,7 @@ const CartProducts = require("../models/cart_products");
 const { isAuthenticated, validateIsLoggedIn } = require("../middleware/auth");
 const { Op } = require("sequelize");
 var dateFormat = require("dateformat");
+const { ship_from } = require("./packing_boxes");
 
 route.get("/:cartId", async (req, res) => {
     Carts.findByPk(req.params.cartId, {
@@ -369,10 +370,18 @@ async function __calulateShipping(addressId, cart) {
     });
 
     if ("tha" === address.country.code_3.toLowerCase()) {
+        Date.prototype.addDays = function (days) {
+            var date = new Date(this.valueOf());
+            date.setDate(date.getDate() + days);
+            return date;
+        }
+
+        let date = new Date();
+        let delDate = date.addDays(7);
         return [{
             serviceName: "Thailandpost",
             cost: 100,
-            eta: "2021-01-29T10:00:00+00:00"
+            eta: dateFormat(delDate, 'yyyy-mm-dd HH:MM:ss')
         }];
     }
 
@@ -396,31 +405,22 @@ async function __calulateShipping(addressId, cart) {
                 country: address.country.code_3,
                 type: address.type === 'office' ? 'business' : 'residential',
             },
-            ship_from: {
-                contact_name: "Wisa Singh",
-                company_name: "GANDHI IMPEX LTD PART",
-                street1: "326 Phahurat Rd, Wang Burapha Phirom",
-                country: "TH",
-                type: "business",
-                postal_code: "10200",
-                city: "Bangkok",
-                phone: "0888812761",
-                street2: "Phra Nakhon",
-                tax_id: null,
-                street3: "THAILAND",
-                state: null,
-                email: "gandhi326projects@gmail.com",
-                fax: null
-            }
+            ship_from: ship_from
         }
     };
 
-    let parcelData = await parcelDetails(cart)
+    let defaultCurrency = await Currencies.findOne({
+        where: {
+            value: 1
+        }
+    });
+
+    let parcelData = await cart.getShipingParcels(defaultCurrency);
     requestBody.shipment.parcels = parcelData;
 
     let rates = [];
 
-    let requestData = await axios.post(process.env.POSTMEN_URL, requestBody, {
+    let requestData = await axios.post(process.env.POSTMEN_URL + "/rates", requestBody, {
         headers: {
             'content-type': 'application/json',
             'postmen-api-key': process.env.POSTMEN_KEY
@@ -428,7 +428,7 @@ async function __calulateShipping(addressId, cart) {
     });
 
     let body = requestData.data;
-    
+
     if (body.meta.code === 200) {
         let availableRates = body.data.rates || [];
         for (let rate of availableRates) {
@@ -462,133 +462,6 @@ async function __calulateShipping(addressId, cart) {
     }
 
     return false;
-}
-
-async function parcelDetails(cart) {
-
-    try {
-        let defaultCurrency = await Currencies.findOne({
-            where: {
-                value: 1
-            }
-        });
-
-        // Packing box dimenssions
-        let boxes = [
-            {
-                maxWeight: 1,
-                height: 24,
-                width: 16,
-                depth: 15
-            },
-            {
-                maxWeight: 2.5,
-                height: 22,
-                width: 35,
-                depth: 14
-            },
-            {
-                maxWeight: 3.5,
-                height: 31,
-                width: 36,
-                depth: 13
-            },
-            {
-                maxWeight: 5,
-                height: 33,
-                width: 32,
-                depth: 18
-            },
-            {
-                maxWeight: 7.5,
-                height: 31,
-                width: 36,
-                depth: 26
-            },
-            {
-                maxWeight: 10,
-                height: 33,
-                width: 32,
-                depth: 34
-            },
-            {
-                maxWeight: 15,
-                height: 41,
-                width: 35,
-                depth: 36
-            },
-            {
-                maxWeight: 20,
-                height: 48,
-                width: 40,
-                depth: 38
-            },
-            {
-                maxWeight: 25,
-                height: 54,
-                width: 44,
-                depth: 40
-            },
-        ];
-
-        let totalNoOfBoxes = boxes.length;
-
-        let weight = 0, allProductsGroup = [[]];
-        for (let product of cart.products) {
-            weight += product.shippingWeight * product.cartProducts.quantity;
-            if (weight <= boxes[totalNoOfBoxes - 1].maxWeight) {
-                allProductsGroup[allProductsGroup.length - 1].push(product);
-            } else {
-                allProductsGroup.push([product]);
-            }
-        }
-
-        let parcels = allProductsGroup.map((productGroup) => {
-            let weight = 0;
-            let items = productGroup.map((product) => {
-                weight += product.shippingWeight * product.cartProducts.quantity;
-                return {
-                    description: product.name,
-                    origin_country: process.env.STORE_COUNTRY,
-                    quantity: Math.floor(product.cartProducts.quantity),
-                    price: {
-                        amount: product.salePrice ? product.salePrice : product.ragularPrice,
-                        currency: defaultCurrency.code
-                    },
-                    weight: {
-                        value: product.shippingWeight,
-                        unit: "kg"
-                    },
-                    sku: product.sku
-                }
-            });
-
-            weight = Math.ceil(weight)
-
-            let availBoxed = boxes.filter(box => box.maxWeight <= weight);
-            let boxLength = availBoxed.length;
-
-            return {
-                description: `Custom Box Wight ${weight} Kg`,
-                box_type: "custom",
-                weight: {
-                    unit: "kg",
-                    value: weight
-                },
-                dimension: {
-                    unit: "cm",
-                    height: availBoxed[boxLength - 1].height,
-                    width: availBoxed[boxLength - 1].width,
-                    depth: availBoxed[boxLength - 1].depth
-                },
-                items: items
-            };
-        });
-
-        return parcels;
-    } catch (err) {
-        console.log(err);
-    }
 }
 
 module.exports = route;

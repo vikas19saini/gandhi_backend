@@ -15,9 +15,9 @@ var app = express();
 const validatingCors = function (req, callback) {
   var corsOptions;
   if (req.header('Origin') === process.env.CLIENT_URL) {
-    corsOptions = { origin: true }
+    corsOptions = { origin: true, exposedHeaders: ["Authorization", "userId"] }
   } else {
-    corsOptions = { origin: true }
+    corsOptions = { origin: true, exposedHeaders: ["Authorization", "userId"] }
   }
 
   callback(null, corsOptions);

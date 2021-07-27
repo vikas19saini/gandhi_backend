@@ -1,4 +1,5 @@
-const { DataTypes, Model } = require("sequelize");
+const { DataTypes, Model, Op } = require("sequelize");
+const { boxes } = require("../controllers/packing_boxes");
 const CartProducts = require("./cart_products");
 const seqConnection = require("./connection");
 
@@ -59,7 +60,17 @@ Carts.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "carts",
-    paranoid: true
+    paranoid: true,
+    scopes: {
+        abandoned: {
+            where: {
+                status: 0,
+                updateAt: {
+                    [Op.lt]: "DATE_SUB(NOW(), INTERVAL 1 HOUR)"
+                }
+            }
+        }
+    }
 });
 
 Carts.prototype.deleteShiping = async function () {
@@ -119,6 +130,69 @@ function calculateCouponDiscount(cart, cp) {
 
     if (cart.coupon.discountType === "percentage") {
         return parseFloat((((cp.cartProducts.quantity * cp.ragularPrice) * cart.coupon.amount) / 100).toFixed(2));
+    }
+}
+
+Carts.prototype.getShipingParcels = async function (defaultCurrency) {
+    try {
+        let cart = this;
+        let totalNoOfBoxes = boxes.length;
+
+        let weight = 0, allProductsGroup = [[]];
+        for (let product of cart.products) {
+            weight += product.shippingWeight * product.cartProducts.quantity;
+            if (weight <= boxes[totalNoOfBoxes - 1].maxWeight) {
+                allProductsGroup[allProductsGroup.length - 1].push(product);
+            } else {
+                allProductsGroup.push([product]);
+            }
+        }
+
+        let parcels = allProductsGroup.map((productGroup) => {
+            let weight = 0;
+            let items = productGroup.map((product) => {
+                weight += product.shippingWeight * product.cartProducts.quantity;
+                return {
+                    description: product.name,
+                    origin_country: process.env.STORE_COUNTRY,
+                    quantity: Math.floor(product.cartProducts.quantity),
+                    price: {
+                        amount: product.salePrice ? product.salePrice : product.ragularPrice,
+                        currency: defaultCurrency.code
+                    },
+                    weight: {
+                        value: product.shippingWeight,
+                        unit: "kg"
+                    },
+                    sku: product.sku
+                }
+            });
+
+            weight = Math.ceil(weight)
+
+            let availBoxed = boxes.filter(box => box.maxWeight <= weight);
+            let boxLength = availBoxed.length;
+
+            return {
+                description: `Custom Box Wight ${weight} Kg`,
+                box_type: "custom",
+                weight: {
+                    unit: "kg",
+                    value: weight
+                },
+                dimension: {
+                    unit: "cm",
+                    height: availBoxed[boxLength - 1].height,
+                    width: availBoxed[boxLength - 1].width,
+                    depth: availBoxed[boxLength - 1].depth
+                },
+                items: items
+            };
+        });
+        return parcels;
+    } catch (err) {
+        console.log(err);
+        throw new Error(err.message);
     }
 }
 
