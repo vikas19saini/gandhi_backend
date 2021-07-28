@@ -24,6 +24,7 @@ const emailSmsTemplates = require("../controllers/admin/email_sms_templates");
 const settings = require("../controllers/admin/settings");
 const orders = require("../controllers/admin/orders");
 const shipments = require("../controllers/admin/shipments");
+const dashboard = require("../controllers/admin/dashboards");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -50,5 +51,6 @@ admin.use("/email-sms-templates", emailSmsTemplates);
 admin.use("/settings", settings);
 admin.use("/orders", orders);
 admin.use("/shipments", shipments);
+admin.use("/dashboards", dashboard);
 
 module.exports = admin;
