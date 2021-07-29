@@ -97,11 +97,17 @@ route.get("/:slug", async (req, res) => {
             },
         });
 
+        let categories = await product.getCategories({
+            joinTableAttributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] },
+            attributes: ["name", "slug"],
+        });
+
         product = {
             ...product.toJSON(), ...{
                 attributes: attributes,
                 featuredImage: featuredImage,
-                thumbnails: thumbnails
+                thumbnails: thumbnails,
+                categories: categories
             }
         }
 
