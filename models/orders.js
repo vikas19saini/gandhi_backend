@@ -144,7 +144,7 @@ Orders.init({
     paranoid: true
 });
 
-Orders.afterCreate(async (orderInstance, options) => {
+Orders.afterCreate(async (orderInstance) => {
     try {
         let order = await getOrder(orderInstance.id);
         sendOrderEmail(order);

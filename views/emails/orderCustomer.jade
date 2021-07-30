@@ -1,138 +1,203 @@
 doctype html
-html(lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml' xmlns:o='urn:schemas-microsoft-com:office:office')
+html
   head
+    title Gandhi Fabrics
     meta(charset='utf-8')
-    meta(name='viewport' content='width=device-width')
-    meta(http-equiv='X-UA-Compatible' content='IE=edge')
-    meta(name='x-apple-disable-message-reformatting')
-    title #{process.env.BRAND_NAME}
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    link(rel='preconnect' href='https://fonts.gstatic.com')
+    link(href='https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400;1,500&display=swap' rel='stylesheet')
     style.
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
-      body{
-      font-family: 'Inter', sans-serif;
+      body {
+      background-color: #ccc;
+      padding: 20px 10px;
+      font-family: 'Roboto', sans-serif;
+      margin: 0px;
+      }
+      .mt {
+      margin-top: 10px !important;
+      }
+      .p10 {
+      padding: 10px;
+      }
+      .p0 {
+      padding: 0px;
+      }
+      .pt20 {
+      padding-top: 30px !important;
+      }
+      a {
+      color: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      }
+      p {
+      font-size: 13px;
+      font-weight: normal;
+      }
+      .m0 {
+      margin: 0px;
+      }
+      .bg {
+      background-color: #fff;
+      }
+      table {
+      border-collapse: collapse;
+      width: 100%;
+      }
+      td,
+      th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+      }
+      h2 {
+      font-size: 35px;
+      font-weight: normal;
+      margin: 0px;
+      }
+      .row {
+      display: block;
+      }
+      .row .col {
+      display: inline-block;
+      align-items: center;
+      width: 49%;
+      }
+      h5 {
+      font-size: 17px;
+      margin: 0;
+      padding: 10px 0px;
+      text-transform: capitalize;
       font-weight: 400;
-      font-size: 14px;
-      line-height: 24px
       }
-      .main_tx h1{font-size: 52px;
-      font-weight: 500;}
-      .main_tx h2{font-size: 17px;
-      line-height: 25px;
-      font-weight: 500;}
-      .main_tx h4{font-size:11px;padding: 15px 0;
-      font-weight: 500;color: #38383D}
-      .table_bdr{background: #F6F6FA;height: 10px;}
-      .footer_icon a img{padding: 0 10px 0 0}
-      .right_bdr{border-right: 1px solid #C4CDDB;}
-      .table_custom{border:1px solid #C4CDDB;padding: 15px}
-      .align_left{padding: 0 0 0 58px}
-      .bttm{border-bottom: 1px solid #C4CDDB;
-      padding: 39px 0;}
-      .lft_tx img{float: left;
-      padding: 0 18px 0 0;}
-      .left_35{padding: 0 0 0 35px}
-      .ft_padd{padding:0 0 25px}
-      .table_head{font-size: 24px;color: #38383D;font-weight: 500}
-      .table_detail{font-size: 16px;
-      color: #38383D;}
-      .sub_total{font-size: 24px;line-height: 40px}
-      @media only screen and (max-width: 414px) {
-      .main_tx h1{font-size:40px;
-      font-weight: 500;}
-      .main_tx h2{font-size: 17px;
-      line-height: 25px;
-      font-weight: 500;}
-      .table_head {
-      font-size: 18px;
-      color: #38383D;
+      .container {
+      max-width: 700px;
+      margin: 0 auto;
       }
-      .table_detail {
-      font-size: 14px;}
-      .table_detail {
-      font-size: 16px;}
-      .sub_total {font-size: 20px;}
+      .mainSec {
+      color: #fff;
+      border-radius: 3px;
+      padding: 20px 30px 20px 30px;
       }
-  body(width='100%' style='margin: 0; padding: 0 !important;')
-    table(align='center' role='presentation' cellspacing='0' cellpadding='0' border='0' width='600' style='padding: 15px;margin:4rem auto 0;')
-      tbody
-        tr
-          td
-            table(align='left' role='presentation' cellspacing='0' cellpadding='0' border='0' width='100%')
-              tbody
-                tr
-                  td.logo
-                    img(src= process.env.WEB_URL + '/images/logo.png')
-                tr
-                  td.main_tx
-                    h1 #{heading}
-                tr
-                  td.main_tx
-                    h2 #{text}
-            table.table_custom(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.right_bdr(align='left' width='50%')
-                    p.table_head Summary
-                    p.table_detail
-                      | Order #: 
-                      span #{order.id}
-                    p.table_detail
-                      | Order Date: 
-                      span #{date}
-                    p.table_detail
-                      | Order Total: 
-                      span #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
-                  td.align_left(valign='top' width='50%')
-                    p.table_head Shipping Address
-                    p.table_detail #{order.completeAddress}
-            table.bttm(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.table_detail(width='50%') Product
-                  td.table_detail(width='25%') Qty
-                  td.table_detail(width='25%') Price
-            
-            each product in order.products
-              table.bttm(width='100%' cellspacing='0' cellpadding='0' border='0')
-                tbody
-                  tr
-                    td.lft_tx.table_detail(width='50%' valign='top')
-                      img(src=product.featuredImage.miniThumbnailUrl)
-                      span(valign='top') #{product.ordersProducts.title}
-                    td.table_detail(width='25%' valign='top') #{product.ordersProducts.quantity}
-                    td.table_detail(width='25%' valign='top') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
-            
-            table.bttm(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.sub_total(width='75%' align='right') Subtotal
-                  td.left_35.sub_total(width='25%') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.orderValue * order.currencyValue).replace("THB", "฿")}
-                tr
-                  td.sub_total(width='75%' align='right') Shipping
-                  td.left_35.sub_total(width='25%') #{!order.shippingCharges ? "Free" : new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.shippingCharges * order.currencyValue).replace("THB", "฿")}
-                tr
-                  td.sub_total(width='75%' align='right') Discount
-                  td.left_35.sub_total(width='25%') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.discount * order.currencyValue).replace("THB", "฿")}
-                tr
-                  td.sub_total(width='75%' align='right') Order total
-                  td.left_35.sub_total(width='25%') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
-            table(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.table_bdr
-            table(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.main_tx
-                    h4 Follow Us On Social Media
-            table.ft_padd(width='100%' cellspacing='0' cellpadding='0' border='0')
-              tbody
-                tr
-                  td.footer_icon(width='50%')
-                    a(href='https://www.facebook.com/gandhifabrics.th')
-                      img(src= process.env.WEB_URL + '/images/facebook.png')
-                    a(href='https://www.instagram.com/gandhi_fabrics/')
-                      img(src= process.env.WEB_URL + '/images/instagram.png')
-                  td(width='50%' align='right')
-                    a(href= process.env.APP_URL)
-                      img(src= process.env.WEB_URL + '/images/logo.png')
+      @media screen and (max-width:600px) {
+      body {
+      padding: 20px 5px !important;
+      }
+      p {
+      font-size: 12px !important;
+      }
+      h2 {
+      font-size: 20px !important;
+      }
+      h5 {
+      font-size: 15px !important;
+      }
+      .mainSec {
+      padding: 20px 5px 20px 5px !important;
+      }
+      .container {
+      max-width: 100% !important;
+      }
+      }
+  body(style='background-color: #ccc; padding: 20px 5px;')
+    .container
+      .row.m0.bg(style='text-align: center;padding: 10px 0px;')
+        a.navbar-brand(href= process.env.APP_URL style='width: 100%;')
+          img(src=process.env.WEB_URL + '/images/logo.png' style='width:120px;')
+      .row.m0.mt.p10.pt20(style='background-color: #af9032a3;display: block;')
+        .col-md-12
+          h2(style='text-align: center;color: #fff;')
+            | Hello 
+            strong #{order.user.name}
+        .col-md-12.pt20
+          .mainSec
+            h2 #{heading}
+            p #{text}
+            a(href=process.env.APP_URL + "/account?tab=2" style='background: #fff;\
+            padding: 18px;\
+            display: block;\
+            width: 150px;\
+            text-align: center;\
+            font-size: 18px;\
+            margin-top: 27px;\
+            color: #000;\
+            border-radius: 5px;\
+            text-decoration: none;') Track Order
+      .row.m0.mt.bg
+        .col(style='border-right: 1px solid #ccc;')
+          .p10
+            h5 Delivering at
+            .mt
+              p(style='margin: 5px 0px;') #{order.completeAddress}
+              p(style='margin: 5px 0px;') Arriving Date: #{eta}
+        .col
+          .p10
+            h5 Summary
+            .mt
+              p(style='margin: 5px 0px;') Order ID: #{order.id}
+              p(style='margin: 5px 0px;') Date: #{date}
+              p(style='margin: 5px 0px;') Total Amount: #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
+      .row.m0.mt.bg(style='display: block;')
+        .col(style='width: 100%;padding: 0px 2px;')
+          table.table-bordered(width='100%' cellspacing='2' cellpadding='5' style='margin: 10px 0px;')
+            tbody
+              tr(style='margin-top: 10px;')
+                td(valign='center' colspan='4')
+                  h5 Quick Details
+              each product in order.products
+                tr(style='margin-top: 10px;')
+                  td(valign='center' style='width: 50px;')
+                    img(style='width: 50px;border-radius: 3px;' src=product.featuredImage.miniThumbnailUrl)
+                  td(valign='center')
+                    p(style='margin: 0px;')
+                      a(href=process.env.APP_URL + "/product/" + product.slug style='font-size: inherit;font-weight: normal;text-decoration: none;') #{product.ordersProducts.title}
+                  td(valign='center' style='text-align: right;')
+                    p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")} x #{product.ordersProducts.quantity}
+                  td(valign='center' style='text-align: right;')
+                    p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
+      .row.m0.mt.bg(style='display: block;')
+        .col(style='width: 100%;padding: 0px 2px;')
+          table.table-bordered(width='100%' cellspacing='2' cellpadding='5' style='margin: 10px 0px;')
+            tbody
+              tr(style='margin-top: 10px;')
+                td(valign='center' colspan='4')
+                  h5 Price breakup
+              tr(style='margin-top: 10px;')
+                td(valign='center')
+                  p(style='margin: 0px;') Subtotal
+                td(valign='center' style='text-align: right;')
+                  p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.orderValue * order.currencyValue).replace("THB", "฿")}
+              tr(style='margin-top: 10px;')
+                td(valign='center')
+                  p(style='margin: 0px;') Discount
+                td(valign='center' style='text-align: right;')
+                  p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.discount * order.currencyValue).replace("THB", "฿")}
+              tr(style='margin-top: 10px;')
+                td(valign='center')
+                  p(style='margin: 0px;') Coupon Discount
+                td(valign='center' style='text-align: right;')
+                  p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.couponDiscount * order.currencyValue).replace("THB", "฿")}    
+              tr(style='margin-top: 10px;')
+                td(valign='center')
+                  p(style='margin: 0px;') Shipping Charges
+                td(valign='center' style='text-align: right;')
+                  p(style='margin: 0px;') #{!order.shippingCharges ? "Free" : new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.shippingCharges * order.currencyValue).replace("THB", "฿")}
+              tr(style='margin-top: 10px;')
+                td(valign='center')
+                  p(style='margin: 0px;') Total
+                td(valign='center' style='text-align: right;')
+                  p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
+      .row.m0.bg.mt
+        .col(style='border-right: 1px solid #ccc;')
+          .p10
+            h5 What's next?
+            .mt
+              p We will send you an email when your order status changed.
+        .col
+          .p10
+            h5 Need help?
+            .mt
+              p(style='margin: 5px 0px;') For queries, or any assistance contact us at ken@gandhifabrics.com
+      .row.m0.bg.mt(style='text-align: center;padding: 10px 0px;')
+        a.navbar-brand(href= process.env.APP_URL style='width: 100%;')
+          img(src=process.env.WEB_URL + '/images/logo.png' style='width:120px;')

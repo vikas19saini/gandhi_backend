@@ -71,13 +71,23 @@ const sendOrderEmail = async (order) => {
     }
 
     // Sending email to customer
-    send(order.user.email, subject, "orderCustomer2", {
+    send(order.user.email, subject, "orderCustomer", {
         order: order,
         date: dateFormat(order.createdAt, "dddd, mmmm dS, yyyy"),
         heading: heading,
         text: text,
         eta: dateFormat(order.shipBy, "dddd, mmmm dS, yyyy"),
-    })
+    });
+
+    // Sending email to the admin
+    if(order.status === 0){
+        send(process.env.ADMIN_ORDER_EMAIL, subject, "admin", {
+            order: order,
+            date: dateFormat(order.createdAt, "dddd, mmmm dS, yyyy"),
+            heading: "New Order Received",
+            eta: dateFormat(order.shipBy, "dddd, mmmm dS, yyyy"),
+        }); 
+    }
 }
 
 function templateGenerator(templatePath, context) {

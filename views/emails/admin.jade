@@ -107,43 +107,29 @@ html
       .row.m0.mt.p10.pt20(style='background-color: #af9032a3;display: block;')
         .col-md-12
           h2(style='text-align: center;color: #fff;')
-            | Hello 
-            strong #{order.user.name}
-        .col-md-12.pt20
-          .mainSec
-            h2 #{heading}
-            p #{text}
-            a(href='' style='background: #fff;\
-            padding: 18px;\
-            display: block;\
-            width: 150px;\
-            text-align: center;\
-            font-size: 18px;\
-            margin-top: 27px;\
-            color: #000;\
-            border-radius: 5px;\
-            text-decoration: none;') Track Order
+            | New Order Received
       .row.m0.mt.bg
         .col(style='border-right: 1px solid #ccc;')
           .p10
-            h5 Delivering at
+            h5 To Deliver at
             .mt
               p(style='margin: 5px 0px;') #{order.completeAddress}
-              p(style='margin: 5px 0px;') Arriving Date: #{eta}
+              p(style='margin: 5px 0px;') Expected Delivery Date: #{eta}
         .col
           .p10
             h5 Summary
             .mt
               p(style='margin: 5px 0px;') Order ID: #{order.id}
-              p(style='margin: 5px 0px;') Date: #{date}
+              p(style='margin: 5px 0px;') Ordered Date: #{date}
               p(style='margin: 5px 0px;') Total Amount: #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
+      
       .row.m0.mt.bg(style='display: block;')
         .col(style='width: 100%;padding: 0px 2px;')
           table.table-bordered(width='100%' cellspacing='2' cellpadding='5' style='margin: 10px 0px;')
             tbody
               tr(style='margin-top: 10px;')
                 td(valign='center' colspan='4')
-                  h5 Quick Details
+                  h5 Order Summary
               each product in order.products
                 tr(style='margin-top: 10px;')
                   td(valign='center' style='width: 50px;')
@@ -155,6 +141,7 @@ html
                     p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")} x #{product.ordersProducts.quantity}
                   td(valign='center' style='text-align: right;')
                     p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
+      
       .row.m0.mt.bg(style='display: block;')
         .col(style='width: 100%;padding: 0px 2px;')
           table.table-bordered(width='100%' cellspacing='2' cellpadding='5' style='margin: 10px 0px;')
@@ -187,17 +174,7 @@ html
                   p(style='margin: 0px;') Total
                 td(valign='center' style='text-align: right;')
                   p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(order.total * order.currencyValue).replace("THB", "฿")}
-      .row.m0.bg.mt
-        .col(style='border-right: 1px solid #ccc;')
-          .p10
-            h5 What's next?
-            .mt
-              p We will send you an email when your order status changed.
-        .col
-          .p10
-            h5 Need help?
-            .mt
-              p(style='margin: 5px 0px;') For queries, or any assistance contact us at ken@gandhifabrics.com
+      
       .row.m0.bg.mt(style='text-align: center;padding: 10px 0px;')
         a.navbar-brand(href= process.env.APP_URL style='width: 100%;')
           img(src=process.env.WEB_URL + '/images/logo.png' style='width:120px;')
