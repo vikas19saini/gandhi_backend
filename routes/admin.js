@@ -25,6 +25,7 @@ const settings = require("../controllers/admin/settings");
 const orders = require("../controllers/admin/orders");
 const shipments = require("../controllers/admin/shipments");
 const dashboard = require("../controllers/admin/dashboards");
+const abondedCarts = require("../controllers/admin/abandoned_carts");
 
 admin.use('/users', users);
 admin.use("/roles", roles);
@@ -52,5 +53,6 @@ admin.use("/settings", settings);
 admin.use("/orders", orders);
 admin.use("/shipments", shipments);
 admin.use("/dashboards", dashboard);
+admin.use("/abondedCarts", abondedCarts);
 
 module.exports = admin;

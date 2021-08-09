@@ -1,4 +1,4 @@
-const { DataTypes, Model, Op } = require("sequelize");
+const { DataTypes, Model, Op, Sequelize } = require("sequelize");
 const { boxes } = require("../controllers/packing_boxes");
 const CartProducts = require("./cart_products");
 const seqConnection = require("./connection");
@@ -64,9 +64,8 @@ Carts.init({
     scopes: {
         abandoned: {
             where: {
-                status: 0,
-                updateAt: {
-                    [Op.lt]: "DATE_SUB(NOW(), INTERVAL 1 HOUR)"
+                updatedAt: {
+                    [Op.lt]: Sequelize.literal("DATE_SUB(NOW(), INTERVAL 1 HOUR)")
                 }
             }
         }

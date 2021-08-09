@@ -43,6 +43,32 @@ Addresses.init({
     phone: {
         type: DataTypes.STRING(15),
         allowNull: false
+    },
+    completeAddress: {
+        type: new DataTypes.VIRTUAL,
+        get: function () {
+            let shippingAddressArr = [];
+            
+            if (this.address)
+                shippingAddressArr.push(this.address);
+
+            if (this.city)
+                shippingAddressArr.push(this.city);
+
+            if (this.zone)
+                shippingAddressArr.push(this.zone.name);
+
+            if (this.country)
+                shippingAddressArr.push(this.country.name);
+
+            if (this.postcode)
+                shippingAddressArr.push(this.postcode);
+
+            if (this.phone)
+                shippingAddressArr.push(this.phone);
+
+            return shippingAddressArr.join(", ");
+        }
     }
 }, {
     sequelize: seqConnection,

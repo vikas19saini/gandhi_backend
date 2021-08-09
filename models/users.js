@@ -46,7 +46,7 @@ Users.init({
     sequelize: startConnection,
     underscored: true,
     modelName: 'users',
-    paranoid: true
+    paranoid: true,
 });
 
 Users.afterCreate(async (user, options) => {
