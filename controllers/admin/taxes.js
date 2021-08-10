@@ -15,9 +15,9 @@ route.get("/", (req, res, next) => {
     }
 
     Taxes.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -25,9 +25,9 @@ route.post("/", async (req, res, next) => {
 
     try {
         const tax = await Taxes.create(req.body);
-        res.send(tax).json();
+        return res.json(tax);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -39,9 +39,9 @@ route.patch("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         });
-        res.send(tax).json();
+        return res.json(tax);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -53,9 +53,9 @@ route.get("/:id", (req, res, next) => {
             }
         ]
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -67,9 +67,9 @@ route.delete("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (error) {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     }
 });
 

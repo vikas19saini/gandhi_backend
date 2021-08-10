@@ -15,18 +15,18 @@ route.get("/", (req, res, next) => {
     const curr = Currencies.findAndCountAll(params);
 
     curr.then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
 route.post("/", (req, res, next) => {
     const curr = Currencies.create(req.body);
     curr.then((data) => {
-        res.send(data), json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
@@ -37,9 +37,9 @@ route.patch("/:id", (req, res, next) => {
         }
     });
     curr.then((data) => {
-        res.send(data), json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
@@ -50,18 +50,18 @@ route.delete("/:id", (req, res, next) => {
         }
     });
     curr.then((d) => {
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
 route.get("/:id", (req, res, next) => {
     const curr = Currencies.findByPk(req.params.id);
     curr.then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     })
 });
 

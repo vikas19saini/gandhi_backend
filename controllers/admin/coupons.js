@@ -18,9 +18,9 @@ route.get("/", (req, res) => {
     }
 
     Coupons.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -36,9 +36,9 @@ route.post("/", async (req, res) => {
             }
             return { message: "Created Successfully" };
         });
-        res.send(transactionResult).json();
+        return res.json(transactionResult);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -56,9 +56,9 @@ route.patch("/:id", async (req, res) => {
             await coupon.setUsers(req.body.users ? req.body.users : [], { transaction: t });
             return { message: "updated" };
         });
-        res.send(transactionResult).json();
+        return res.json(transactionResult);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -69,9 +69,9 @@ route.patch("/status/:id", async (req, res) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Updated" }).json();
+        return res.json({ message: "Updated" });
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -80,9 +80,9 @@ route.get("/:id", async (req, res) => {
         const coupon = await Coupons.findByPk(req.params.id, {
             include: ["categories", "users"]
         });
-        res.send(coupon).json();
+        return res.json(coupon);
     } catch (error) {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     }
 })
 
@@ -97,9 +97,9 @@ route.delete("/:id", async (req, res) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (error) {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     }
 });
 

@@ -32,7 +32,7 @@ route.get("/filters", (req, res) => {
     }).then((data) => {
         return res.json(data)
     }).catch(err => {
-        return res.status(500).json(err)
+        return res.status(400).json(err)
     })
 })
 
@@ -44,7 +44,7 @@ route.get("/config", (req, res) => {
     }).then((data) => {
         return res.json(data)
     }).catch(err => {
-        return res.status(500).json(err)
+        return res.status(400).json(err)
     })
 })
 
@@ -55,7 +55,7 @@ route.get("/countries", (req, res) => {
     }).then(data => {
         return res.json(data)
     }).catch(err => {
-        return res.status(500).json(err);
+        return res.status(400).json(err);
     })
 })
 

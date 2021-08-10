@@ -42,16 +42,16 @@ users.get('/', (req, res) => {
 
     const users = Users.findAndCountAll(params);
     users.then((response) => {
-        res.send(response).json();
+        return res.json(response);
     }).catch(error => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     });
 });
 
 users.post("/", (req, res) => {
 
     if (req.body.password !== req.body.confirmPassword) {
-        res.status(400).send({ message: "Passwords doesn't match, please try again!" }).json();
+        return res.status(400).json({ message: "Passwords doesn't match, please try again!" });
     }
 
     // Generating access token
@@ -65,9 +65,9 @@ users.post("/", (req, res) => {
     }
 
     saveUser().then((response) => {
-        res.send(response).json();
+        return res.json(response);
     }).catch(error => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     });
 })
 
@@ -81,9 +81,9 @@ users.get("/:id", (req, res) => {
         ]
     });
     user.then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch(error => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     });
 });
 
@@ -101,9 +101,9 @@ users.delete("/:id", (req, res) => {
     }
 
     deleteUser().then((data) => {
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     }).catch((error) => {
-        res.send(error).json();
+        return res.status(400).json(error);
     })
 });
 
@@ -122,9 +122,9 @@ users.patch("/:id", (req, res) => {
     }
 
     saveUser().then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 

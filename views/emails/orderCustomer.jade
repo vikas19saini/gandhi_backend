@@ -152,7 +152,7 @@ html
                     p(style='margin: 0px;')
                       a(href=process.env.APP_URL + "/product/" + product.slug style='font-size: inherit;font-weight: normal;text-decoration: none;') #{product.ordersProducts.title}
                   td(valign='center' style='text-align: right;')
-                    p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")} x #{product.ordersProducts.quantity}
+                    p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? product.ordersProducts.salePrice * order.currencyValue : product.ordersProducts.ragularPrice * order.currencyValue).replace("THB", "฿")} x #{product.ordersProducts.quantity}
                   td(valign='center' style='text-align: right;')
                     p(style='margin: 0px;') #{new Intl.NumberFormat('en-IN', { style: "currency", currency: order.currencyCode }).format(product.ordersProducts.salePrice ? ((product.ordersProducts.salePrice * product.ordersProducts.quantity ) * order.currencyValue) : ((product.ordersProducts.ragularPrice * product.ordersProducts.quantity ) * order.currencyValue) ).replace("THB", "฿")}
       .row.m0.mt.bg(style='display: block;')

@@ -17,18 +17,18 @@ country.get("/", (req, res, next) => {
     const countries = Countries.findAndCountAll(params);
 
     countries.then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
 country.post("/", (req, res, next) => {
     const con = Countries.create(req.body);
     con.then((data) => {
-        res.send(data), json();
+        return res.json(data)
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
@@ -39,9 +39,9 @@ country.patch("/:id", (req, res, next) => {
         }
     });
     con.then((data) => {
-        res.send(data), json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
@@ -52,18 +52,18 @@ country.delete("/:id", (req, res, next) => {
         }
     });
     con.then((d) => {
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     }).catch((error) => {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     })
 });
 
 country.get("/:id", (req, res, next) => {
     const con = Countries.findByPk(req.params.id);
     con.then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((error) => {
-        res.status(404).send(error).json();
+        return res.status(404).json(error);
     })
 });
 

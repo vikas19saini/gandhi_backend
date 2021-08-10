@@ -13,9 +13,9 @@ route.get("/", (req, res, next) => {
     }
 
     GeoZones.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -24,9 +24,9 @@ route.post("/", async (req, res, next) => {
     try {
         const geoZone = await GeoZones.create(req.body);
         await geoZone.addZones(req.body.zones);
-        res.send(geoZone).json();
+        return res.json(geoZone);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -40,9 +40,9 @@ route.patch("/:id", async (req, res, next) => {
         });
         const geoZone = await GeoZones.findByPk(req.params.id);
         await geoZone.setZones(req.body.zones);
-        res.send(geoZone).json();
+        return res.json(geoZone);
     } catch (error) {
-        res.status(400).send(error).json();
+        return res.status(400).json(error);
     }
 });
 
@@ -55,9 +55,9 @@ route.get("/:id", (req, res, next) => {
             }
         ]
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -71,9 +71,9 @@ route.delete("/:id", async (req, res, next) => {
                 id: req.params.id
             }
         });
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     } catch (error) {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     }
 });
 

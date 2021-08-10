@@ -15,17 +15,17 @@ zone.get("/", (req, res, next) => {
     }
 
     Zones.findAndCountAll(params).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
 zone.post("/", (req, res, next) => {
     Zones.create(req.body).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -35,9 +35,9 @@ zone.patch("/:id", (req, res, next) => {
             id: req.params.id
         }
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(400).send(err).json();
+        return res.status(400).json(err);
     })
 });
 
@@ -45,9 +45,9 @@ zone.get("/:id", (req, res, next) => {
     Zones.findByPk(req.params.id, {
         include: Countries
     }).then((data) => {
-        res.send(data).json();
+        return res.json(data);
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
@@ -57,9 +57,9 @@ zone.delete("/:id", (req, res, next) => {
             id: req.params.id
         }
     }).then((data) => {
-        res.send({ message: "Successfully deleted" }).json();
+        return res.json({ message: "Successfully deleted" });
     }).catch((err) => {
-        res.status(404).send(err).json();
+        return res.status(404).json(err);
     })
 });
 
