@@ -7,7 +7,7 @@ route.get("/config", async (req, res) => {
         key: process.env.PAYPAL_KEY,
         title: "Paypal Express Checkout",
         currencies: ["usd", "thb", "myr"]
-    }, {
+    }, /* {
         name: "bank",
         url: process.env.BANK_PAYMENT_URL,
         merchantId: process.env.BANK_PAYMENT_ID,
@@ -21,7 +21,7 @@ route.get("/config", async (req, res) => {
         title: "Pay by credit/debit card",
         currencyCode: 764,
         currencies: ["thb"]
-    }];
+    } */];
 
     return res.json(payments);
 });
