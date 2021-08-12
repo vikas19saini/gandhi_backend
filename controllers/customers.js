@@ -95,10 +95,20 @@ route.post("/resendOtp", async (req, res) => {
 
 route.post("/resetPassword", async (req, res) => {
     try {
-        await Users.update({password: req.body.password}, {where: {
-            email: req.body.email,
-            otp: req.body.otp
-        }});
+
+        await Users.findAll({
+            where: {
+                email: req.body.email,
+                otp: req.body.otp
+            },
+            rejectOnEmpty: true
+        });
+        await Users.update({ password: req.body.password }, {
+            where: {
+                email: req.body.email,
+                otp: req.body.otp
+            }
+        });
 
         return res.status(201).json({ message: "Successfully created" })
     } catch (err) {
