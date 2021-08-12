@@ -12,8 +12,8 @@ route.get("/", async (req, res) => {
     })
 
     return res.json({
-        title: "Gandhi - Home",
-        metaDescription: "Gandhi meta desription",
+        title: "Gandhi Fabrics: Buy complete range of Fabrics Online",
+        metaDescription: "Get a complete range of Cotton, Lace, Linen, Silk, Wool, Lace, Traditional, Embroidery, Natural, Printed fabrics. Visit our official website to buy fabrics online from Gandhi Fabrics.",
         sliders: sliders
     })
 })

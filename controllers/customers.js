@@ -87,7 +87,20 @@ route.post("/resendOtp", async (req, res) => {
         user.otp = otp;
         await user.save({ sendOtp: true });
 
-        return res.json({ message: "Successfully created" })
+        return res.json({ message: "Otp Sent" })
+    } catch (err) {
+        return res.status(400).json(err);
+    }
+});
+
+route.post("/resetPassword", async (req, res) => {
+    try {
+        await Users.update({password: req.body.password}, {where: {
+            email: req.body.email,
+            otp: req.body.otp
+        }});
+
+        return res.status(201).json({ message: "Successfully created" })
     } catch (err) {
         return res.status(400).json(err);
     }

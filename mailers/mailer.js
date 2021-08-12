@@ -100,7 +100,7 @@ function templateGenerator(templatePath, context) {
 }
 
 const sendOtp = async (user) => {
-    let st = await send(user.email, process.env.BRAND_NAME + " email verification", "otp", user)
+    let st = await send(user.email, process.env.BRAND_NAME + " Email Address Confirmation", "otp", user)
     return st
 }
 

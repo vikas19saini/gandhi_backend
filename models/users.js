@@ -9,12 +9,12 @@ Users.init({
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: "UniqueEmailAndPhone"
+        unique: true
     },
     phone: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: "UniqueEmailAndPhone"
+        unique: true
     },
     name: {
         type: DataTypes.STRING,
