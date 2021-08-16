@@ -1,115 +1,62 @@
 const route = require('express').Router();
 const { Op } = require('sequelize');
 const { Categories, Uploads, Products } = require("../models/index");
+const { count } = require('../models/users');
 
 route.get("/products/:slug", async (req, res) => {
     try {
 
-        let assosiations = [{
-            model: Uploads,
-            as: "featuredImage",
-            attributes: {
-                exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
-            },
-        }];
-
-        let whereConditions = [
-            { status: 1 }
-        ];
-
-        if (req.params.slug !== "search") {
-            assosiations.push({
-                model: Categories,
-                as: "categories",
-                where: { slug: req.params.slug },
-                required: true,
-                through: { attributes: ["categoryId", "productId"] },
-                attributes: ["id"]
-            });
-        } else {
-            whereConditions.push({
-                [Op.or]: [
-                    {
-                        name: {
-                            [Op.substring]: req.query.query
-                        }
-                    },
-                    {
-                        sku: {
-                            [Op.substring]: req.query.query
-                        }
-                    },
-                    {
-                        tags: {
-                            [Op.substring]: req.query.query
-                        }
-                    },
-                    {
-                        shortDescription: {
-                            [Op.substring]: req.query.query
-                        }
-                    },
-                    {
-                        longDescription: {
-                            [Op.substring]: req.query.query
-                        }
-                    }
-                ]
-            });
-        }
-
-        let orderBy;
-        if (req.query.sort) {
-            if (req.query.sort === "ragularPriceAsc") {
-                orderBy = ["ragularPrice", "asc"];
-            } else if (req.query.sort === "ragularPriceDesc") {
-                orderBy = ["ragularPrice", "desc"];
-            } else if (req.query.sort === "createdAtDesc") {
-                orderBy = ["createdAt", "desc"];
-            }
-        } else {
-            orderBy = ["id", "desc"];
-        }
+        let scopes = ["active", "withImage", { method: ["sortBy", req] }];
 
         if (req.query.filters) {
-            let filters = req.query.filters.split("|");
-            let filtersArray = [];
-            for (let f of filters) {
-                filtersArray.push({
-                    tags: {
-                        [Op.substring]: f
-                    }
-                })
-            }
+            scopes.push({ method: ["withFilters", req] });
+        }
 
-            whereConditions.push({
-                [Op.or]: filtersArray
-            });
+        if (req.query.start && req.query.end) {
+            scopes.push({ method: ["priceFilter", req] });
         }
 
         let queryParams = {
-            where: {
-                [Op.and]: whereConditions
-            },
-            order: [orderBy],
             distinct: true,
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset),
-            include: assosiations,
             attributes: ["id", "createdAt", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
         };
 
-        if (req.query.start && req.query.end) {
-            queryParams.where = { ...queryParams.where, ...{ ragularPrice: { [Op.between]: [parseInt(req.query.start), parseInt(req.query.end)] } } };
+        let category = null;
+        let count = null;
+        let products = null;
+
+        if (req.params.slug === "search") {
+            scopes.push({ method: ["withSearch", req] });
+            count = await Products.scope(scopes).count();
+            products = await Products.scope(scopes).findAll(queryParams);
+        } else {
+            category = await Categories.findOne({
+                where: {
+                    slug: req.params.slug
+                },
+                rejectOnEmpty: true
+            });
+
+            count = await category.countProducts({
+                scopes: scopes,
+            });
+
+            queryParams.scope = scopes;
+            products = await category.getProducts(queryParams);
         }
 
-        let products = await Products.findAndCountAll(queryParams);
-        return res.json(products);
+        return res.json({
+            count: count,
+            rows: products,
+            category: category
+        });
     } catch (err) {
         console.log(err)
         return res.status(400).json(err);
     }
-})
+});
 
 route.get("/:slug", async (req, res) => {
     try {

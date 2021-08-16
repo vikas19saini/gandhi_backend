@@ -1,5 +1,7 @@
-const { DataTypes, Model } = require("sequelize");
+const { DataTypes, Model, Op, Sequelize } = require("sequelize");
+const Categories = require("./categories");
 const seqConnection = require("./connection");
+const Uploads = require("./uploads");
 
 class Products extends Model { }
 
@@ -150,7 +152,116 @@ Products.init({
     sequelize: seqConnection,
     underscored: true,
     modelName: "products",
-    paranoid: true
+    paranoid: true,
+    scopes: {
+        active: {
+            where: {
+                status: 1
+            }
+        },
+        withImage: {
+            include: [{
+                model: Uploads,
+                as: "featuredImage",
+                attributes: {
+                    exclude: ["deletedAt", "createdAt", "updatedAt", "name"]
+                },
+            }]
+        },
+        sortBy(req) {
+            let ob = ["id", "desc"];
+            if (req.query.sort) {
+                if (req.query.sort === "ragularPriceAsc") {
+                    ob = ["ragularPrice", "asc"];
+                } else if (req.query.sort === "ragularPriceDesc") {
+                    ob = ["ragularPrice", "desc"];
+                } else if (req.query.sort === "createdAtDesc") {
+                    ob = ["createdAt", "desc"];
+                }
+            }
+            return {
+                order: [ob]
+            }
+        },
+        withFilters(req) {
+            let filters = req.query.filters.split("|");
+            let filtersArray = [];
+            for (let f of filters) {
+                filtersArray.push({
+                    tags: {
+                        [Op.substring]: f
+                    }
+                })
+            }
+
+            return {
+                where: {
+                    [Op.or]: filtersArray
+                }
+            }
+        },
+        priceFilter(req) {
+            return {
+                where: {
+                    ragularPrice: {
+                        [Op.between]: [parseInt(req.query.start), parseInt(req.query.end)]
+                    }
+                }
+            }
+        },
+        withSearch(req) {
+            return {
+                where: {
+                    [Op.or]: [
+                        {
+                            name: {
+                                [Op.substring]: req.query.query
+                            }
+                        },
+                        {
+                            sku: {
+                                [Op.substring]: req.query.query
+                            }
+                        },
+                        {
+                            tags: {
+                                [Op.substring]: req.query.query
+                            }
+                        },
+                        {
+                            shortDescription: {
+                                [Op.substring]: req.query.query
+                            }
+                        },
+                        {
+                            longDescription: {
+                                [Op.substring]: req.query.query
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        inCategory(catId) {
+            return {
+                include: {
+                    model: Categories,
+                    where: {
+                        [Op.or]: [
+                            {
+                                id: catId,
+                            },
+                            {
+                                parentId: catId
+                            }
+                        ]
+                    },
+                    as: "categories",
+                    required: true,
+                }
+            }
+        }
+    }
 });
 
 Products.getCurrentStockStatus = (product) => {

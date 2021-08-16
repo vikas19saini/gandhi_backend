@@ -11,7 +11,8 @@ route.get("/", async (req, res) => {
         attributes: {
             exclude: ["longDescription", "metaDescription", "metaTitle", "minOrderQuantity", "maxOrderQuantity", "shippingHeight", "shippingLength", "shippingWeight",
                 "shortDescription", "step", "tags", "updatedAt", "lengthClassId", "taxClassId", "weightClassId"]
-        }
+        },
+        include: ["featuredImage"]
     };
 
     if (req.query.limit) {
@@ -22,9 +23,9 @@ route.get("/", async (req, res) => {
         params.offset = parseInt(req.query.offset);
     }
 
-    if (req.query.include) {
+    /* if (req.query.include) {
         params.include = req.query.include.split(",");
-    }
+    } */
 
     if (req.query.searchBy) {
         params.where = {
