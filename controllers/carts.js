@@ -80,7 +80,7 @@ route.post("/allocateStock", [validateIsLoggedIn], async (req, res) => {
     }
 });
 
-route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
+route.post("/applyCoupon", [/* isAuthenticated */], async (req, res) => {
     try {
         let coupon = await Coupons.findOne({
             where: {
@@ -111,7 +111,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
         if (!coupon)
             return res.status(400).json({ message: "Invalid coupon code" });
 
-        if (coupon.users.length > 0) {
+        if (coupon.users.length > 0 && req.userId) {
             let haveUser = coupon.users.filter(cu => cu.id === req.userId);
             if (haveUser.length === 0)
                 return res.status(400).json({ message: "Invalid coupon code" });
@@ -126,7 +126,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
             return res.status(400).json({ message: "Cart value is grater than max spend!" });
         }
 
-        if (coupon.limitPerUser) {
+        if (coupon.limitPerUser && req.userId) {
             let orders = await Orders.findAll({
                 where: {
                     userId: req.userId,
@@ -166,7 +166,7 @@ route.post("/applyCoupon", [isAuthenticated], async (req, res) => {
 
         await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
 
-        return res.json(coupon);
+        return res.json({message: "Coupon successfully applied"});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -238,7 +238,7 @@ route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
     }
 });
 
-route.post("/removeCoupon", [isAuthenticated], async (req, res) => {
+route.post("/removeCoupon", [/* isAuthenticated */], async (req, res) => {
     Carts.update({ couponId: null }, { where: { id: req.body.cartId } }).then(async (r) => {
         return res.json({ message: "Coupon removed" });
     }).catch((err) => {

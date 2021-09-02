@@ -2,7 +2,7 @@ const { Users, Roles, Menus } = require("../../models/index")
 const passwordHash = require("password-hash");
 const jwt = require("jsonwebtoken");
 
-const login = async (userName, password) => {
+const login = async (userName, password, bypassPasswordAndStatus = false) => {
     const user = await Users.findOne({
         where: {
             email: userName
@@ -21,18 +21,20 @@ const login = async (userName, password) => {
         }
     }
 
-    if (!passwordHash.verify(password, user.password)) {
-        return {
-            status: false,
-            message: "Invalid password!"
+    if (!bypassPasswordAndStatus) {
+        if (!passwordHash.verify(password, user.password)) {
+            return {
+                status: false,
+                message: "Invalid password!"
+            }
         }
-    }
 
-    if (!user.status) {
-        return {
-            status: false,
-            message: "Inactive account!",
-            statusCode: 1100
+        if (!user.status) {
+            return {
+                status: false,
+                message: "Inactive account!",
+                statusCode: 1100
+            }
         }
     }
 
@@ -46,7 +48,12 @@ const login = async (userName, password) => {
     return {
         status: true,
         token: authToken,
-        user: user
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            token: user.token
+        }
     }
 }
 

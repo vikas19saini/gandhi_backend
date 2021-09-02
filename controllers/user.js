@@ -9,8 +9,7 @@ route.post("/login", (req, res) => {
         } else {
             return res.status(401).json({ ...data })
         }
-
     })
-})
+});
 
 module.exports = route;

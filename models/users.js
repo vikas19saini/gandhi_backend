@@ -50,7 +50,8 @@ Users.init({
 });
 
 Users.afterCreate(async (user, options) => {
-    sendOtp(user); // Sending Otp
+    if (!options.bypassEmail)
+        sendOtp(user); // Sending Otp
 });
 
 Users.afterUpdate(async (user, option) => {

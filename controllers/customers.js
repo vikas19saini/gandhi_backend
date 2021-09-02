@@ -1,8 +1,9 @@
 const route = require('express').Router();
-const { Users, Enquiries } = require("../models/index");
+const { Users, Enquiries, Addresses, Carts } = require("../models/index");
 const multer = require("multer");
 const fs = require("fs");
 const { isAuthenticated } = require('../middleware/auth');
+const { login } = require('./components/auth');
 
 var storage = multer.diskStorage({
     destination: process.env.UPLOAD_DIR.replace("uploads", "enquires"),
@@ -125,6 +126,53 @@ route.patch("/details", [isAuthenticated], async (req, res) => {
     }).catch((err) => {
         return res.status(400).json(err);
     })
+});
+
+route.post("/guestCheckout", async (req, res) => {
+    try {
+        let postData = req.body;
+        let user = await Users.findOne({
+            where: { email: postData.email }
+        });
+
+        if (!user) {
+            user = await Users.create({
+                email: postData.email,
+                phone: postData.phone,
+                password: postData.postcode,
+                name: postData.name,
+                status: 1
+            }, { bypassEmail: true });
+        }
+
+        await Carts.update({ userId: user.id }, {
+            where: {
+                id: postData.cartId
+            }
+        });
+
+        let address = await Addresses.create({
+            userId: user.id,
+            address: postData.address,
+            city: postData.city,
+            countryId: postData.countryId,
+            zoneId: postData.zoneId || 0,
+            postcode: postData.postcode,
+            type: "home",
+            isDefault: 0,
+            name: postData.name,
+            phone: postData.phone
+        });
+
+        let auth = await login(postData.email, postData.postcode, true);
+        return res.status(201).json({
+            auth: auth,
+            addressId: address.id
+        });
+    } catch (err) {
+        console.log(err.message);
+        return res.status(400).json({ message: err.message });
+    }
 });
 
 module.exports = route;
