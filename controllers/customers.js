@@ -175,4 +175,15 @@ route.post("/guestCheckout", async (req, res) => {
     }
 });
 
+route.post("/checkUserExist", (req, res) => {
+    Users.findOne({
+        where: { email: req.body.email },
+        rejectOnEmpty: true
+    }).then(() => {
+        return res.status(200).json({ isExist: true });
+    }).catch(err => {
+        return res.status(404).json({ isExist: false });
+    })
+});
+
 module.exports = route;
