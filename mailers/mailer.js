@@ -16,9 +16,9 @@ const mailer = nodemailer.createTransport({
 
 const send = async (to, subject, template, context) => {
 
-    if (process.env.APP_MODE !== "production") {
+    /* if (process.env.APP_MODE !== "production") {
         to = "vikas.lamppost@gmail.com";
-    }
+    } */
 
     try {
         let templateHtml = templateGenerator(template, context)
