@@ -4,11 +4,7 @@ const { Products, Categories, Uploads } = require("../models/index");
 
 route.get("/new", async (req, res) => {
     try {
-        let products = await Products.findAll({
-            where: {
-                status: 1
-            },
-            order: Sequelize.literal('rand()'),
+        let op = {
             attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"],
             include: [{
                 model: Uploads,
@@ -18,10 +14,19 @@ route.get("/new", async (req, res) => {
                 },
             }],
             limit: 30
-        })
+        };
+
+        let products = [];
+        
+        if (req.query.filterBy) {
+            products = await Products.scope(["sortBy", "active", req.query.filterBy]).findAll(op);
+        } else {
+            products = await Products.scope(["sortBy", "active"]).findAll(op);
+        }
 
         return res.json(products);
     } catch (err) {
+        console.log(err)
         return res.status(500).json(err)
     }
 })

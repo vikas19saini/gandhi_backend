@@ -170,7 +170,7 @@ Products.init({
         },
         sortBy(req) {
             let ob = ["id", "desc"];
-            if (req.query.sort) {
+            if (req && req.query.sort) {
                 if (req.query.sort === "ragularPriceAsc") {
                     ob = ["ragularPrice", "asc"];
                 } else if (req.query.sort === "ragularPriceDesc") {
@@ -239,6 +239,13 @@ Products.init({
                             }
                         }
                     ]
+                }
+            }
+        },
+        discounted: {
+            where: {
+                salePrice: {
+                    [Op.gt]: 0
                 }
             }
         },
