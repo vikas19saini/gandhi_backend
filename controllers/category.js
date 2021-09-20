@@ -31,6 +31,10 @@ route.get("/products/:slug", async (req, res) => {
             scopes.push({ method: ["withSearch", req] });
             count = await Products.scope(scopes).count();
             products = await Products.scope(scopes).findAll(queryParams);
+        } else if (req.params.slug === "sale") {
+            scopes.push("discounted");
+            count = await Products.scope(scopes).count();
+            products = await Products.scope(scopes).findAll(queryParams);
         } else {
             category = await Categories.findOne({
                 where: {

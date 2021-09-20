@@ -1,5 +1,6 @@
 const { default: axios } = require('axios');
 const jwt = require('jsonwebtoken');
+const { Carts, Currencies } = require('../models');
 
 const route = require('express').Router();
 
@@ -9,22 +10,16 @@ route.get("/config", async (req, res) => {
         mode: process.env.PAYPAL_MODE,
         key: process.env.PAYPAL_KEY,
         title: "Paypal Express Checkout",
-        currencies: ["usd", "thb", "myr"]
-    }, /* {
-        name: "bank",
+        currencies: ["usd", "thb", "myr"],
+        description: "Click here to choose this payment method and Please wait until you see payment options."
+    }, {
+        name: "2c2p",
         url: process.env.BANK_PAYMENT_URL,
         merchantId: process.env.BANK_PAYMENT_ID,
-        title: "Pay by credit/debit card",
-        currencyCode: 840,
-        currencies: ["usd"]
-    }, {
-        name: "bank",
-        url: process.env.BANK_PAYMENT_URL,
-        merchantId: process.env.BANK_PAYMENT_ID_THAI,
-        title: "Pay by credit/debit card",
-        currencyCode: 764,
-        currencies: ["thb"]
-    } */];
+        title: "credit/debit card",
+        currencies: ["usd", "thb", "myr"],
+        description: "You will be redirected to the external website where you can complete payment."
+    }];
 
     return res.json(payments);
 });
@@ -33,35 +28,52 @@ route.get("/", async (req, res) => {
     res.render("index");
 });
 
-route.post("/", async (req, res) => {
+route.post("/capture", async (req, res) => {
     console.log(req.body);
 });
 
-route.get("/paymentToken", async (req, res) => {
-    let reqBody = {
-        "merchantID": process.env.MER_ID,
-        "invoiceNo": Math.random() * 100000000,
-        "description": "item 1",
-        "amount": 1000.00,
-        "currencyCode": "THB",
-        tokenize: true,
-        recurring: false,
-        invoicePrefix: "GF",
-        frontendReturnUrl: ""
-    }
+route.post("/paymentToken", async (req, res) => {
 
+    let { cartId, currencyId } = req.body;
 
-    let token = jwt.sign(reqBody, process.env.SHAKEY, { algorithm: "HS256" });
-    let response = await axios.post("https://sandbox-pgw.2c2p.com/payment/4.1/PaymentToken", {
-        payload: token
-    }, {
-        headers: {
-            contentType: "application/json"
+    try {
+        let cart = await Carts.findByPk(cartId, { rejectOnEmpty: true });
+        let currency = await Currencies.findByPk(currencyId, { rejectOnEmpty: true });
+
+        let totalAmount = Number((cart.total * currency.value).toFixed(2));
+        let payload = {
+            merchantID: process.env.MER_ID,
+            invoiceNo: `GF-ORD/CART/${cart.id}`,
+            amount: totalAmount,
+            description: `Payment against cart ID # ${cartId}`,
+            currencyCode: currency.code,
+            tokenize: true,
+            invoicePrefix: "GF-ORD",
+            userDefined1: cartId,
+            frontendReturnUrl: `${process.env.APP_URL}/thankyou?cartId=${cartId}`,
+            backendReturnUrl: `${process.env.WEB_URL}/payments/capture`
         }
-    });
-    console.log(response.data)
-    let authToken = jwt.decode(response.data.payload, reqBody, { algorithm: "HS256" });
-    return res.json(authToken);
+
+        let token = jwt.sign(payload, process.env.SHAKEY, { algorithm: "HS256" });
+        let response = await axios.post(`${process.env.CPEND_POINT}/paymentToken`, {
+            payload: token
+        }, {
+            headers: {
+                contentType: "application/json"
+            }
+        });
+        
+        let decodedResponse = jwt.decode(response.data.payload, payload, { algorithm: "HS256" });        
+        if(decodedResponse.respCode !== "0000"){
+            return res.status(400).json({status: "Fail"});
+        }
+
+        return res.status(200).json(decodedResponse);
+
+    } catch (err) {
+        console.log(err)
+        return res.status(400).json(err);
+    }
 
 })
 
