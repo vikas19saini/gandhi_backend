@@ -1,11 +1,10 @@
 const { default: axios } = require('axios');
 const jwt = require('jsonwebtoken');
-const { isAuthenticated } = require('../middleware/auth');
 const { Carts, Currencies } = require('../models');
 
 const route = require('express').Router();
 
-route.get("/config", [isAuthenticated], async (req, res) => {
+route.get("/config", async (req, res) => {
     let payments = [{
         name: "paypal",
         mode: process.env.PAYPAL_MODE,
@@ -26,11 +25,39 @@ route.get("/config", [isAuthenticated], async (req, res) => {
 });
 
 
-route.post("/capture", async (req, res) => {
-    console.log(req.body);
+route.post("/validate", async (req, res) => {
+    let { cartId } = req.body;
+    try {
+        let cart = await Carts.findByPk(cartId, { rejectOnEmpty: true });
+        let payload = {
+            merchantID: process.env.MER_ID,
+            invoiceNo: `GFORDCART${cartId}`,
+            locale: 'en',
+            paymentToken: cart.token
+        }
+        
+        let token = jwt.sign(payload, process.env.SHAKEY, { algorithm: "HS256" });
+        let response = await axios.post(`${process.env.CPEND_POINT}/PaymentInquiry`, {
+            payload: token
+        }, {
+            headers: {
+                contentType: "application/json"
+            }
+        });
+
+        let decodedResponse = jwt.decode(response.data.payload, process.env.SHAKEY, { algorithm: "HS256" });
+        if (decodedResponse.respCode !== "0000") {
+            return res.status(400).json({ status: "Fail" });
+        }
+
+        return res.status(200).json(decodedResponse);
+
+    } catch (err) {
+        return res.status(400).json(err);
+    }
 });
 
-route.post("/paymentToken", [isAuthenticated], async (req, res) => {
+route.post("/paymentToken", async (req, res) => {
 
     let { cartId, currencyId } = req.body;
 
@@ -48,7 +75,7 @@ route.post("/paymentToken", [isAuthenticated], async (req, res) => {
             tokenize: true,
             invoicePrefix: "GFORD",
             userDefined1: cartId,
-            frontendReturnUrl: `${process.env.WEB_URL}/payments/capture`,
+            frontendReturnUrl: `${process.env.APP_URL}/order/${cartId}`,
             backendReturnUrl: `${process.env.WEB_URL}/payments/capture`,
             recurring: false,
             immediatePayment: true
@@ -63,10 +90,12 @@ route.post("/paymentToken", [isAuthenticated], async (req, res) => {
             }
         });
 
-        let decodedResponse = jwt.decode(response.data.payload, payload, { algorithm: "HS256" });
+        let decodedResponse = jwt.decode(response.data.payload, process.env.SHAKEY, { algorithm: "HS256" });
         if (decodedResponse.respCode !== "0000") {
             return res.status(400).json({ status: "Fail" });
         }
+
+        await Carts.update({ token: decodedResponse.paymentToken }, { where: { id: cartId } });
 
         return res.status(200).json(decodedResponse);
 

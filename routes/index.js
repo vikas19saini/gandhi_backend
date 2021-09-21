@@ -23,6 +23,6 @@ router.use("/address", [isAuthenticated], addresses);
 router.use("/wishlist", [isAuthenticated], wishlist);
 router.use("/cart", carts);
 router.use("/orders", orders);
-router.use("/payments", payments);
+router.use("/payments", [isAuthenticated], payments);
 
 module.exports = router;

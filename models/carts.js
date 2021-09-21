@@ -51,6 +51,10 @@ Carts.init({
         type: DataTypes.STRING(225),
         allowNull: true
     },
+    token: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     status: {
         type: DataTypes.TINYINT,
         allowNull: false,
