@@ -1,10 +1,11 @@
 const { default: axios } = require('axios');
 const jwt = require('jsonwebtoken');
+const { isAuthenticated } = require('../middleware/auth');
 const { Carts, Currencies } = require('../models');
 
 const route = require('express').Router();
 
-route.get("/config", async (req, res) => {
+route.get("/config", [isAuthenticated], async (req, res) => {
     let payments = [{
         name: "paypal",
         mode: process.env.PAYPAL_MODE,
@@ -24,15 +25,12 @@ route.get("/config", async (req, res) => {
     return res.json(payments);
 });
 
-route.get("/", async (req, res) => {
-    res.render("index");
-});
 
 route.post("/capture", async (req, res) => {
     console.log(req.body);
 });
 
-route.post("/paymentToken", async (req, res) => {
+route.post("/paymentToken", [isAuthenticated], async (req, res) => {
 
     let { cartId, currencyId } = req.body;
 
