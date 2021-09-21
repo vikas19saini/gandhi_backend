@@ -43,15 +43,17 @@ route.post("/paymentToken", async (req, res) => {
         let totalAmount = Number((cart.total * currency.value).toFixed(2));
         let payload = {
             merchantID: process.env.MER_ID,
-            invoiceNo: `GF-ORD/CART/${cart.id}`,
+            invoiceNo: `GFORDCART${cart.id}`,
             amount: totalAmount,
             description: `Payment against cart ID # ${cartId}`,
             currencyCode: currency.code,
             tokenize: true,
-            invoicePrefix: "GF-ORD",
+            invoicePrefix: "GFORD",
             userDefined1: cartId,
-            frontendReturnUrl: `${process.env.APP_URL}/thankyou?cartId=${cartId}`,
-            backendReturnUrl: `${process.env.WEB_URL}/payments/capture`
+            frontendReturnUrl: `${process.env.APP_URL}/order/${cartId}`,
+            backendReturnUrl: `${process.env.WEB_URL}/payments/capture`,
+            recurring: false,
+            immediatePayment: true
         }
 
         let token = jwt.sign(payload, process.env.SHAKEY, { algorithm: "HS256" });
@@ -62,10 +64,10 @@ route.post("/paymentToken", async (req, res) => {
                 contentType: "application/json"
             }
         });
-        
-        let decodedResponse = jwt.decode(response.data.payload, payload, { algorithm: "HS256" });        
-        if(decodedResponse.respCode !== "0000"){
-            return res.status(400).json({status: "Fail"});
+
+        let decodedResponse = jwt.decode(response.data.payload, payload, { algorithm: "HS256" });
+        if (decodedResponse.respCode !== "0000") {
+            return res.status(400).json({ status: "Fail" });
         }
 
         return res.status(200).json(decodedResponse);
