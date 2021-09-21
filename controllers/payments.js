@@ -48,7 +48,7 @@ route.post("/paymentToken", [isAuthenticated], async (req, res) => {
             tokenize: true,
             invoicePrefix: "GFORD",
             userDefined1: cartId,
-            frontendReturnUrl: `${process.env.APP_URL}/order/${cartId}`,
+            frontendReturnUrl: `${process.env.WEB_URL}/payments/capture`,
             backendReturnUrl: `${process.env.WEB_URL}/payments/capture`,
             recurring: false,
             immediatePayment: true
