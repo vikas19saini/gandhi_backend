@@ -1,7 +1,5 @@
 const route = require('express').Router();
-const { Op } = require('sequelize');
 const { Categories, Uploads, Products } = require("../models/index");
-const { count } = require('../models/users');
 
 route.get("/products/:slug", async (req, res) => {
     try {
@@ -43,12 +41,18 @@ route.get("/products/:slug", async (req, res) => {
                 rejectOnEmpty: true
             });
 
-            count = await category.countProducts({
-                scopes: scopes,
-            });
+            if (req.query.includeChild) {
+                scopes.push({ method: ["inCategory", category.id] });
+                count = req.query.limit;
+                products = await Products.scope(scopes).findAll(queryParams);
+            } else {
+                count = await category.countProducts({
+                    scopes: scopes,
+                });
 
-            queryParams.scope = scopes;
-            products = await category.getProducts(queryParams);
+                queryParams.scope = scopes;
+                products = await category.getProducts(queryParams);
+            }
         }
 
         return res.json({
@@ -57,7 +61,6 @@ route.get("/products/:slug", async (req, res) => {
             category: category
         });
     } catch (err) {
-        console.log(err)
         return res.status(400).json(err);
     }
 });
