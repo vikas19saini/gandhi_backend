@@ -192,10 +192,10 @@ route.delete("/:id", async (req, res) => {
 
 route.get("/download/all", async (req, res) => {
     Products.findAll(
-        {
+        /* {
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset)
-        }
+        } */
     ).then(async (products) => {
         let rows = [];
         for (let product of products) {
@@ -252,8 +252,8 @@ route.get("/download/all", async (req, res) => {
             extraLength: 10
         }, false);
 
-        writeFileSync(`${process.env.IMPORT_DIR}/${new Date().getTime()}-AllProducts.xlsx`, buffer);
-        return res.json({ status: "Success" });
+        writeFileSync(`${process.env.IMPORT_DIR}/AllUploadedSKUs.xlsx`, buffer);
+        return res.json({ status: "Success", fileName: "AllUploadedSKUs.xlsx" });
     }).catch(err => {
         console.log(err);
         return res.status(500).json({ status: "fail" });
