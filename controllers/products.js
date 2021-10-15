@@ -17,16 +17,22 @@ route.get("/new", async (req, res) => {
         };
 
         let products = [];
-        
+
         if (req.query.filterBy) {
-            products = await Products.scope(["sortBy", "active", req.query.filterBy]).findAll(op);
+            if (req.query.filterBy === "discounted") {
+                op['order'] = Sequelize.literal('(ragular_price - sale_price) desc')
+                products = await Products.scope(["active", req.query.filterBy]).findAll(op);
+            } else {
+                products = await Products.scope(["sortBy", "active", req.query.filterBy]).findAll(op);
+            }
+
         } else {
             products = await Products.scope(["sortBy", "active"]).findAll(op);
         }
 
         return res.json(products);
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
         return res.status(500).json(err)
     }
 })
