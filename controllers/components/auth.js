@@ -48,12 +48,12 @@ const login = async (userName, password, bypassPasswordAndStatus = false) => {
     return {
         status: true,
         token: authToken,
-        user: {
+        user/* : {
             id: user.id,
             name: user.name,
             email: user.email,
             token: user.token
-        }
+        } */
     }
 }
 
