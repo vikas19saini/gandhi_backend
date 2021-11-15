@@ -166,7 +166,7 @@ route.post("/applyCoupon", [/* isAuthenticated */], async (req, res) => {
 
         await Carts.update({ couponId: coupon.id }, { where: { id: req.body.cartId } });
 
-        return res.json({message: "Coupon successfully applied"});
+        return res.json({ message: "Coupon successfully applied" });
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -219,6 +219,11 @@ route.post("/calculateShipping", [isAuthenticated], async (req, res) => {
         if (!req.body.addressId || !req.body.cartId) throw new Error("Address id and cart id is mandatory!");
 
         let cart = await Carts.findByPk(req.body.cartId, { include: [{ model: Coupons, as: "coupon" }, { model: Products, as: "products" }], rejectOnEmpty: true });
+
+        if (req.body.storePickup) {
+            await Carts.update({ addressId: req.body.addressId, shippingCost: 0, eta: "", shippingMethod: "Store_Pickup" }, { where: { id: req.body.cartId } });
+            return res.json({ message: "Cart updated" });
+        }
 
         let shippingMethods = await __calulateShipping(req.body.addressId, cart);
         if (shippingMethods) {
