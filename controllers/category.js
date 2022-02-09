@@ -18,7 +18,7 @@ route.get("/products/:slug", async (req, res) => {
             distinct: true,
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset),
-            attributes: ["id", "createdAt", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
+            attributes: ["id", "createdAt", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
         };
 
         let category = null;

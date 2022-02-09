@@ -13,6 +13,14 @@ FilterValues.init({
         type: DataTypes.STRING(225),
         allowNull: false
     },
+    th_name: {
+        type: DataTypes.STRING(225),
+        allowNull: false
+    },
+    vi_name: {
+        type: DataTypes.STRING(225),
+        allowNull: false
+    },
     colorCode: {
         type: DataTypes.STRING(10),
         allowNull: false

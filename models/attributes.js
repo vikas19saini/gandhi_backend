@@ -8,6 +8,14 @@ Attributes.init({
         type: DataTypes.STRING(225),
         allowNull: false
     },
+    th_name: {
+        type: DataTypes.STRING(225),
+        allowNull: false
+    },
+    vi_name: {
+        type: DataTypes.STRING(225),
+        allowNull: false
+    },
     sortOrder: {
         type: DataTypes.INTEGER,
         defaultValue: 0

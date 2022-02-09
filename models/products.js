@@ -15,6 +15,14 @@ Products.init({
         type: DataTypes.STRING(500),
         allowNull: false,
     },
+    th_name: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+    },
+    vi_name: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+    },
     slug: {
         type: DataTypes.STRING(500),
         allowNull: false,
@@ -25,6 +33,22 @@ Products.init({
         allowNull: true
     },
     longDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    thShortDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    thLongDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    viShortDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    viLongDescription: {
         type: DataTypes.TEXT,
         allowNull: true
     },
@@ -189,7 +213,7 @@ Products.init({
             for (let f of filters) {
                 filtersArray.push({
                     tags: {
-                        [Op.substring]: f
+                        [Op.substring]: decodeURI(f)
                     }
                 })
             }

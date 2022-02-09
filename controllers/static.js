@@ -21,17 +21,21 @@ route.get("/", async (req, res) => {
 route.get("/filters", (req, res) => {
     Filters.findAll({
         order: [['sortOrder', 'ASC']],
+        attributes: ["id", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
         include: [
             {
                 model: FilterValues,
                 as: "filterValues",
                 required: true,
+                attributes: ["id", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
                 order: [['sortOrder', 'ASC']]
             }
-        ]
+        ],
+        req
     }).then((data) => {
         return res.json(data)
     }).catch(err => {
+        console.error(err)
         return res.status(400).json(err)
     })
 })

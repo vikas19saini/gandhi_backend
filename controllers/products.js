@@ -5,7 +5,7 @@ const { Products, Categories, Uploads } = require("../models/index");
 route.get("/new", async (req, res) => {
     try {
         let op = {
-            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"],
+            attributes: ["id", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
             include: [{
                 model: Uploads,
                 as: "featuredImage",
@@ -64,7 +64,7 @@ route.get("/relative/:pid", async (req, res) => {
             distinct: true,
             limit: 21,
             order: [["id", "asc"]],
-            attributes: ["id", "name", "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"]
+            attributes: ["id", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], "slug", "sku", "ragularPrice", "salePrice", "uploadId", "minOrderQuantity"]
         })
     }).then((products) => {
         return res.json(products);
