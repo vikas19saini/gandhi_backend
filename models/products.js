@@ -15,11 +15,11 @@ Products.init({
         type: DataTypes.STRING(500),
         allowNull: false,
     },
-    th_name: {
+    thName: {
         type: DataTypes.STRING(500),
         allowNull: true,
     },
-    vi_name: {
+    viName: {
         type: DataTypes.STRING(500),
         allowNull: true,
     },

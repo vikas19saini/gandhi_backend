@@ -21,6 +21,14 @@ ProductsAttributeValues.init({
     attributeDescription: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    thAttributeDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    viAttributeDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 }, {
     sequelize: seqConnection,

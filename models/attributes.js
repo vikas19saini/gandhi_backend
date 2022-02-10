@@ -8,11 +8,11 @@ Attributes.init({
         type: DataTypes.STRING(225),
         allowNull: false
     },
-    th_name: {
+    thName: {
         type: DataTypes.STRING(225),
         allowNull: false
     },
-    vi_name: {
+    viName: {
         type: DataTypes.STRING(225),
         allowNull: false
     },

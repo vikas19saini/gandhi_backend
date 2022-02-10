@@ -15,7 +15,7 @@ route.get("/:cartId", async (req, res) => {
                 model: Products,
                 as: "products",
                 through: { attributes: { exclude: ["createdAt", "deletedAt", "updatedAt"] } },
-                attributes: ["id", "name", "sku", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
+                attributes: ["id", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], "sku", "slug", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity", "step", "status", "currentStockStatus"],
                 include: [{
                     model: Uploads,
                     as: "featuredImage",

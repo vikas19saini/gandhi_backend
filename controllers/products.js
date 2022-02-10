@@ -78,18 +78,19 @@ route.get("/:slug", async (req, res) => {
         where: {
             slug: req.params.slug
         },
-        attributes: {
-            exclude: ["shippingWidth", "shippingWeight", "shippingLength", "shippingHeight", "lengthClassId", "createdAt", "deletedAt", "updatedAt",
-                "status", "tags", "taxClassId", "weightClassId"]
-        }
+        attributes: ["id", "sku", "slug",
+            [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"],
+            [`${req.headers.lang ? req.headers.lang + "_" : ""}short_description`, "shortDescription"],
+            [`${req.headers.lang ? req.headers.lang + "_" : ""}long_description`, "longDescription"],
+            "metaTitle", "metaDescription", "ragularPrice", "salePrice", "quantity", "manageStock", "minOrderQuantity",
+            "maxOrderQuantity", "step", "uploadId", "stockStatus", "currentStockStatus"
+        ]
     });
 
     if (product) {
         let attributes = await product.getAttributes({
-            attributes: {
-                exclude: ["deletedAt", "createdAt", "updatedAt", "attributeId", "sortOrder"]
-            },
-            joinTableAttributes: { exclude: ["deletedAt", "createdAt", "updatedAt"] },
+            attributes: [[`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
+            joinTableAttributes: [[`${req.headers.lang ? req.headers.lang + "_" : ""}attribute_description`, "attributeDescription"]],
             order: [["sortOrder", "asc"]]
         });
 
