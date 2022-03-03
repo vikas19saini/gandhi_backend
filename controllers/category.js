@@ -18,7 +18,7 @@ route.get("/products/:slug", async (req, res) => {
             distinct: true,
             limit: parseInt(req.query.limit),
             offset: parseInt(req.query.offset),
-            attributes: ["id", "createdAt", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
+            attributes: ["id", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], "slug", "sku", "ragularPrice", "salePrice", "uploadId", "manageStock", "stockStatus", "currentStockStatus", "minOrderQuantity"]
         };
 
         let category = null;
@@ -71,6 +71,7 @@ route.get("/:slug", async (req, res) => {
             where: {
                 slug: req.params.slug
             },
+            attributes: ["id", "slug", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"], [`${req.headers.lang ? req.headers.lang + "_" : ""}Description`, "description"]],
             include: [
                 {
                     model: Uploads,
@@ -83,6 +84,7 @@ route.get("/:slug", async (req, res) => {
                 {
                     model: Categories,
                     as: "descendents",
+                    attributes: ["id", "slug", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
                     include: [
                         {
                             model: Uploads,

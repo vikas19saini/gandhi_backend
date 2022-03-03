@@ -83,7 +83,7 @@ route.post("/", (req, res, next) => {
 
 route.patch("/:id", async (req, res) => {
     try {
-        Categories.update(req.body, {
+        await Categories.update(req.body, {
             where: {
                 id: req.params.id
             }

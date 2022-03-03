@@ -5,8 +5,16 @@ class Categories extends Model { }
 
 Categories.init({
     name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(225),
         allowNull: false
+    },
+    thName: {
+        type: DataTypes.STRING(225),
+        allowNull: true
+    },
+    viName: {
+        type: DataTypes.STRING(225),
+        allowNull: true
     },
     slug: {
         type: DataTypes.STRING,
@@ -26,6 +34,14 @@ Categories.init({
         allowNull: true,
     },
     description: {
+        type: DataTypes.STRING(1000),
+        allowNull: true
+    },
+    thDescription: {
+        type: DataTypes.STRING(1000),
+        allowNull: true
+    },
+    viDescription: {
         type: DataTypes.STRING(1000),
         allowNull: true
     },
