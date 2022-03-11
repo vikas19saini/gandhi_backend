@@ -67,7 +67,27 @@ route.get("/products/:slug", async (req, res) => {
 
 route.get("/:slug", async (req, res) => {
     try {
-        let category = await Categories.findOne({
+
+        if (req.query.minimal) {
+            const category = await Categories.findOne({
+                where: {
+                    slug: req.params.slug
+                },
+                attributes: ["id", "slug", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
+                include: [
+                    {
+                        model: Categories,
+                        as: "descendents",
+                        attributes: ["id", "slug", [`${req.headers.lang ? req.headers.lang + "_" : ""}name`, "name"]],
+                        through: { attributes: [] }
+                    }
+                ]
+            });
+
+            return res.json(category);
+        }
+
+        const category = await Categories.findOne({
             where: {
                 slug: req.params.slug
             },
