@@ -2,6 +2,7 @@ var users = require('express').Router();
 const { Users, Roles, Menus } = require("../../models/index");
 const jwt = require("jsonwebtoken");
 const { Op } = require('sequelize');
+const passwordHash = require("password-hash");
 
 users.get('/', (req, res) => {
     let params = {
@@ -69,6 +70,23 @@ users.post("/", (req, res) => {
     }).catch(error => {
         return res.status(400).json(error);
     });
+})
+
+users.patch("/reset-pasword", async (req, res) => {
+    try {
+        const user = await Users.findByPk(req.body.userId, { raw: true })
+
+        if (!user) return res.status(404).json({ message: "User not found!" });
+
+        if (!passwordHash.verify(req.body.password, user.password)) {
+            return res.status(500).json({ message: "Incorrect current password!" });
+        }
+
+        await Users.update({ password: req.body.newPassword }, { where: { id: req.body.userId } })
+        return res.json({ message: "Successfully deleted" });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 })
 
 users.get("/:id", (req, res) => {
