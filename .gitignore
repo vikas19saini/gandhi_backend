@@ -2,4 +2,5 @@
 /public/uploads
 /public/enquires
 /public/imports
+/node_modules
 /node_modules/sharp
